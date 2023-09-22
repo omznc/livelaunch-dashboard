@@ -9,9 +9,8 @@ export default async function Agencies({
 		g: string | undefined;
 	};
 }) {
-	const guild = searchParams?.g;
-
-	if (!guild) return null;
+	const guildId = searchParams?.g;
+	if (!guildId) return null;
 
 	const agencies = await cache(
 		async () => prisma.ll2_agencies.findMany(),
@@ -22,9 +21,17 @@ export default async function Agencies({
 		}
 	)();
 
+	const guild = await prisma.enabled_guilds.findFirst({
+		where: {
+			guild_id: BigInt(guildId),
+		},
+	});
+
+	if (!guild) return null;
+
 	const enabledAgencies = await prisma.ll2_agencies_filter.findMany({
 		where: {
-			guild_id: BigInt(guild),
+			guild_id: BigInt(guildId),
 		},
 	});
 

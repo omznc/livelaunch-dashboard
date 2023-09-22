@@ -1,6 +1,6 @@
 'use server';
 
-import { Agency } from '@app/(dashboard)/agencies/client';
+import { AgenciesSettings, Agency } from '@app/(dashboard)/agencies/client';
 import prisma from '@lib/prisma';
 import { getUserGuilds } from '@app/(dashboard)/layout';
 
@@ -32,4 +32,18 @@ export const SetAgencies = async (agencies: Agency[], guildId: string) => {
 			skipDuplicates: true,
 		}),
 	]);
+};
+
+export const updateSettings = async (
+	guildId: string,
+	settings: AgenciesSettings
+): Promise<void> => {
+	await prisma.enabled_guilds.update({
+		where: {
+			guild_id: BigInt(guildId),
+		},
+		data: {
+			agencies_include_exclude: Number(settings.whitelist),
+		},
+	});
 };

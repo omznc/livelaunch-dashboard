@@ -1,11 +1,13 @@
 'use client';
 
-import {
-	enabled_guilds,
-	ll2_agencies,
-	ll2_agencies_filter,
-} from '@prisma/client';
+import { enabled_guilds, news_filter, news_sites } from '@prisma/client';
 import { useEffect, useState } from 'react';
+import { useDebounce } from '@lib/hooks';
+import { cn } from '@lib/utils';
+import { Separator } from '@components/ui/separator';
+import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { Switch } from '@components/ui/switch';
+import { Input } from '@components/ui/input';
 import {
 	Table,
 	TableBody,
@@ -13,68 +15,61 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from '@/components/ui/table';
+} from '@components/ui/table';
 import { Checkbox } from '@components/ui/checkbox';
-import { useDebounce } from '@lib/hooks';
-import { cn } from '@lib/utils';
 import Image from 'next/image';
-import { SetAgencies, updateSettings } from '@app/(dashboard)/agencies/actions';
-import toast from 'react-hot-toast';
-import { Switch } from '@components/ui/switch';
 import { Label } from '@components/ui/label';
-import { Separator } from '@components/ui/separator';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
-import { Input } from '@components/ui/input';
+import { updateSettings } from '@app/(dashboard)/news-sites/actions';
 import { Tabs, TabsList, TabsTrigger } from '@components/ui/tabs';
 
 interface ClientProps {
-	agencies: ll2_agencies[];
-	enabledAgencies: ll2_agencies_filter[];
+	newsSites: news_sites[];
+	enabledNewsSites: news_filter[];
 	guild: enabled_guilds;
 }
 
-export interface Agency extends ll2_agencies {
+export interface NewsSite extends news_sites {
 	selected: boolean;
 }
 
-export interface AgenciesSettings {
+export interface NewsSitesSettings {
 	whitelist: boolean;
 }
 
 export default function Client({
-	agencies,
-	enabledAgencies,
+	newsSites,
+	enabledNewsSites,
 	guild,
 }: ClientProps) {
-	const [selectedAgencies, setSelectedAgencies] = useState<Agency[]>(
-		agencies.map(a => ({
+	const [selectedNewsSites, setSelectedNewsSites] = useState<NewsSite[]>(
+		newsSites.map(a => ({
 			...a,
-			selected: !enabledAgencies.some(e => e.agency_id === a.agency_id),
+			selected: !enabledNewsSites.some(
+				e => e.news_site_id === a.news_site_id
+			),
 		}))
 	);
-	const [settings, setSettings] = useState<AgenciesSettings>({
-		whitelist: Boolean(guild.agencies_include_exclude),
+	const [settings, setSettings] = useState<NewsSitesSettings>({
+		whitelist: Boolean(guild.news_include_exclude),
 	});
 	const [mounted, setMounted] = useState(false);
 	const [searchQuery, setSearchQuery] = useState('');
 
-	const debounced = useDebounce(selectedAgencies, 1000 * 1.5);
+	const debounced = useDebounce(selectedNewsSites, 1000 * 1.5);
 
 	useEffect(() => {
 		if (!mounted) {
 			setMounted(true);
 			return;
 		}
-		toast.promise(SetAgencies(selectedAgencies, String(guild.guild_id)), {
-			loading: 'Saving...',
-			success: 'Saved!',
-			error: 'Failed to save!',
-		});
+		console.log(debounced);
 	}, [debounced]);
 
-	const filtered = selectedAgencies.filter(
-		a => a.name?.toLowerCase().includes(searchQuery.toLowerCase())
+	const filtered = selectedNewsSites.filter(
+		a => a.news_site_name?.toLowerCase().includes(searchQuery.toLowerCase())
 	);
+
+	console.log(guild.agencies_include_exclude);
 
 	return (
 		<div className='flex flex-col gap-4'>
@@ -83,7 +78,7 @@ export default function Client({
 					Exclusions
 				</h4>
 				<p className='text-sm select-none opacity-50'>
-					{'Whether to show or hide agencies'}
+					{'Whether to show or hide news sites'}
 				</p>
 			</div>
 			<div
@@ -98,12 +93,12 @@ export default function Client({
 					<Label htmlFor='toggle-whitelist'>Exclusion Mode</Label>
 					<p className='text-sm  select-none opacity-50'>
 						{
-							"When on 'Exclude' mode, all agencies will be shown except for the ones you select. When on 'Include' mode, only the agencies you select will be shown."
+							"When on 'Exclude' mode, all news sites will be used except for the ones you select. When on 'Include' mode, only the news sites you select will be used."
 						}
 					</p>
 					<Separator />
 					<p className='text-sm select-none inline-flex items-center gap-2 opacity-60'>
-						The selected agencies will be{' '}
+						The selected news sites will be{' '}
 						{settings.whitelist ? (
 							<>
 								shown <FaEye className='-mb-0.5' />
@@ -138,10 +133,10 @@ export default function Client({
 			</div>
 			<div className='flex flex-col gap-2'>
 				<h4 className='scroll-m-20 text-xl font-semibold tracking-tight'>
-					Add or remove agencies
+					Add or remove news sites
 				</h4>
 				<p className='text-sm opacity-50'>
-					Select the agencies you want to{' '}
+					Select the news sites you want to{' '}
 					{settings.whitelist ? 'show' : 'hide'}.
 				</p>
 			</div>
@@ -161,18 +156,17 @@ export default function Client({
 									<Checkbox
 										className='grid place-items-center h-6 w-6 m-2 rounded-[5px]'
 										checked={
-											selectedAgencies.every(
+											selectedNewsSites.every(
 												a => a.selected
-											) && selectedAgencies.length > 0
+											) && selectedNewsSites.length > 0
 										}
 										onClick={e => {
 											e.preventDefault();
 											e.stopPropagation();
-											setSelectedAgencies(prev =>
+											setSelectedNewsSites(prev =>
 												prev.map(p => ({
 													...p,
-													selected:
-														!settings.whitelist,
+													selected: !p.selected,
 												}))
 											);
 										}}
@@ -183,7 +177,7 @@ export default function Client({
 						<TableBody className='w-full cursor-pointer'>
 							{filtered.map(a => (
 								<TableRow
-									key={a.agency_id}
+									key={a.news_site_id}
 									className={cn(
 										'hover:bg-foreground align-middle w-full h-8 h-18 hover:bg-muted/50',
 										{
@@ -193,9 +187,10 @@ export default function Client({
 									onMouseDown={e => {
 										if (e.button === 0) {
 											e.preventDefault();
-											setSelectedAgencies(prev =>
+											setSelectedNewsSites(prev =>
 												prev.map(p =>
-													p.agency_id === a.agency_id
+													p.news_site_id ===
+													a.news_site_id
 														? {
 																...p,
 																selected:
@@ -209,9 +204,10 @@ export default function Client({
 									onMouseEnter={e => {
 										if (e.buttons === 1) {
 											e.preventDefault();
-											setSelectedAgencies(prev =>
+											setSelectedNewsSites(prev =>
 												prev.map(p =>
-													p.agency_id === a.agency_id
+													p.news_site_id ===
+													a.news_site_id
 														? {
 																...p,
 																selected:
@@ -235,16 +231,19 @@ export default function Client({
 										) : (
 											<div
 												className='flex h-[42px] w-[42px] items-center justify-center rounded-full bg-[#1e1f22]'
-												title={a.name ?? 'Unknown'}
+												title={
+													a.news_site_name ??
+													'Unknown'
+												}
 											>
-												{a.name?.[0]}
+												{a.news_site_name?.[0]}
 											</div>
 										)}
-										{a.name}
+										{a.news_site_name}
 									</TableCell>
 									<TableCell className='right-0 relative text-right align-bottom ml-auto'>
 										<Checkbox
-											name={`Checked ${a.name}? ${a.selected}`}
+											name={`Checked ${a.news_site_name}? ${a.selected}`}
 											checked={a.selected}
 											className='grid place-items-center h-6 w-6 m-2 rounded-[5px]'
 											onClick={e => {
@@ -252,10 +251,10 @@ export default function Client({
 												e.stopPropagation();
 											}}
 											onCheckedChange={checked => {
-												setSelectedAgencies(prev =>
+												setSelectedNewsSites(prev =>
 													prev.map(p =>
-														p.agency_id ===
-														a.agency_id
+														p.news_site_id ===
+														a.news_site_id
 															? {
 																	...p,
 																	selected:

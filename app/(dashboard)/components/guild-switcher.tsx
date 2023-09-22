@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar';
-import { Button } from '@components/ui/button';
+import { Button, buttonVariants } from '@components/ui/button';
 import {
 	Command,
 	CommandEmpty,
@@ -30,11 +30,15 @@ import {
 import { RxCaretSort } from 'react-icons/rx';
 import { CheckIcon, PlusCircle } from 'lucide-react';
 import { GuildsResponse } from '@app/(dashboard)/layout';
-import { revalidateGuilds } from '@app/(dashboard)/actions';
+import { revalidateAll, revalidateGuilds } from '@app/(dashboard)/actions';
 import { DialogBody } from 'next/dist/client/components/react-dev-overlay/internal/components/Dialog';
 import { BiRefresh } from 'react-icons/bi';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useTransition } from 'react';
+import env from '@env';
+import Link from 'next/link';
+import { FaPlus, FaPlusCircle } from 'react-icons/fa';
+import toast from 'react-hot-toast';
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
 	typeof PopoverTrigger
@@ -56,6 +60,7 @@ export default function GuildSwitcher({
 	const params = useSearchParams();
 	const router = useRouter();
 	const selectedGuild = guilds.find(guild => guild.id === params.get('g'));
+	const [pending, startTransition] = useTransition();
 
 	useEffect(() => {
 		if (!selectedGuild) {
@@ -66,112 +71,130 @@ export default function GuildSwitcher({
 	return (
 		<Dialog open={showNewGuildDialog} onOpenChange={setShowNewGuildDialog}>
 			{guilds.length !== 0 && (
-				<Popover open={open} onOpenChange={setOpen}>
-					<PopoverTrigger asChild>
-						<Button
-							variant='outline'
-							role='combobox'
-							aria-expanded={open}
-							aria-label='Select a Guild'
-							className={cn(
-								'w-[200px] justify-between',
-								className
-							)}
-						>
-							{selectedGuild ? (
-								<>
-									<Avatar className='mr-2 h-5 w-5'>
-										<AvatarImage
-											src={
-												selectedGuild.icon
-													? `https://cdn.discordapp.com/icons/${selectedGuild.id}/${selectedGuild.icon}.png`
-													: undefined
-											}
-											alt={selectedGuild.name}
-										/>
-										<AvatarFallback>
-											{selectedGuild.name[0] || 'LL'}
-										</AvatarFallback>
-									</Avatar>
-									<span className='truncate'>
-										{selectedGuild.name}
-									</span>
-								</>
-							) : (
-								<span className='truncate animate-pulse'>
-									Just a moment...
-								</span>
-							)}
-							<RxCaretSort className='ml-auto h-4 w-4 shrink-0 opacity-50' />
-						</Button>
-					</PopoverTrigger>
-					<PopoverContent className='w-[200px] p-0'>
-						<Command>
-							<CommandList>
-								<CommandInput placeholder='Search guild...' />
-								<CommandEmpty>No team found.</CommandEmpty>
-								<CommandGroup heading={'Your Guilds'}>
-									{guilds.map(guild => (
-										<CommandItem
-											key={guild.id}
-											onSelect={() => {
-												if (guild.botAccess) {
-													setOpen(false);
-													router.push(
-														`?g=${guild.id}`
-													);
-												} else {
-													setShowNewGuildDialog(true);
+				<>
+					<Button
+						variant={'outline'}
+						className={'p-3 mr-2'}
+						onClick={() => {
+							setShowNewGuildDialog(true);
+						}}
+					>
+						<FaPlus />
+					</Button>
+					<Popover open={open} onOpenChange={setOpen}>
+						<PopoverTrigger asChild>
+							<Button
+								variant='outline'
+								role='combobox'
+								aria-expanded={open}
+								aria-label='Select a Guild'
+								className={cn(
+									'w-[200px] justify-between',
+									className,
+									{
+										'animate-pulse': pending,
+									}
+								)}
+							>
+								{selectedGuild ? (
+									<>
+										<Avatar className='mr-2 h-5 w-5'>
+											<AvatarImage
+												src={
+													selectedGuild.icon
+														? `https://cdn.discordapp.com/icons/${selectedGuild.id}/${selectedGuild.icon}.png`
+														: undefined
 												}
-											}}
-											className='text-sm'
-										>
-											<Avatar className='mr-2 h-5 w-5'>
-												<AvatarImage
-													src={
-														guild.icon
-															? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`
-															: undefined
-													}
-													alt={guild.name}
-												/>
-												<AvatarFallback>
-													{guild.name[0] || 'LL'}
-												</AvatarFallback>
-											</Avatar>
-											{guild.name}
-											<CheckIcon
-												className={cn(
-													'ml-auto h-4 w-4',
-													selectedGuild?.id ===
-														guild.id
-														? 'opacity-100'
-														: 'opacity-0'
-												)}
+												alt={selectedGuild.name}
 											/>
-										</CommandItem>
-									))}
-								</CommandGroup>
-							</CommandList>
-							<CommandSeparator />
-							<CommandList>
-								<CommandGroup>
-									<DialogTrigger asChild>
-										<CommandItem
-											onSelect={() => {
-												setOpen(false);
-												setShowNewGuildDialog(true);
-											}}
-										>
-											<PlusCircle className='mr-2 h-5 w-5' />
-											Add a Guild
-										</CommandItem>
-									</DialogTrigger>
-								</CommandGroup>
-							</CommandList>
-						</Command>
-					</PopoverContent>
-				</Popover>
+											<AvatarFallback>
+												{selectedGuild.name[0] || 'LL'}
+											</AvatarFallback>
+										</Avatar>
+										<span className='truncate'>
+											{selectedGuild.name}
+										</span>
+									</>
+								) : (
+									<span className='truncate animate-pulse'>
+										Just a moment...
+									</span>
+								)}
+								<RxCaretSort className='ml-auto h-4 w-4 shrink-0 opacity-50' />
+							</Button>
+						</PopoverTrigger>
+						<PopoverContent className='w-[200px] p-0'>
+							<Command>
+								<CommandList>
+									<CommandInput placeholder='Search for a server...' />
+									<CommandEmpty>No guild found.</CommandEmpty>
+									<CommandGroup heading={'Your Guilds'}>
+										{guilds.map(guild => (
+											<CommandItem
+												key={guild.id}
+												onSelect={async () => {
+													if (guild.botAccess) {
+														setOpen(false);
+														startTransition(() => {
+															router.push(
+																`/?g=${guild.id}`
+															);
+														});
+													} else {
+														setShowNewGuildDialog(
+															true
+														);
+													}
+												}}
+												className='text-sm'
+											>
+												<Avatar className='mr-2 h-5 w-5'>
+													<AvatarImage
+														src={
+															guild.icon
+																? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`
+																: undefined
+														}
+														alt={guild.name}
+													/>
+													<AvatarFallback>
+														{guild.name[0] || 'LL'}
+													</AvatarFallback>
+												</Avatar>
+												{guild.name}
+												<CheckIcon
+													className={cn(
+														'ml-auto h-4 w-4',
+														selectedGuild?.id ===
+															guild.id
+															? 'opacity-100'
+															: 'opacity-0'
+													)}
+												/>
+											</CommandItem>
+										))}
+									</CommandGroup>
+								</CommandList>
+								<CommandSeparator />
+								<CommandList>
+									<CommandGroup>
+										<DialogTrigger asChild>
+											<CommandItem
+												onSelect={() => {
+													setOpen(false);
+													setShowNewGuildDialog(true);
+												}}
+											>
+												<PlusCircle className='mr-2 h-5 w-5' />
+												Add a Server
+											</CommandItem>
+										</DialogTrigger>
+									</CommandGroup>
+								</CommandList>
+							</Command>
+						</PopoverContent>
+					</Popover>
+				</>
 			)}
 			{guilds.length === 0 && (
 				<Button
@@ -186,7 +209,7 @@ export default function GuildSwitcher({
 				<DialogHeader>
 					<DialogTitle>Add a Guild</DialogTitle>
 					<DialogDescription>
-						To add a guild, you must be an administrator.
+						To add a server, you must be an administrator.
 					</DialogDescription>
 				</DialogHeader>
 				<DialogBody className='inline-flex gap-1'>
@@ -224,16 +247,24 @@ export default function GuildSwitcher({
 					>
 						Cancel
 					</Button>
-					<Button
-						type='submit'
-						onClick={() => {
-							window.open(
-								`https://discord.com/api/oauth2/authorize?client_id=1028048059956985876&permissions=0&scope=bot`
-							);
-						}}
+					<Link
+						className={buttonVariants({
+							variant: 'secondary',
+						})}
+						href={`https://discord.com/oauth2/authorize?client_id=${env.NEXT_PUBLIC_DISCORD_CLIENT_ID}&scope=bot%20applications.commands&guild_id=${guilds[0].id}&disable_guild_select=true&permissions=8`}
+						target={'_blank'}
 					>
-						Invite LiveLaunch
-					</Button>
+						Open in Browser
+					</Link>
+					<Link
+						className={buttonVariants({
+							variant: 'default',
+						})}
+						href={`discord://-/application-directory/${env.NEXT_PUBLIC_DISCORD_CLIENT_ID}`}
+						onClick={() => toast.success('Check your Discord app.')}
+					>
+						Open in Discord
+					</Link>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>

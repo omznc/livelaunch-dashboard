@@ -26,6 +26,9 @@ const RetainQueryLink = ({
 	// 4. get the query from useSearchParams
 	const existingQuery = Object.fromEntries(params);
 
+	// 5. get any #hash from the href
+	const hash = typeof href === 'object' ? href.hash : undefined;
+
 	return (
 		<Link
 			{...props}
@@ -37,6 +40,7 @@ const RetainQueryLink = ({
 					...query,
 					...existingQuery,
 				},
+				hash: hash,
 			}}
 		/>
 	);

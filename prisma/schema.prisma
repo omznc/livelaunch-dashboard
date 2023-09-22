@@ -10,28 +10,30 @@ datasource db {
 model Account {
   id                String  @id @default(cuid())
   userId            String
-  type              String
-  provider          String
   providerAccountId String
-  refresh_token     String? @db.Text
   access_token      String? @db.Text
   expires_at        Int?
-  token_type        String?
-  scope             String?
   id_token          String? @db.Text
+  provider          String
+  refresh_token     String? @db.Text
+  scope             String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token_type        String?
+  type              String
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
+  @@index([userId], map: "Account_userId_fkey")
 }
 
 model Session {
   id           String   @id @default(cuid())
-  sessionToken String   @unique
   userId       String
   expires      DateTime
+  sessionToken String   @unique
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "Session_userId_fkey")
 }
 
 model User {
@@ -77,6 +79,7 @@ model enabled_guilds {
   notification_button_fc       Int?                     @default(1) @db.UnsignedTinyInt
   notification_button_g4l      Int?                     @default(1) @db.UnsignedTinyInt
   notification_button_sln      Int?                     @default(1) @db.UnsignedTinyInt
+  agencies_include_exclude     Int                      @default(0) @db.UnsignedTinyInt
   ll2_agencies_filter          ll2_agencies_filter[]
   news_filter                  news_filter[]
   notification_countdown       notification_countdown[]

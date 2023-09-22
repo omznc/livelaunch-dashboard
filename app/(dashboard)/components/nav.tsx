@@ -2,7 +2,30 @@
 
 import { cn } from '@/lib/utils';
 import RetainQueryLink from '@components/retain-query-link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
+import { enabled_guilds } from '@prisma/client';
+import { useEffect, useState } from 'react';
+import { getGuild } from '@app/(dashboard)/actions';
+import { ImNewTab } from 'react-icons/im';
+import { FaArrowUp } from 'react-icons/fa';
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from '@components/ui/dialog';
+import * as React from 'react';
+import { DialogBody } from 'next/dist/client/components/react-dev-overlay/internal/components/Dialog';
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from '@components/ui/accordion';
+import { Button, buttonVariants } from '@components/ui/button';
+import Link from 'next/link';
 
 const links = [
 	{
@@ -10,42 +33,156 @@ const links = [
 		label: 'Home',
 	},
 	{
+		href: '/general',
+		label: 'General',
+		requiresGuildEnabled: true,
+	},
+	{
 		href: '/agencies',
 		label: 'Agencies',
+		requiresGuildEnabled: true,
 	},
 	{
 		href: '/news-sites',
 		label: 'News Sites',
+		requiresGuildEnabled: true,
+	},
+	{
+		href: '/notifications',
+		label: 'Notifications',
+		requiresGuildEnabled: true,
 	},
 ];
 
-export function Nav({
-	className,
-	...props
-}: React.HTMLAttributes<HTMLElement>) {
+interface NavProps extends React.HTMLAttributes<HTMLElement> {}
+
+export function Nav({ className, ...props }: NavProps) {
 	const path = usePathname();
+	const params = useSearchParams();
+	const guildId = params.get('g');
+	const [guild, setGuild] = useState<enabled_guilds | null | undefined>(null);
+	const [mounted, setMounted] = useState(false);
+	const [showHelpDialog, setShowHelpDialog] = useState(false);
+
+	useEffect(() => {
+		if (!mounted) {
+			setMounted(true);
+			return;
+		}
+		if (!guildId) return;
+		getGuild(guildId).then(value => setGuild(value));
+	}, [guildId, mounted]);
+
 	return (
-		<nav
-			className={cn(
-				'flex items-center space-x-4 lg:space-x-6',
-				className
-			)}
-			{...props}
-		>
-			{links.map(({ href, label }) => (
-				<RetainQueryLink
-					key={`${href}${label}`}
-					href={href}
-					className={cn(
-						'text-sm font-medium opacity-80 transition-all',
-						{
-							'font-bold opacity-100': path === href,
-						}
-					)}
-				>
-					{label}
-				</RetainQueryLink>
-			))}
-		</nav>
+		<>
+			<nav
+				className={cn(
+					'flex items-center space-x-4 lg:space-x-6',
+					className
+				)}
+				{...props}
+			>
+				{!guild && (
+					<Button
+						variant='outline'
+						onClick={() => setShowHelpDialog(true)}
+						className={'-ml-4'}
+					>
+						Enable LiveLaunch
+					</Button>
+				)}
+				{links
+					.filter(
+						({ requiresGuildEnabled }) =>
+							!requiresGuildEnabled ||
+							(requiresGuildEnabled && guild)
+					)
+					.map(({ href, label }) => (
+						<RetainQueryLink
+							key={`${href}${label}`}
+							href={href}
+							className={cn(
+								'text-sm font-medium opacity-80 transition-all',
+								{
+									'font-bold opacity-100': path === href,
+								}
+							)}
+						>
+							{label}
+						</RetainQueryLink>
+					))}
+			</nav>
+			<Dialog open={showHelpDialog} onOpenChange={setShowHelpDialog}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Enable LiveLaunch</DialogTitle>
+						<DialogDescription>
+							You have to enable LiveLaunch in your server to be
+							able to access settings on this dashboard. It is
+							pretty straightforward, I promise.
+						</DialogDescription>
+					</DialogHeader>
+					<DialogBody className='flex flex-col gap-2'>
+						To enable the bot you need to run the following command
+						in your server
+						<code className='relative p-4 block w-full rounded bg-muted font-mono text-sm font-semibold'>
+							{`/enable <feature>`}
+						</code>
+						Where the feature is one of the following
+						<Accordion type='single' collapsible>
+							<AccordionItem value='item-1'>
+								<AccordionTrigger>
+									notifications
+								</AccordionTrigger>
+								<AccordionContent>
+									Send notifications to the specified channel.
+								</AccordionContent>
+							</AccordionItem>
+							<AccordionItem value='item-2'>
+								<AccordionTrigger>news</AccordionTrigger>
+								<AccordionContent>
+									Send space related news to the specified
+									channel.
+								</AccordionContent>
+							</AccordionItem>
+							<AccordionItem value='item-3'>
+								<AccordionTrigger>messages</AccordionTrigger>
+								<AccordionContent>
+									Send YouTube livestreams to the specified
+									channel.
+								</AccordionContent>
+							</AccordionItem>
+							<AccordionItem
+								value='item-4'
+								className='border-none'
+							>
+								<AccordionTrigger>events</AccordionTrigger>
+								<AccordionContent>
+									Create Discord events with a maximum of 50
+									events at any given time.
+								</AccordionContent>
+							</AccordionItem>
+						</Accordion>
+					</DialogBody>
+					<DialogFooter>
+						<Button
+							variant='outline'
+							onClick={() => setShowHelpDialog(false)}
+						>
+							Close
+						</Button>
+						{/*	open discord app on desktop*/}
+						<Link
+							className={buttonVariants({
+								variant: 'default',
+							})}
+							href={'discord://-/'}
+						>
+							Open Discord
+						</Link>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+		</>
 	);
 }
