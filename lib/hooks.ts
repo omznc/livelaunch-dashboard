@@ -17,3 +17,20 @@ export const useDebounce = (value: any, delay: number) => {
 
 	return debouncedValue;
 };
+
+export const useHash = () => {
+	const [hash, setHash] = useState(window.location.hash);
+	const [mounted, setMounted] = useState(false);
+
+	useEffect(() => {
+		if (!mounted) {
+			setMounted(true);
+			return;
+		}
+		const handler = () => setHash(window.location.hash);
+		window.addEventListener('hashchange', handler);
+		return () => window.removeEventListener('hashchange', handler);
+	}, [mounted]);
+
+	return hash;
+};

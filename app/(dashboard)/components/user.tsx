@@ -22,9 +22,9 @@ export default function User() {
 			<DropdownMenuTrigger asChild>
 				<Button
 					variant='ghost'
-					className='relative h-8 w-8 rounded-full'
+					className='relative md:h-8 md:w-8 h-9 w-9'
 				>
-					<Avatar className='h-8 w-8'>
+					<Avatar className='md:h-8 md:w-8 h-9 w-9 md:rounded-full rounded-sm'>
 						<AvatarImage
 							src={session.data!.user?.image ?? undefined}
 						/>

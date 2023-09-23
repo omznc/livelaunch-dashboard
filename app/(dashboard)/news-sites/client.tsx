@@ -2,10 +2,10 @@
 
 import { enabled_guilds, news_filter, news_sites } from '@prisma/client';
 import { useEffect, useState } from 'react';
-import { useDebounce } from '@lib/hooks';
+import { useDebounce, useHash } from '@lib/hooks';
 import { cn } from '@lib/utils';
 import { Separator } from '@components/ui/separator';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaArrowUp, FaEye, FaEyeSlash } from 'react-icons/fa';
 import { Switch } from '@components/ui/switch';
 import { Input } from '@components/ui/input';
 import {
@@ -21,6 +21,8 @@ import Image from 'next/image';
 import { Label } from '@components/ui/label';
 import { updateSettings } from '@app/(dashboard)/news-sites/actions';
 import { Tabs, TabsList, TabsTrigger } from '@components/ui/tabs';
+import { Setting, SettingGroup } from '@components/setting';
+import Link from 'next/link';
 
 interface ClientProps {
 	newsSites: news_sites[];
@@ -69,47 +71,50 @@ export default function Client({
 		a => a.news_site_name?.toLowerCase().includes(searchQuery.toLowerCase())
 	);
 
-	console.log(guild.agencies_include_exclude);
+	const hash = useHash();
 
 	return (
 		<div className='flex flex-col gap-4'>
-			<div className='flex flex-col gap-2'>
-				<h4 className='scroll-m-20 text-xl font-semibold tracking-tight'>
-					Exclusions
-				</h4>
-				<p className='text-sm select-none opacity-50'>
-					{'Whether to show or hide news sites'}
-				</p>
-			</div>
-			<div
-				className={cn(
-					'flex border cursor-pointer hover:bg-muted/10 rounded-md items-center transition-all justify-between space-x-2 p-4',
-					{
-						'bg-muted/30': settings.whitelist,
-					}
-				)}
+			<SettingGroup title={'Exclusions'} hash={hash}>
+				{'Whether to show or hide news sites'}
+			</SettingGroup>
+			{/*<div*/}
+			{/*	className={cn(*/}
+			{/*		'flex border cursor-pointer hover:bg-muted/10 rounded-md items-center transition-all justify-between space-x-2 p-4',*/}
+			{/*		{*/}
+			{/*			'bg-muted/30': settings.whitelist,*/}
+			{/*		}*/}
+			{/*	)}*/}
+			{/*>*/}
+			{/*	<div className={cn('flex flex-col gap-2')}>*/}
+			{/*		<Label htmlFor='toggle-whitelist'>Exclusion Mode</Label>*/}
+			{/*		<p className='text-sm  select-none opacity-50'>*/}
+			{/*			{*/}
+			{/*				"When on 'Exclude' mode, all news sites will be used except for the ones you select. When on 'Include' mode, only the news sites you select will be used."*/}
+			{/*			}*/}
+			{/*		</p>*/}
+			{/*		<Separator />*/}
+			{/*		<p className='text-sm select-none inline-flex items-center gap-2 opacity-60'>*/}
+			{/*			The selected news sites will be{' '}*/}
+			{/*			{settings.whitelist ? (*/}
+			{/*				<>*/}
+			{/*					shown <FaEye className='-mb-0.5' />*/}
+			{/*				</>*/}
+			{/*			) : (*/}
+			{/*				<>*/}
+			{/*					hidden <FaEyeSlash className='-mb-0.5' />*/}
+			{/*				</>*/}
+			{/*			)}*/}
+			{/*		</p>*/}
+			{/*	</div>*/}
+			{/*</div>*/}
+			<Setting
+				label={'Exclusion Mode'}
+				description={
+					"When on 'Exclude' mode, all news sites will be used except for the ones you select. When on 'Include' mode, only the news sites you select will be used."
+				}
+				active={settings.whitelist}
 			>
-				<div className={cn('flex flex-col gap-2')}>
-					<Label htmlFor='toggle-whitelist'>Exclusion Mode</Label>
-					<p className='text-sm  select-none opacity-50'>
-						{
-							"When on 'Exclude' mode, all news sites will be used except for the ones you select. When on 'Include' mode, only the news sites you select will be used."
-						}
-					</p>
-					<Separator />
-					<p className='text-sm select-none inline-flex items-center gap-2 opacity-60'>
-						The selected news sites will be{' '}
-						{settings.whitelist ? (
-							<>
-								shown <FaEye className='-mb-0.5' />
-							</>
-						) : (
-							<>
-								hidden <FaEyeSlash className='-mb-0.5' />
-							</>
-						)}
-					</p>
-				</div>
 				<Tabs
 					defaultValue={
 						guild.agencies_include_exclude ? 'include' : 'exclude'
@@ -130,16 +135,11 @@ export default function Client({
 						<TabsTrigger value='include'>Include</TabsTrigger>
 					</TabsList>
 				</Tabs>
-			</div>
-			<div className='flex flex-col gap-2'>
-				<h4 className='scroll-m-20 text-xl font-semibold tracking-tight'>
-					Add or remove news sites
-				</h4>
-				<p className='text-sm opacity-50'>
-					Select the news sites you want to{' '}
-					{settings.whitelist ? 'show' : 'hide'}.
-				</p>
-			</div>
+			</Setting>
+			<SettingGroup title={'Modify Agencies'} hash={hash}>
+				Select the news sites you want to{' '}
+				{settings.whitelist ? 'show' : 'hide'}.
+			</SettingGroup>
 			<Input
 				placeholder={'Search...'}
 				onChange={e => {

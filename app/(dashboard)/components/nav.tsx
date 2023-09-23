@@ -26,6 +26,7 @@ import {
 } from '@components/ui/accordion';
 import { Button, buttonVariants } from '@components/ui/button';
 import Link from 'next/link';
+import { Skeleton } from '@components/ui/skeleton';
 
 const links = [
 	{
@@ -62,6 +63,7 @@ export function Nav({ className, ...props }: NavProps) {
 	const guildId = params.get('g');
 	const [guild, setGuild] = useState<enabled_guilds | null | undefined>(null);
 	const [mounted, setMounted] = useState(false);
+	const [ranGetGuild, setRanGetGuild] = useState(false);
 	const [showHelpDialog, setShowHelpDialog] = useState(false);
 
 	useEffect(() => {
@@ -70,14 +72,25 @@ export function Nav({ className, ...props }: NavProps) {
 			return;
 		}
 		if (!guildId) return;
-		getGuild(guildId).then(value => setGuild(value));
+		getGuild(guildId)
+			.then(value => setGuild(value))
+			.then(() => setRanGetGuild(true));
 	}, [guildId, mounted]);
+
+	if (!mounted || !ranGetGuild)
+		return (
+			<div className='ml-4 flex items-center justify-evenly md:justify-start space-x-4 lg:space-x-6'>
+				{links.map(({ href, label }) => (
+					<Skeleton key={href} className={cn(`h-4`, `w-16`)} />
+				))}
+			</div>
+		);
 
 	return (
 		<>
 			<nav
 				className={cn(
-					'flex items-center space-x-4 lg:space-x-6',
+					'flex animate-fade-in items-center justify-evenly md:justify-start space-x-4 lg:space-x-6',
 					className
 				)}
 				{...props}
@@ -171,7 +184,6 @@ export function Nav({ className, ...props }: NavProps) {
 						>
 							Close
 						</Button>
-						{/*	open discord app on desktop*/}
 						<Link
 							className={buttonVariants({
 								variant: 'default',

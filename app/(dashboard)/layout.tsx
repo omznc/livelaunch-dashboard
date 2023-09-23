@@ -38,6 +38,19 @@ export default async function Layout({
 							<User />
 						</div>
 					</div>
+					{/* Mobile version */}
+					<div className='flex flex-col md:hidden gap-4'>
+						<div className='flex h-16 items-center justify-between px-4'>
+							<div className='flex items-center'>
+								<GuildSwitcher guilds={await filterGuilds()} />
+							</div>
+							<div className='flex items-center gap-2'>
+								<ThemeToggle />
+								<User />
+							</div>
+						</div>
+						<Nav className='mx-6' />
+					</div>
 					<div className='flex flex-col h-full w-full overflow-scroll p-8'>
 						{children}
 					</div>

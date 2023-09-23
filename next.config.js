@@ -10,6 +10,10 @@ const nextConfig = {
 				hostname: 'juststephen.com',
 				pathname: '/LiveLaunch/*/**',
 			},
+			{
+				protocol: 'https',
+				hostname: 'cdn.discordapp.com',
+			},
 		],
 	},
 	// swcMinify: true,

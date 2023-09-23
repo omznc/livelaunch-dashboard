@@ -212,7 +212,7 @@ export default function GuildSwitcher({
 						To add a server, you must be an administrator.
 					</DialogDescription>
 				</DialogHeader>
-				<DialogBody className='inline-flex gap-1'>
+				<DialogBody className='inline-flex justify-center sm:justify-start gap-1'>
 					{revalidationCooldown ? (
 						`You've refreshed the servers recently, please wait a few seconds.`
 					) : (
