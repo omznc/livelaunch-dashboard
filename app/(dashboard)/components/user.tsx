@@ -6,11 +6,9 @@ import { signOut, useSession } from 'next-auth/react';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
-	DropdownMenuGroup,
 	DropdownMenuItem,
 	DropdownMenuLabel,
 	DropdownMenuSeparator,
-	DropdownMenuShortcut,
 	DropdownMenuTrigger,
 } from '@components/ui/dropdown-menu';
 

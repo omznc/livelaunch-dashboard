@@ -3,8 +3,8 @@ import { unstable_cache as cache } from 'next/cache';
 import Client from '@app/(dashboard)/news-sites/client';
 
 export default async function NewsSites({
-	searchParams,
-}: {
+											searchParams,
+										}: {
 	searchParams: {
 		g: string | undefined;
 	};
@@ -19,7 +19,7 @@ export default async function NewsSites({
 		{
 			tags: ['news-sites'],
 			revalidate: 60 * 60,
-		}
+		},
 	)();
 
 	const guild = await prisma.enabled_guilds.findFirst({

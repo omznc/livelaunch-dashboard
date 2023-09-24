@@ -1,5 +1,4 @@
 import SignInButton from '@app/(public)/login/sign-in-button';
-import { LuRocket } from 'react-icons/lu';
 
 // a simple sign in with discord button, some text, a title.
 export default function AuthenticationPage() {

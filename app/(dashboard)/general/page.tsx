@@ -2,8 +2,8 @@ import prisma from '@lib/prisma';
 import Client from './client';
 
 export default async function Agencies({
-	searchParams,
-}: {
+										   searchParams,
+									   }: {
 	searchParams: {
 		g: string | undefined;
 	};

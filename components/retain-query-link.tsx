@@ -6,10 +6,10 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { PropsWithChildren } from 'react';
 
 const RetainQueryLink = ({
-	href,
-	className,
-	...props
-}: LinkProps & { className?: string } & PropsWithChildren) => {
+							 href,
+							 className,
+							 ...props
+						 }: LinkProps & { className?: string } & PropsWithChildren) => {
 	// 1. use useRouter hook to get access to the current query params
 	const router = useRouter();
 	const params = useSearchParams();

@@ -1,32 +1,17 @@
 'use client';
 
-import {
-	enabled_guilds,
-	ll2_agencies,
-	ll2_agencies_filter,
-} from '@prisma/client';
+import { enabled_guilds, ll2_agencies, ll2_agencies_filter } from '@prisma/client';
 import { useEffect, useState } from 'react';
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@components/ui/checkbox';
 import { useDebounce, useHash } from '@lib/hooks';
 import { cn } from '@lib/utils';
 import Image from 'next/image';
 import { SetAgencies, updateSettings } from '@app/(dashboard)/agencies/actions';
 import toast from 'react-hot-toast';
-import { Switch } from '@components/ui/switch';
-import { Label } from '@components/ui/label';
-import { Separator } from '@components/ui/separator';
-import { FaEye, FaEyeSlash } from 'react-icons/fa';
 import { Input } from '@components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@components/ui/tabs';
-import { Setting, SettingGroup } from '@components/setting';
+import { Setting, SettingGroup } from '@components/ui/setting';
 
 interface ClientProps {
 	agencies: ll2_agencies[];
@@ -43,15 +28,15 @@ export interface AgenciesSettings {
 }
 
 export default function Client({
-	agencies,
-	enabledAgencies,
-	guild,
-}: ClientProps) {
+								   agencies,
+								   enabledAgencies,
+								   guild,
+							   }: ClientProps) {
 	const [selectedAgencies, setSelectedAgencies] = useState<Agency[]>(
 		agencies.map(a => ({
 			...a,
 			selected: !enabledAgencies.some(e => e.agency_id === a.agency_id),
-		}))
+		})),
 	);
 	const [settings, setSettings] = useState<AgenciesSettings>({
 		whitelist: Boolean(guild.agencies_include_exclude),
@@ -76,7 +61,7 @@ export default function Client({
 	const hash = useHash();
 
 	const filtered = selectedAgencies.filter(
-		a => a.name?.toLowerCase().includes(searchQuery.toLowerCase())
+		a => a.name?.toLowerCase().includes(searchQuery.toLowerCase()),
 	);
 
 	return (
@@ -87,7 +72,7 @@ export default function Client({
 			<Setting
 				label={'Exclusion Mode'}
 				description={
-					"When on 'Exclude' mode, all agencies will be shown except for the ones you select. When on 'Include' mode, only the agencies you select will be shown."
+					'When on \'Exclude\' mode, all agencies will be shown except for the ones you select. When on \'Include\' mode, only the agencies you select will be shown.'
 				}
 				active={settings.whitelist}
 			>
@@ -133,7 +118,7 @@ export default function Client({
 										className='grid place-items-center h-6 w-6 m-2 rounded-[5px]'
 										checked={
 											selectedAgencies.every(
-												a => a.selected
+												a => a.selected,
 											) && selectedAgencies.length > 0
 										}
 										onClick={e => {
@@ -144,7 +129,7 @@ export default function Client({
 													...p,
 													selected:
 														!settings.whitelist,
-												}))
+												})),
 											);
 										}}
 									/>
@@ -159,7 +144,7 @@ export default function Client({
 										'hover:bg-foreground align-middle w-full h-8 h-18 hover:bg-muted/50',
 										{
 											'bg-muted/30': a.selected,
-										}
+										},
 									)}
 									onMouseDown={e => {
 										if (e.button === 0) {
@@ -168,12 +153,12 @@ export default function Client({
 												prev.map(p =>
 													p.agency_id === a.agency_id
 														? {
-																...p,
-																selected:
-																	!p.selected,
-														  }
-														: p
-												)
+															...p,
+															selected:
+																!p.selected,
+														}
+														: p,
+												),
 											);
 										}
 									}}
@@ -184,12 +169,12 @@ export default function Client({
 												prev.map(p =>
 													p.agency_id === a.agency_id
 														? {
-																...p,
-																selected:
-																	!p.selected,
-														  }
-														: p
-												)
+															...p,
+															selected:
+																!p.selected,
+														}
+														: p,
+												),
 											);
 										}
 									}}
@@ -228,13 +213,13 @@ export default function Client({
 														p.agency_id ===
 														a.agency_id
 															? {
-																	...p,
-																	selected:
-																		(checked as boolean) ??
-																		false,
-															  }
-															: p
-													)
+																...p,
+																selected:
+																	(checked as boolean) ??
+																	false,
+															}
+															: p,
+													),
 												);
 											}}
 										/>

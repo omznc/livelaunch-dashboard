@@ -19,7 +19,7 @@ const env = createEnv({
 			})
 			.min(
 				1,
-				'DISCORD_CLIENT_SECRET must be a valid Discord client secret'
+				'DISCORD_CLIENT_SECRET must be a valid Discord client secret',
 			),
 		DISCORD_BOT_TOKEN: z
 			.string({
@@ -34,7 +34,7 @@ const env = createEnv({
 			})
 			.min(
 				24,
-				'NEXTAUTH_SECRET must be a valid NextAuth secret (>24 characters)'
+				'NEXTAUTH_SECRET must be a valid NextAuth secret (>24 characters)',
 			),
 		NODE_ENV: z.string({
 			description: 'Node environment',
@@ -52,7 +52,7 @@ const env = createEnv({
 	runtimeEnv: {
 		DATABASE_URL: process.env.DATABASE_URL,
 		NEXT_PUBLIC_DISCORD_CLIENT_ID:
-			process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID,
+		process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID,
 		DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
 		DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
 		NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,

@@ -6,7 +6,7 @@ import { getUserGuilds } from '@app/(dashboard)/layout';
 
 export const SetAgencies = async (agencies: Agency[], guildId: string) => {
 	const authorized = await getUserGuilds().then(guilds =>
-		guilds.find(g => g.id === guildId)
+		guilds.find(g => g.id === guildId),
 	);
 
 	if (!authorized) {
@@ -36,7 +36,7 @@ export const SetAgencies = async (agencies: Agency[], guildId: string) => {
 
 export const updateSettings = async (
 	guildId: string,
-	settings: AgenciesSettings
+	settings: AgenciesSettings,
 ): Promise<void> => {
 	await prisma.enabled_guilds.update({
 		where: {

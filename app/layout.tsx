@@ -12,23 +12,23 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-	children,
-}: {
+									   children,
+								   }: {
 	children: React.ReactNode;
 }) {
 	return (
 		<html lang='en' suppressHydrationWarning>
-			<body className={inter.className}>
-				<ThemeProvider
-					attribute='class'
-					defaultTheme='system'
-					enableSystem
-					disableTransitionOnChange
-				>
-					<Toast />
-					{children}
-				</ThemeProvider>
-			</body>
+		<body className={inter.className}>
+		<ThemeProvider
+			attribute='class'
+			defaultTheme='system'
+			enableSystem
+			disableTransitionOnChange
+		>
+			<Toast />
+			{children}
+		</ThemeProvider>
+		</body>
 		</html>
 	);
 }

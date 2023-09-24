@@ -1,31 +1,11 @@
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from '@components/ui/card';
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@components/ui/card';
 import { buttonVariants } from '@components/ui/button';
 import Link from 'next/link';
 import env from '@env';
 import { cn } from '@lib/utils';
-import {
-	FaArrowUp,
-	FaDiscord,
-	FaGithub,
-	FaHashtag,
-	FaInfo,
-	FaInfoCircle,
-	FaTwitter,
-} from 'react-icons/fa';
+import { FaArrowUp, FaDiscord, FaGithub, FaHashtag } from 'react-icons/fa';
 import { BiSolidUpvote } from 'react-icons/bi';
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from '@components/ui/tooltip';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@components/ui/tooltip';
 
 export default async function Home() {
 	return (
@@ -57,7 +37,7 @@ export default async function Home() {
 								buttonVariants({
 									variant: 'secondary',
 								}),
-								'inline-flex gap-2'
+								'inline-flex gap-2',
 							)}
 							href={
 								'https://github.com/omznc/livelaunch-dashboard'
@@ -73,7 +53,7 @@ export default async function Home() {
 								buttonVariants({
 									variant: 'default',
 								}),
-								'inline-flex gap-2'
+								'inline-flex gap-2',
 							)}
 							href={'https://github.com/juststephen/livelaunch'}
 							target={'_blank'}
@@ -100,7 +80,7 @@ export default async function Home() {
 								buttonVariants({
 									variant: 'default',
 								}),
-								'inline-flex gap-2'
+								'inline-flex gap-2',
 							)}
 							href={`https://top.gg/bot/${
 								env.NODE_ENV === 'development'
@@ -133,7 +113,7 @@ export default async function Home() {
 												buttonVariants({
 													variant: 'secondary',
 												}),
-												'inline-flex gap-2'
+												'inline-flex gap-2',
 											)}
 											href={
 												'discord://-/channels/151026584164237312/967838544766836777'
@@ -157,7 +137,7 @@ export default async function Home() {
 								buttonVariants({
 									variant: 'default',
 								}),
-								'inline-flex gap-2'
+								'inline-flex gap-2',
 							)}
 							href={`https://discord.gg/nztN2FXe7A`}
 							target={'_blank'}

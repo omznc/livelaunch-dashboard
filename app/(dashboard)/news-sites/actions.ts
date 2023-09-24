@@ -5,7 +5,7 @@ import { NewsSitesSettings } from '@app/(dashboard)/news-sites/client';
 
 export async function updateSettings(
 	guildId: string,
-	settings: NewsSitesSettings
+	settings: NewsSitesSettings,
 ): Promise<void> {
 	await prisma.enabled_guilds.update({
 		where: {

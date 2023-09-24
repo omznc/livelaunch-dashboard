@@ -16,8 +16,8 @@ export const metadata: Metadata = {
 };
 
 export default async function Layout({
-	children,
-}: {
+										 children,
+									 }: {
 	children: React.ReactNode;
 }) {
 	const session = await getServerSession(authOptions);
@@ -101,7 +101,7 @@ const filterGuilds = async () => {
 	// return the guilds the bot and user share
 	const guilds: GuildsResponse[] = botGuilds
 		.filter(guild =>
-			userGuilds.some(userGuild => userGuild.id === guild.id)
+			userGuilds.some(userGuild => userGuild.id === guild.id),
 		)
 		.map(guild => ({ ...guild, botAccess: true }));
 

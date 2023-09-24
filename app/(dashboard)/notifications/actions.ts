@@ -1,19 +1,16 @@
 'use server';
 
 import prisma from '@lib/prisma';
-import {
-	CountdownSetting,
-	NotificationsSettings,
-} from '@app/(dashboard)/notifications/client';
+import { CountdownSetting, NotificationsSettings } from '@app/(dashboard)/notifications/client';
 
 export const updateSettings = async (
 	guildId: string,
-	settings: NotificationsSettings
+	settings: NotificationsSettings,
 ): Promise<void> => {
 	// remove countdown key
 
 	const data = Object.fromEntries(
-		Object.entries(settings).map(([key, value]) => [key, Number(value)])
+		Object.entries(settings).map(([key, value]) => [key, Number(value)]),
 	);
 	await prisma.enabled_guilds.update({
 		where: {
@@ -28,7 +25,7 @@ export const updateSettings = async (
 export const updateCountdown = async (
 	guildId: string,
 	settings: CountdownSetting,
-	minutes?: number
+	minutes?: number,
 ): Promise<void> => {
 	if (minutes) {
 		await prisma.notification_countdown.update({

@@ -6,7 +6,7 @@ import { Switch } from '@components/ui/switch';
 import { useState } from 'react';
 import { updateSettings } from '@app/(dashboard)/general/actions';
 import Link from 'next/link';
-import { Setting, SettingGroup } from '@components/setting';
+import { Setting, SettingGroup } from '@components/ui/setting';
 
 interface ClientProps {
 	guild: enabled_guilds;

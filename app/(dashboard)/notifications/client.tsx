@@ -8,7 +8,7 @@ import { updateCountdown, updateSettings } from './actions';
 import RetainQueryLink from '@components/retain-query-link';
 import { Input } from '@components/ui/input';
 import { Switch } from '@components/ui/switch';
-import { Setting, SettingGroup } from '@components/setting';
+import { Setting, SettingGroup } from '@components/ui/setting';
 import { useDebounce } from '@lib/hooks';
 import toast from 'react-hot-toast';
 
@@ -63,7 +63,7 @@ export default function Client({ guild, minutes }: ClientProps) {
 				loading: 'Saving...',
 				success: 'Saved!',
 				error: 'Failed to save.',
-			}
+			},
 		);
 	}, [debouncedCountdown]);
 
@@ -138,7 +138,7 @@ export default function Client({ guild, minutes }: ClientProps) {
 									minutes: clamp(
 										e.target.valueAsNumber,
 										0,
-										60
+										60,
 									),
 								}));
 							}}
