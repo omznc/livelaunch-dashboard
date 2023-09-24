@@ -37,3 +37,6 @@ next-env.d.ts
 
 # docker-mapped directories
 mysql-data
+
+# misc
+.idea
