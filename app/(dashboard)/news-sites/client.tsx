@@ -71,43 +71,11 @@ export default function Client({
 		a => a.news_site_name?.toLowerCase().includes(searchQuery.toLowerCase())
 	);
 
-	const hash = useHash();
-
 	return (
 		<div className='flex flex-col gap-4'>
-			<SettingGroup title={'Exclusions'} hash={hash}>
+			<SettingGroup title={'Exclusions'}>
 				{'Whether to show or hide news sites'}
 			</SettingGroup>
-			{/*<div*/}
-			{/*	className={cn(*/}
-			{/*		'flex border cursor-pointer hover:bg-muted/10 rounded-md items-center transition-all justify-between space-x-2 p-4',*/}
-			{/*		{*/}
-			{/*			'bg-muted/30': settings.whitelist,*/}
-			{/*		}*/}
-			{/*	)}*/}
-			{/*>*/}
-			{/*	<div className={cn('flex flex-col gap-2')}>*/}
-			{/*		<Label htmlFor='toggle-whitelist'>Exclusion Mode</Label>*/}
-			{/*		<p className='text-sm  select-none opacity-50'>*/}
-			{/*			{*/}
-			{/*				"When on 'Exclude' mode, all news sites will be used except for the ones you select. When on 'Include' mode, only the news sites you select will be used."*/}
-			{/*			}*/}
-			{/*		</p>*/}
-			{/*		<Separator />*/}
-			{/*		<p className='text-sm select-none inline-flex items-center gap-2 opacity-60'>*/}
-			{/*			The selected news sites will be{' '}*/}
-			{/*			{settings.whitelist ? (*/}
-			{/*				<>*/}
-			{/*					shown <FaEye className='-mb-0.5' />*/}
-			{/*				</>*/}
-			{/*			) : (*/}
-			{/*				<>*/}
-			{/*					hidden <FaEyeSlash className='-mb-0.5' />*/}
-			{/*				</>*/}
-			{/*			)}*/}
-			{/*		</p>*/}
-			{/*	</div>*/}
-			{/*</div>*/}
 			<Setting
 				label={'Exclusion Mode'}
 				description={
@@ -136,7 +104,7 @@ export default function Client({
 					</TabsList>
 				</Tabs>
 			</Setting>
-			<SettingGroup title={'Modify Agencies'} hash={hash}>
+			<SettingGroup title={'Modify Agencies'}>
 				Select the news sites you want to{' '}
 				{settings.whitelist ? 'show' : 'hide'}.
 			</SettingGroup>

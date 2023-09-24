@@ -10,9 +10,8 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from '@components/ui/tooltip';
-import Link from 'next/link';
-import { buttonVariants } from '@components/ui/button';
 import { useHash } from '@lib/hooks';
+import { FaCopy } from 'react-icons/fa6';
 
 interface SettingProps {
 	label: string;
@@ -32,23 +31,20 @@ export function Setting({
 	return (
 		<div
 			className={cn(
-				`flex border cursor-pointer hover:bg-muted/10 rounded-md items-center transition-all justify-between space-x-2 p-4`,
+				`flex border rounded-md items-center transition-all justify-between space-x-2 p-4`,
 				{
 					'bg-muted/30': active,
 				}
 			)}
-			onClick={e => {
-				(e.currentTarget.children[1] as HTMLDivElement).click();
-			}}
 		>
-			<div className='flex h-full w-full gap-4'>
+			<div className='flex h-full transition-all w-full gap-4'>
 				{image && (
 					<Image
 						src={image}
 						alt={label}
-						width={32}
-						height={32}
-						className='rounded-full h-full w-auto'
+						width={42}
+						height={42}
+						className='rounded-full h-full max-h-[42px] w-auto bg-white'
 					/>
 				)}
 				<div className='flex flex-col gap-2'>
@@ -107,6 +103,7 @@ export function SettingGroup({ title, children }: SettingGroupProps) {
 								)}
 							/>
 							{title}
+							<FaCopy className='opacity-0 h-4 w-4 group-hover:opacity-50 transition-all' />
 						</h4>
 					</TooltipTrigger>
 					<TooltipContent>Copy link to this section</TooltipContent>

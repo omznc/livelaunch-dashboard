@@ -72,9 +72,8 @@ export function Nav({ className, ...props }: NavProps) {
 			return;
 		}
 		if (!guildId) return;
-		getGuild(guildId)
-			.then(value => setGuild(value))
-			.then(() => setRanGetGuild(true));
+		setRanGetGuild(true);
+		getGuild(guildId).then(value => setGuild(value));
 	}, [guildId, mounted]);
 
 	if (!mounted || !ranGetGuild)
@@ -115,7 +114,7 @@ export function Nav({ className, ...props }: NavProps) {
 							key={`${href}${label}`}
 							href={href}
 							className={cn(
-								'text-sm font-medium opacity-80 transition-all',
+								'text-sm font-medium text-center opacity-80 transition-all',
 								{
 									'font-bold opacity-100': path === href,
 								}

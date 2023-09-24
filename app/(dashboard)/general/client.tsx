@@ -1,23 +1,12 @@
 'use client';
 
 import { enabled_guilds } from '@prisma/client';
-import { cn } from '@lib/utils';
-import { Label } from '@components/ui/label';
-import { Separator } from '@components/ui/separator';
-import {
-	FaArrowUp,
-	FaCalendarCheck,
-	FaCalendarTimes,
-	FaEye,
-	FaEyeSlash,
-} from 'react-icons/fa';
+import { FaArrowUp } from 'react-icons/fa';
 import { Switch } from '@components/ui/switch';
-import { ReactNode, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { updateSettings } from '@app/(dashboard)/general/actions';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 import { Setting, SettingGroup } from '@components/setting';
-import { useHash } from '@lib/hooks';
 
 interface ClientProps {
 	guild: enabled_guilds;
@@ -39,9 +28,6 @@ export default function Client({ guild }: ClientProps) {
 		se_launch: Boolean(guild.se_launch),
 		se_event: Boolean(guild.se_event),
 	});
-
-	const hash = useHash();
-	console.log(hash);
 
 	return (
 		<div className='flex flex-col gap-4'>
@@ -179,50 +165,6 @@ export default function Client({ guild }: ClientProps) {
 					defaultChecked={settings.se_event}
 				/>
 			</Setting>
-		</div>
-	);
-}
-
-export interface ToggleSettingProps {
-	label: string;
-	description: string;
-	switchId: string;
-	checked: boolean;
-	guildId: string;
-	setter: (checked: boolean) => void;
-	status: ReactNode;
-}
-
-export function ToggleSetting({
-	label,
-	description,
-	switchId,
-	checked,
-	setter,
-	status,
-}: ToggleSettingProps) {
-	return (
-		<div
-			className={`flex border cursor-pointer hover:bg-muted/10 rounded-md items-center transition-all justify-between space-x-2 p-4 ${
-				checked ? 'bg-muted/30' : ''
-			}`}
-			onClick={() => {
-				document.getElementById(switchId)?.click();
-			}}
-		>
-			<div className='flex flex-col gap-2'>
-				<Label htmlFor={switchId}>{label}</Label>
-				<p className='text-sm select-none opacity-50'>{description}</p>
-				<Separator />
-				<p className='text-sm select-none inline-flex items-center gap-2 opacity-60'>
-					{status}
-				</p>
-			</div>
-			<Switch
-				id={switchId}
-				onCheckedChange={setter}
-				defaultChecked={checked}
-			/>
 		</div>
 	);
 }

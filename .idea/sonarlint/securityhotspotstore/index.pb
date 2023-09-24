@@ -113,3 +113,7 @@ X
 (app/(dashboard)/notifications/client.tsx,c\9\c9340eaf931291fb14486406b9a6932ac09c54d1
 F
 components/setting.tsx,b\6\b63b82fe0579aaa6422add6e629b548fac560d67
+I
+components/ui/tooltip.tsx,d\6\d6dae9b4cbb605940c61e7348f2b0a6b41ae2435
+F
+components/ui/card.tsx,7\9\79f0a50bd3f074b5392c67c55d393d0a58a09656

@@ -17,7 +17,16 @@ export default async function Agencies({
 		},
 	});
 
+	const countdown = await prisma.notification_countdown.findFirst({
+		where: {
+			guild_id: BigInt(guildId),
+		},
+		select: {
+			minutes: true,
+		},
+	});
+
 	if (!guild) return null;
 
-	return <Client guild={guild} />;
+	return <Client guild={guild} minutes={countdown?.minutes} />;
 }

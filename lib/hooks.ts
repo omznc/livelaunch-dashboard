@@ -19,7 +19,7 @@ export const useDebounce = (value: any, delay: number) => {
 };
 
 export const useHash = () => {
-	const [hash, setHash] = useState(window.location.hash);
+	const [hash, setHash] = useState('');
 	const [mounted, setMounted] = useState(false);
 
 	useEffect(() => {

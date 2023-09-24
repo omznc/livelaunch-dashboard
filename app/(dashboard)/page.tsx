@@ -55,7 +55,7 @@ export default async function Home() {
 				</p>
 			</div>
 			<div className='flex w-full flex-wrap h-full gap-4 justify-center items-stretch max-h-[300px]'>
-				<Card className='w-[350px] flex-grow justify-between flex-col flex'>
+				<Card className='w-[400px] flex-grow justify-between flex-col flex'>
 					<CardHeader>
 						<CardTitle>LiveLaunch is open source</CardTitle>
 						<CardDescription>
@@ -64,7 +64,7 @@ export default async function Home() {
 							}
 						</CardDescription>
 					</CardHeader>
-					<CardFooter className='flex justify-between'>
+					<CardFooter className='flex gap-2 justify-between'>
 						<Link
 							className={cn(
 								buttonVariants({
@@ -97,7 +97,7 @@ export default async function Home() {
 						</Link>
 					</CardFooter>
 				</Card>
-				<Card className='w-[350px] flex-grow justify-between flex-col flex'>
+				<Card className='w-[400px] flex-grow justify-between flex-col flex'>
 					<CardHeader>
 						<CardTitle>Vote for LiveLaunch</CardTitle>
 						<CardDescription>
@@ -128,7 +128,7 @@ export default async function Home() {
 						</Link>
 					</CardFooter>
 				</Card>
-				<Card className='w-[350px] flex-grow justify-between flex-col flex'>
+				<Card className='w-[400px] flex-grow justify-between flex-col flex'>
 					<CardHeader>
 						<CardTitle>Support</CardTitle>
 						<CardDescription>

@@ -2,50 +2,38 @@
 
 import { enabled_guilds } from '@prisma/client';
 import { Label } from '@components/ui/label';
-import { Separator } from '@components/ui/separator';
-import {
-	FaArrowUp,
-	FaCalendarCheck,
-	FaCalendarTimes,
-	FaCheckCircle,
-	FaTimesCircle,
-} from 'react-icons/fa';
-import React, { useState } from 'react';
-import { updateSettings } from './actions';
+import { FaArrowUp } from 'react-icons/fa';
+import React, { useEffect, useState } from 'react';
+import { updateCountdown, updateSettings } from './actions';
 import RetainQueryLink from '@components/retain-query-link';
 import { Input } from '@components/ui/input';
-import { ToggleSetting } from '@app/(dashboard)/general/client';
 import { Switch } from '@components/ui/switch';
 import { Setting, SettingGroup } from '@components/setting';
-import { useHash } from '@lib/hooks';
+import { useDebounce } from '@lib/hooks';
+import toast from 'react-hot-toast';
 
 interface ClientProps {
 	guild: enabled_guilds;
+	minutes?: number;
+}
+
+export interface CountdownSetting {
+	days: number;
+	hours: number;
+	minutes: number;
 }
 
 export interface NotificationsSettings {
-	//	Set how long before a launch the bot should send a notification.
-
-	countdown: {
-		days: number;
-		hours: number;
-		minutes: number;
-	};
-	notification_end_status: boolean; // Enable or disable final status notifications
-	notification_hold: boolean; // Enable or disable hold notifications
-	notification_liftoff: boolean; // Enable or disable liftoff notifications
-	notification_go: boolean; // Enable or disable go for launch notifications
-	notification_tbc: boolean; // Enable or disable to be confirmed notifications
-	notification_tbd: boolean; // Enable or disable to be determined notifications
+	notification_end_status: boolean;
+	notification_hold: boolean;
+	notification_go: boolean;
+	notification_liftoff: boolean;
+	notification_tbc: boolean;
+	notification_tbd: boolean;
 }
 
-export default function Client({ guild }: ClientProps) {
+export default function Client({ guild, minutes }: ClientProps) {
 	const [settings, setSettings] = useState<NotificationsSettings>({
-		countdown: {
-			days: 0,
-			hours: 0,
-			minutes: 0,
-		},
 		notification_end_status: Boolean(guild.notification_end_status),
 		notification_hold: Boolean(guild.notification_hold),
 		notification_liftoff: Boolean(guild.notification_liftoff),
@@ -54,10 +42,35 @@ export default function Client({ guild }: ClientProps) {
 		notification_tbd: Boolean(guild.notification_tbd),
 	});
 
+	const [countdown, setCountdown] = useState<CountdownSetting>({
+		days: minutes ? Math.floor(minutes / 60 / 24) : 0,
+		hours: minutes ? Math.floor(minutes / 60) % 24 : 0,
+		minutes: minutes ? minutes % 60 : 0,
+	});
+
+	const [mounted, setMounted] = useState(false);
+
+	const debouncedCountdown = useDebounce(countdown, 1000 * 5);
+
+	useEffect(() => {
+		if (!mounted) {
+			setMounted(true);
+			return;
+		}
+		toast.promise(
+			updateCountdown(String(guild.guild_id), countdown, minutes),
+			{
+				loading: 'Saving...',
+				success: 'Saved!',
+				error: 'Failed to save.',
+			}
+		);
+	}, [debouncedCountdown]);
+
 	return (
 		<div className='flex flex-col gap-4'>
 			<SettingGroup title={'Notifications'}>
-				{'Tweak how notifications work'}
+				{'Tweak how notifications work. Works well with'}
 				<RetainQueryLink
 					href={{
 						pathname: '/general',
@@ -82,21 +95,13 @@ export default function Client({ guild }: ClientProps) {
 							type='number'
 							id='days'
 							placeholder='Days'
+							defaultValue={countdown.days}
 							min={0}
 							max={31}
 							onChange={e => {
-								e.target.valueAsNumber = clamp(
-									e.target.valueAsNumber,
-									0,
-									31
-								);
-
-								setSettings(prev => ({
+								setCountdown(prev => ({
 									...prev,
-									countdown: {
-										...prev.countdown,
-										days: e.target.valueAsNumber,
-									},
+									days: clamp(e.target.valueAsNumber, 0, 31),
 								}));
 							}}
 						/>
@@ -107,21 +112,13 @@ export default function Client({ guild }: ClientProps) {
 							type='number'
 							id='hours'
 							placeholder='Hours'
+							defaultValue={countdown.hours}
 							min={0}
 							max={24}
 							onChange={e => {
-								e.target.valueAsNumber = clamp(
-									e.target.valueAsNumber,
-									0,
-									24
-								);
-
-								setSettings(prev => ({
+								setCountdown(prev => ({
 									...prev,
-									countdown: {
-										...prev.countdown,
-										hours: e.target.valueAsNumber,
-									},
+									hours: clamp(e.target.valueAsNumber, 0, 24),
 								}));
 							}}
 						/>
@@ -132,20 +129,17 @@ export default function Client({ guild }: ClientProps) {
 							type='number'
 							id='minutes'
 							placeholder='Minutes'
+							defaultValue={countdown.minutes}
 							min={0}
 							max={60}
 							onChange={e => {
-								e.target.valueAsNumber = clamp(
-									e.target.valueAsNumber,
-									0,
-									60
-								);
-								setSettings(prev => ({
+								setCountdown(prev => ({
 									...prev,
-									countdown: {
-										...prev.countdown,
-										minutes: e.target.valueAsNumber,
-									},
+									minutes: clamp(
+										e.target.valueAsNumber,
+										0,
+										60
+									),
 								}));
 							}}
 						/>

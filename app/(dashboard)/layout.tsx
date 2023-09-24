@@ -9,8 +9,6 @@ import { ThemeToggle } from '@components/theme-toggle';
 import User from '@app/(dashboard)/components/user';
 import env from '@env';
 import { RESTAPIPartialCurrentUserGuild } from 'discord.js';
-import prisma from '@lib/prisma';
-import { enabled_guilds } from '@prisma/client';
 
 export const metadata: Metadata = {
 	title: 'LiveLaunch Dashboard',
@@ -27,8 +25,8 @@ export default async function Layout({
 	if (session?.user) {
 		return (
 			<AuthProvider session={session}>
-				<div className='flex flex-col h-[100dvh] w-full'>
-					<div className='hidden flex-row justify-between border-b md:flex'>
+				<div className='flex flex-col items-center h-[100dvh] w-full'>
+					<div className='hidden flex-row w-full justify-between border-b md:flex'>
 						<div className='flex h-16 items-center px-4'>
 							<GuildSwitcher guilds={await filterGuilds()} />
 							<Nav className='mx-6' />
@@ -39,7 +37,7 @@ export default async function Layout({
 						</div>
 					</div>
 					{/* Mobile version */}
-					<div className='flex flex-col md:hidden gap-4'>
+					<div className='flex w-full flex-col md:hidden gap-4'>
 						<div className='flex h-16 items-center justify-between px-4'>
 							<div className='flex items-center'>
 								<GuildSwitcher guilds={await filterGuilds()} />
@@ -51,7 +49,7 @@ export default async function Layout({
 						</div>
 						<Nav className='mx-6' />
 					</div>
-					<div className='flex flex-col h-full w-full overflow-scroll p-8'>
+					<div className='flex flex-col h-full w-full max-w-[1000px] transition-all overflow-scroll p-8'>
 						{children}
 					</div>
 				</div>
