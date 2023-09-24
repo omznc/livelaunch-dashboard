@@ -6,8 +6,6 @@ import { usePathname, useSearchParams } from 'next/navigation';
 import { enabled_guilds } from '@prisma/client';
 import { useEffect, useState } from 'react';
 import { getGuild } from '@app/(dashboard)/actions';
-import { ImNewTab } from 'react-icons/im';
-import { FaArrowUp } from 'react-icons/fa';
 import {
 	Dialog,
 	DialogContent,

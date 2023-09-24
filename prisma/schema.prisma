@@ -46,14 +46,6 @@ model User {
   sessions      Session[]
 }
 
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
 model enabled_guilds {
   guild_id                     BigInt                   @id @db.UnsignedBigInt
   channel_id                   BigInt?                  @db.UnsignedBigInt

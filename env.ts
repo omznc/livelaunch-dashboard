@@ -36,12 +36,6 @@ const env = createEnv({
 				24,
 				'NEXTAUTH_SECRET must be a valid NextAuth secret (>24 characters)'
 			),
-		TOPGG_TOKEN: z
-			.string({
-				description: 'Top.gg token',
-				required_error: 'TOPGG_TOKEN is required',
-			})
-			.min(1, 'TOPGG_TOKEN must be a valid Top.gg token'),
 		NODE_ENV: z.string({
 			description: 'Node environment',
 		}),
@@ -62,7 +56,6 @@ const env = createEnv({
 		DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
 		DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
 		NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
-		TOPGG_TOKEN: process.env.TOPGG_TOKEN,
 		NODE_ENV: process.env.NODE_ENV,
 	},
 });

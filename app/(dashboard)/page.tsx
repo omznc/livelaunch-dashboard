@@ -28,19 +28,6 @@ import {
 } from '@components/ui/tooltip';
 
 export default async function Home() {
-	const topgg = await fetch(
-		`https://top.gg/api/bots/${
-			env.NODE_ENV === 'development'
-				? '869969874036867082'
-				: env.NEXT_PUBLIC_DISCORD_CLIENT_ID
-		}`,
-		{
-			headers: {
-				Authorization: env.TOPGG_TOKEN,
-			},
-		}
-	).then(res => res.json() as Promise<TopGGResponse>);
-
 	return (
 		<div className='flex flex-col gap-24'>
 			<div className='flex flex-col gap-2 w-full h-full justify-center items-center'>
@@ -172,7 +159,7 @@ export default async function Home() {
 								}),
 								'inline-flex gap-2'
 							)}
-							href={`https://discord.gg/${topgg.support}`}
+							href={`https://discord.gg/nztN2FXe7A`}
 							target={'_blank'}
 						>
 							<FaDiscord />
