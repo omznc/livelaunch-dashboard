@@ -62,6 +62,7 @@ const env = createEnv({
 		DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
 		DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
 		NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
+		NEXTAUTH_URL: process.env.NEXTAUTH_URL,
 		NODE_ENV: process.env.NODE_ENV,
 	},
 });
