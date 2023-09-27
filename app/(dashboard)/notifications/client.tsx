@@ -1,20 +1,48 @@
 'use client';
 
-import { enabled_guilds } from '@prisma/client';
-import { Label } from '@components/ui/label';
-import { FaArrowUp } from 'react-icons/fa';
-import React, { useEffect, useState } from 'react';
-import { updateCountdown, updateSettings } from './actions';
+import { enabled_guilds, notification_countdown } from '@prisma/client';
+import { FaArrowUp, FaCross, FaHashtag, FaTimes } from 'react-icons/fa';
+import React, { useState } from 'react';
+import {
+	addCountdown,
+	disableFeature,
+	removeCountdown,
+	updateChannel,
+	updateFilters,
+} from './actions';
 import RetainQueryLink from '@components/retain-query-link';
-import { Input } from '@components/ui/input';
 import { Switch } from '@components/ui/switch';
 import { Setting, SettingGroup } from '@components/ui/setting';
-import { useDebounce } from '@lib/hooks';
 import toast from 'react-hot-toast';
+import { RESTGetAPIGuildChannelsResult } from 'discord.js';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+} from '@components/ui/select';
+
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from '@components/ui/dialog';
+import { Button, buttonVariants } from '@components/ui/button';
+import { DialogBody } from 'next/dist/client/components/react-dev-overlay/internal/components/Dialog';
+import Link from 'next/link';
+import env from '@env';
+import { Input } from '@components/ui/input';
+import { Label } from '@components/ui/label';
+import { Badge } from '@components/ui/badge';
 
 interface ClientProps {
 	guild: enabled_guilds;
-	minutes?: number;
+	countdowns: notification_countdown[];
+	channels: RESTGetAPIGuildChannelsResult;
 }
 
 export interface CountdownSetting {
@@ -23,7 +51,7 @@ export interface CountdownSetting {
 	minutes: number;
 }
 
-export interface NotificationsSettings {
+export interface NotificationsFilterSettings {
 	notification_end_status: boolean;
 	notification_hold: boolean;
 	notification_go: boolean;
@@ -32,8 +60,8 @@ export interface NotificationsSettings {
 	notification_tbd: boolean;
 }
 
-export default function Client({ guild, minutes }: ClientProps) {
-	const [settings, setSettings] = useState<NotificationsSettings>({
+export default function Client({ guild, countdowns, channels }: ClientProps) {
+	const [settings, setSettings] = useState<NotificationsFilterSettings>({
 		notification_end_status: Boolean(guild.notification_end_status),
 		notification_hold: Boolean(guild.notification_hold),
 		notification_liftoff: Boolean(guild.notification_liftoff),
@@ -42,33 +70,53 @@ export default function Client({ guild, minutes }: ClientProps) {
 		notification_tbd: Boolean(guild.notification_tbd),
 	});
 
-	const [countdown, setCountdown] = useState<CountdownSetting>({
-		days: minutes ? Math.floor(minutes / 60 / 24) : 0,
-		hours: minutes ? Math.floor(minutes / 60) % 24 : 0,
-		minutes: minutes ? minutes % 60 : 0,
+	const [selectedChannelID, setSelectedChannelID] = useState<
+		string | undefined
+	>(guild.notification_channel_id?.toString());
+
+	const [newCountdown, setNewCountdown] = useState<CountdownSetting>({
+		days: 0,
+		hours: 0,
+		minutes: 0,
 	});
 
-	const [mounted, setMounted] = useState(false);
+	const resetNewCountdown = () => {
+		setNewCountdown({
+			days: 0,
+			hours: 0,
+			minutes: 0,
+		});
+	};
 
-	const debouncedCountdown = useDebounce(countdown, 1000 * 5);
-
-	useEffect(() => {
-		if (!mounted) {
-			setMounted(true);
-			return;
-		}
-		toast.promise(
-			updateCountdown(String(guild.guild_id), countdown, minutes),
-			{
-				loading: 'Saving...',
-				success: 'Saved!',
-				error: 'Failed to save.',
-			},
-		);
-	}, [debouncedCountdown]);
+	const [addCountdownDialogOpen, setAddCountdownDialogOpen] = useState(false);
 
 	return (
 		<div className='flex flex-col gap-4'>
+			<SettingGroup title={'Feature'}></SettingGroup>
+			<Setting
+				label={'Disable Feature'}
+				description={'Disable this feature for your server.'}
+				active={false}
+				className='flex flex-col gap-4'
+				disabled={guild.notification_channel_id === null}
+			>
+				<Button
+					onClick={() => {
+						toast.promise(disableFeature(String(guild.guild_id)), {
+							loading: 'Disabling...',
+							success: () => {
+								setSelectedChannelID(undefined);
+								return 'Disabled.';
+							},
+							error: 'Failed to disable.',
+						});
+					}}
+					className='w-fit whitespace-nowrap'
+					variant='outline'
+				>
+					Disable
+				</Button>
+			</Setting>
 			<SettingGroup title={'Notifications'}>
 				{'Tweak how notifications work. Works well with'}
 				<RetainQueryLink
@@ -81,71 +129,248 @@ export default function Client({ guild, minutes }: ClientProps) {
 					Scheduled Events <FaArrowUp className='-rotate-45' />
 				</RetainQueryLink>
 			</SettingGroup>
+
+			<Setting
+				label={'Notification Channel'}
+				description={
+					'Choose which channel the bot should send notifications to. Setting this enables this feature.'
+				}
+				active={false}
+			>
+				<Select
+					onValueChange={value => {
+						setSelectedChannelID(value);
+						toast.promise(
+							updateChannel(String(guild.guild_id), value),
+							{
+								loading: 'Saving...',
+								success: 'Saved.',
+								error: 'Failed to save.',
+							}
+						);
+					}}
+				>
+					<SelectTrigger className='w-full md:w-fit-content md:max-w-[350px]'>
+						{(() => {
+							const chan = channels.find(
+								channel => channel.id === selectedChannelID
+							);
+							if (chan) {
+								return (
+									<span>
+										<FaHashtag className='inline-block mr-2' />
+										{chan.name}
+									</span>
+								);
+							}
+							return 'No channel selected';
+						})()}
+					</SelectTrigger>
+					<SelectContent>
+						{channels.map(channel => (
+							<SelectItem
+								key={channel.id}
+								onClick={() => {
+									console.log(channel);
+								}}
+								value={channel.id}
+							>
+								<FaHashtag className='inline-block mr-2' />
+								{channel.name}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</Setting>
 			<Setting
 				label={'Notification Countdown'}
 				description={
 					'Set how long before a launch the bot should send a notification.'
 				}
 				active={false}
+				className='flex flex-col gap-4'
+				disabled={guild.notification_channel_id === null}
 			>
-				<div className='flex gap-2 items-center'>
-					<div className='grid max-w-sm items-center gap-1.5'>
-						<Label htmlFor='days'>Days (0-31)</Label>
-						<Input
-							type='number'
-							id='days'
-							placeholder='Days'
-							defaultValue={countdown.days}
-							min={0}
-							max={31}
-							onChange={e => {
-								setCountdown(prev => ({
-									...prev,
-									days: clamp(e.target.valueAsNumber, 0, 31),
-								}));
-							}}
-						/>
-					</div>
-					<div className='grid max-w-sm items-center gap-1.5'>
-						<Label htmlFor='hours'>Hours (0-24)</Label>
-						<Input
-							type='number'
-							id='hours'
-							placeholder='Hours'
-							defaultValue={countdown.hours}
-							min={0}
-							max={24}
-							onChange={e => {
-								setCountdown(prev => ({
-									...prev,
-									hours: clamp(e.target.valueAsNumber, 0, 24),
-								}));
-							}}
-						/>
-					</div>
-					<div className='grid max-w-sm items-center gap-1.5'>
-						<Label htmlFor='minutes'>Minutes (0-60)</Label>
-						<Input
-							type='number'
-							id='minutes'
-							placeholder='Minutes'
-							defaultValue={countdown.minutes}
-							min={0}
-							max={60}
-							onChange={e => {
-								setCountdown(prev => ({
-									...prev,
-									minutes: clamp(
-										e.target.valueAsNumber,
-										0,
-										60,
-									),
-								}));
-							}}
-						/>
-					</div>
-				</div>
+				<Dialog
+					open={addCountdownDialogOpen}
+					onOpenChange={setAddCountdownDialogOpen}
+				>
+					<Button
+						onClick={() => {
+							resetNewCountdown();
+							setAddCountdownDialogOpen(true);
+						}}
+						className='w-fit whitespace-nowrap'
+						variant='outline'
+					>
+						Add a Countdown
+					</Button>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>Add a Countdown</DialogTitle>
+							<DialogDescription>
+								{`Let's create a new countdown. You can add ${
+									64 - countdowns.length
+								} more.`}
+							</DialogDescription>
+						</DialogHeader>
+						<DialogBody className='justify-center flex flex-col sm:justify-start gap-4'>
+							<div className='flex gap-2 items-center'>
+								<div className='grid max-w-sm items-center gap-1.5'>
+									<Label htmlFor='days'>Days (0-31)</Label>
+									<Input
+										type='number'
+										id='days'
+										placeholder='Days'
+										defaultValue={0}
+										min={0}
+										max={31}
+										onChange={e => {
+											e.target.value = clamp(
+												e.target.valueAsNumber,
+												0,
+												31
+											).toString();
+											setNewCountdown(prev => ({
+												...prev,
+												days: e.target.valueAsNumber,
+											}));
+										}}
+									/>
+								</div>
+								<div className='grid max-w-sm items-center gap-1.5'>
+									<Label htmlFor='hours'>Hours (0-24)</Label>
+									<Input
+										type='number'
+										id='hours'
+										placeholder='Hours'
+										defaultValue={0}
+										min={0}
+										max={24}
+										onChange={e => {
+											e.target.value = clamp(
+												e.target.valueAsNumber,
+												0,
+												24
+											).toString();
+											setNewCountdown(prev => ({
+												...prev,
+												hours: e.target.valueAsNumber,
+											}));
+										}}
+									/>
+								</div>
+								<div className='grid max-w-sm items-center gap-1.5'>
+									<Label htmlFor='minutes'>
+										Minutes (0-60)
+									</Label>
+									<Input
+										type='number'
+										id='minutes'
+										placeholder='Minutes'
+										defaultValue={0}
+										min={0}
+										max={60}
+										onChange={e => {
+											e.target.value = clamp(
+												e.target.valueAsNumber,
+												0,
+												60
+											).toString();
+											setNewCountdown(prev => ({
+												...prev,
+												minutes: e.target.valueAsNumber,
+											}));
+										}}
+									/>
+								</div>
+							</div>
+							{`That would be ${
+								newCountdown.days * 24 * 60 +
+								newCountdown.hours * 60 +
+								newCountdown.minutes
+							} minutes beforehand.`}
+						</DialogBody>
+						<DialogFooter>
+							<Button
+								variant='outline'
+								onClick={() => setAddCountdownDialogOpen(false)}
+							>
+								Cancel
+							</Button>
+							<Button
+								onClick={() => {
+									addCountdown(
+										String(guild.guild_id),
+										newCountdown
+									).catch(() => {
+										toast.error('Failed to add countdown.');
+									});
+									setAddCountdownDialogOpen(false);
+								}}
+							>
+								Add
+							</Button>
+						</DialogFooter>
+					</DialogContent>
+				</Dialog>
 			</Setting>
+			<h2 className='text-sm'>
+				{countdowns.length > 0
+					? 'Current Countdowns'
+					: "This is where you'd see your countdowns, if you had any."}
+			</h2>
+			<div className='flex flex-wrap gap-2'>
+				{countdowns.map(countdown => (
+					<Badge
+						key={`${countdown.guild_id}-${countdown.minutes}`}
+						className='group hover:gap-2'
+					>
+						{(() => {
+							const days = Math.floor(
+								countdown.minutes / 60 / 24
+							);
+							const hours =
+								Math.floor(countdown.minutes / 60) % 24;
+							const minutes = countdown.minutes % 60;
+
+							return (
+								<div className='flex gap-1 items-center'>
+									{days > 0 && (
+										<span className='text-sm'>
+											{days} day
+											{days > 1 ? 's' : ''}
+										</span>
+									)}
+									{hours > 0 && (
+										<span className='text-sm'>
+											{hours} hour
+											{hours > 1 ? 's' : ''}
+										</span>
+									)}
+									{minutes > 0 && (
+										<span className='text-sm'>
+											{minutes} minute
+											{minutes > 1 ? 's' : ''}
+										</span>
+									)}
+								</div>
+							);
+						})()}
+						<FaTimes
+							onClick={() => {
+								removeCountdown(
+									String(guild.guild_id),
+									countdown.minutes
+								).catch(() => {
+									toast.error('Failed to remove countdown.');
+								});
+							}}
+							className='w-0 invisible cursor-pointer group-hover:visible group-hover:w-2 transition-all'
+						/>
+					</Badge>
+				))}
+			</div>
 
 			<SettingGroup title={'Filtering'}>
 				{
@@ -156,13 +381,14 @@ export default function Client({ guild, minutes }: ClientProps) {
 			<Setting
 				label={'End Status'}
 				description={
-					'Will the bot send a notification when the launch ends?'
+					'Will the bot send a notification when the launch recieves an end status?'
 				}
 				active={settings.notification_end_status}
+				disabled={guild.notification_channel_id === null}
 			>
 				<Switch
 					onCheckedChange={checked => {
-						updateSettings(String(guild.guild_id), {
+						updateFilters(String(guild.guild_id), {
 							...settings,
 							notification_end_status: checked,
 						});
@@ -181,10 +407,11 @@ export default function Client({ guild, minutes }: ClientProps) {
 					'Will the bot send a notification when a hold occurs?'
 				}
 				active={settings.notification_hold}
+				disabled={guild.notification_channel_id === null}
 			>
 				<Switch
 					onCheckedChange={checked => {
-						updateSettings(String(guild.guild_id), {
+						updateFilters(String(guild.guild_id), {
 							...settings,
 							notification_hold: checked,
 						});
@@ -203,10 +430,11 @@ export default function Client({ guild, minutes }: ClientProps) {
 					'Will the bot send a notification when the rocket lifts off?'
 				}
 				active={settings.notification_liftoff}
+				disabled={guild.notification_channel_id === null}
 			>
 				<Switch
 					onCheckedChange={checked => {
-						updateSettings(String(guild.guild_id), {
+						updateFilters(String(guild.guild_id), {
 							...settings,
 							notification_liftoff: checked,
 						});
@@ -225,10 +453,11 @@ export default function Client({ guild, minutes }: ClientProps) {
 					'Will the bot send a notification when the launch is go?'
 				}
 				active={settings.notification_go}
+				disabled={guild.notification_channel_id === null}
 			>
 				<Switch
 					onCheckedChange={checked => {
-						updateSettings(String(guild.guild_id), {
+						updateFilters(String(guild.guild_id), {
 							...settings,
 							notification_go: checked,
 						});
@@ -247,10 +476,11 @@ export default function Client({ guild, minutes }: ClientProps) {
 					'Will the bot send a notification when the launch is to be confirmed?'
 				}
 				active={settings.notification_tbc}
+				disabled={guild.notification_channel_id === null}
 			>
 				<Switch
 					onCheckedChange={checked => {
-						updateSettings(String(guild.guild_id), {
+						updateFilters(String(guild.guild_id), {
 							...settings,
 							notification_tbc: checked,
 						});
@@ -269,10 +499,11 @@ export default function Client({ guild, minutes }: ClientProps) {
 					'Will the bot send a notification when the launch is to be determined?'
 				}
 				active={settings.notification_tbd}
+				disabled={guild.notification_channel_id === null}
 			>
 				<Switch
 					onCheckedChange={checked => {
-						updateSettings(String(guild.guild_id), {
+						updateFilters(String(guild.guild_id), {
 							...settings,
 							notification_tbd: checked,
 						});

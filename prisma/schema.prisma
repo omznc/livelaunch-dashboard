@@ -50,6 +50,7 @@ model enabled_guilds {
   guild_id                     BigInt                   @id @db.UnsignedBigInt
   channel_id                   BigInt?                  @db.UnsignedBigInt
   webhook_url                  String?                  @db.Text
+  scheduled_events             Int?                     @default(0) @db.UnsignedTinyInt
   se_launch                    Int?                     @default(1) @db.UnsignedTinyInt
   se_event                     Int?                     @default(1) @db.UnsignedTinyInt
   se_no_url                    Int?                     @default(0) @db.UnsignedTinyInt
@@ -75,7 +76,7 @@ model enabled_guilds {
   ll2_agencies_filter          ll2_agencies_filter[]
   news_filter                  news_filter[]
   notification_countdown       notification_countdown[]
-  scheduled_events             scheduled_events[]
+  scheduled_events_arr         scheduled_events[]
 }
 
 model ll2_agencies {

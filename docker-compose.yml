@@ -8,10 +8,12 @@ services:
       MYSQL_DATABASE: LiveLaunch
     volumes:
       - ./mysql-data:/var/lib/mysql
+    ports:
+        - "3306:3306"
   web:
     build: .
     ports:
-      - "80:3000"
+      - "3000:3000"
     env_file:
       - .env
     environment:

@@ -1,9 +1,10 @@
 import prisma from '@lib/prisma';
 import Client from './client';
+import { getBotChannels } from '@lib/discord-api';
 
 export default async function Agencies({
-										   searchParams,
-									   }: {
+	searchParams,
+}: {
 	searchParams: {
 		g: string | undefined;
 	};
@@ -17,16 +18,16 @@ export default async function Agencies({
 		},
 	});
 
-	const countdown = await prisma.notification_countdown.findFirst({
-		where: {
-			guild_id: BigInt(guildId),
-		},
-		select: {
-			minutes: true,
-		},
-	});
-
 	if (!guild) return null;
 
-	return <Client guild={guild} minutes={countdown?.minutes} />;
+	const [countdowns, channels] = await Promise.all([
+		prisma.notification_countdown.findMany({
+			where: {
+				guild_id: BigInt(guildId),
+			},
+		}),
+		getBotChannels(guildId),
+	]);
+
+	return <Client guild={guild} countdowns={countdowns} channels={channels} />;
 }

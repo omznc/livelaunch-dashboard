@@ -8,11 +8,11 @@ export default function SignInButton() {
 	return (
 		<Button
 			className='mt-6'
-			onMouseDown={() =>
+			onClick={() => {
 				signIn('discord', {
 					callbackUrl: `${window.location.origin}/`,
-				})
-			}
+				});
+			}}
 		>
 			<FaDiscord className='inline-block mr-2' />
 			Sign in with Discord

@@ -1,11 +1,22 @@
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from '@components/ui/card';
+import {
+	Card,
+	CardDescription,
+	CardFooter,
+	CardHeader,
+	CardTitle,
+} from '@components/ui/card';
 import { buttonVariants } from '@components/ui/button';
 import Link from 'next/link';
 import env from '@env';
 import { cn } from '@lib/utils';
 import { FaArrowUp, FaDiscord, FaGithub, FaHashtag } from 'react-icons/fa';
 import { BiSolidUpvote } from 'react-icons/bi';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@components/ui/tooltip';
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from '@components/ui/tooltip';
 
 export default async function Home() {
 	return (
@@ -37,7 +48,7 @@ export default async function Home() {
 								buttonVariants({
 									variant: 'secondary',
 								}),
-								'inline-flex gap-2',
+								'inline-flex gap-2'
 							)}
 							href={
 								'https://github.com/omznc/livelaunch-dashboard'
@@ -53,7 +64,7 @@ export default async function Home() {
 								buttonVariants({
 									variant: 'default',
 								}),
-								'inline-flex gap-2',
+								'inline-flex gap-2'
 							)}
 							href={'https://github.com/juststephen/livelaunch'}
 							target={'_blank'}
@@ -80,7 +91,7 @@ export default async function Home() {
 								buttonVariants({
 									variant: 'default',
 								}),
-								'inline-flex gap-2',
+								'inline-flex gap-2'
 							)}
 							href={`https://top.gg/bot/${
 								env.NODE_ENV === 'development'
@@ -113,7 +124,7 @@ export default async function Home() {
 												buttonVariants({
 													variant: 'secondary',
 												}),
-												'inline-flex gap-2',
+												'inline-flex gap-2'
 											)}
 											href={
 												'discord://-/channels/151026584164237312/967838544766836777'
@@ -137,7 +148,7 @@ export default async function Home() {
 								buttonVariants({
 									variant: 'default',
 								}),
-								'inline-flex gap-2',
+								'inline-flex gap-2'
 							)}
 							href={`https://discord.gg/nztN2FXe7A`}
 							target={'_blank'}
@@ -151,32 +162,4 @@ export default async function Home() {
 			</div>
 		</div>
 	);
-}
-
-export interface TopGGResponse {
-	defAvatar: string;
-	invite: string;
-	website: string;
-	support: string;
-	github: string;
-	longdesc: string;
-	shortdesc: string;
-	prefix: string;
-	lib: string;
-	clientid: string;
-	avatar: string;
-	id: string;
-	discriminator: string;
-	username: string;
-	date: string;
-	server_count: number;
-	shard_count: number;
-	guilds: string[];
-	shards: string[];
-	monthlyPoints: number;
-	points: number;
-	certifiedBot: boolean;
-	owners: string[];
-	tags: string[];
-	donatebotguildid: string;
 }

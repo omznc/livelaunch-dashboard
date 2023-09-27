@@ -4,7 +4,12 @@ import { cn } from '@lib/utils';
 import Image from 'next/image';
 import { FaHashtag } from 'react-icons/fa';
 import toast from 'react-hot-toast';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@components/ui/tooltip';
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from '@components/ui/tooltip';
 import { useHash } from '@lib/hooks';
 import { FaCopy } from 'react-icons/fa6';
 
@@ -14,25 +19,38 @@ interface SettingProps {
 	active: boolean;
 	children: ReactNode;
 	image?: string;
+	className?: string;
+	disabled?: boolean;
 }
 
 export function Setting({
-							label,
-							description,
-							active,
-							children,
-							image,
-						}: SettingProps) {
+	label,
+	description,
+	active,
+	children,
+	image,
+	className,
+	disabled,
+}: SettingProps) {
 	return (
 		<div
 			className={cn(
-				`flex border rounded-md items-center transition-all justify-between space-x-2 p-4`,
+				`relative flex md:flex-row flex-col md:gap-0 gap-4 border rounded-md items-center transition-all justify-between p-4`,
 				{
 					'bg-muted/30': active,
+					'space-x-2': !disabled,
 				},
+				className
 			)}
 		>
-			<div className='flex h-full transition-all w-full gap-4'>
+			{disabled && (
+				<div className='z-10 absolute w-full h-full flex filter items-center justify-center rounded-md -ml-4 backdrop-blur-sm bg-opacity-10 border-none'>
+					<p className='text-sm absolute font-semibold select-none'>
+						This setting is disabled
+					</p>
+				</div>
+			)}
+			<div className={cn('flex h-full transition-all w-full gap-4')}>
 				{image && (
 					<Image
 						src={image}
@@ -56,7 +74,7 @@ export function Setting({
 
 interface SettingGroupProps {
 	title: string;
-	children: ReactNode;
+	children?: ReactNode;
 }
 
 export function SettingGroup({ title, children }: SettingGroupProps) {
@@ -73,7 +91,7 @@ export function SettingGroup({ title, children }: SettingGroupProps) {
 								'group scroll-m-20 w-fit inline-flex cursor-pointer items-center gap-1 text-xl font-semibold tracking-tight',
 								{
 									'font-bold': id === hash.slice(1),
-								},
+								}
 							)}
 							id={id}
 							onClick={() => {
@@ -85,7 +103,7 @@ export function SettingGroup({ title, children }: SettingGroupProps) {
 									})
 									.catch(() => {
 										toast.error(
-											'Failed to copy to clipboard!',
+											'Failed to copy to clipboard!'
 										);
 									});
 							}}
@@ -95,7 +113,7 @@ export function SettingGroup({ title, children }: SettingGroupProps) {
 									'opacity-50 transition-all group-hover:opacity-100',
 									{
 										'opacity-100': id === hash.slice(1),
-									},
+									}
 								)}
 							/>
 							{title}
@@ -105,9 +123,11 @@ export function SettingGroup({ title, children }: SettingGroupProps) {
 					<TooltipContent>Copy link to this section</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>
-			<p className='text-sm inline-flex items-center gap-1 select-none opacity-50'>
-				{children}
-			</p>
+			{children && (
+				<p className='text-sm inline-flex items-center gap-1 select-none opacity-50'>
+					{children}
+				</p>
+			)}
 		</div>
 	);
 }

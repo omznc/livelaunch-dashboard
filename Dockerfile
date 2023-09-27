@@ -1,13 +1,11 @@
 FROM oven/bun:latest AS bun
 FROM node:18-alpine AS node
 
-# Install dependencies with bun, since it's faster.
 FROM bun AS deps
 WORKDIR /app
 COPY package.json ./
 RUN bun i
 
-# We gotta do everything else with Node, since bun is broken rn :(
 FROM node AS builder
 WORKDIR /app
 

@@ -28,3 +28,20 @@ export const getGuild = async (id: string) => {
 		},
 	});
 };
+
+export const enableGuild = async (id: string) => {
+	const session = await getServerSession(authOptions);
+	if (!session?.user) return;
+
+	await prisma.enabled_guilds.upsert({
+		where: {
+			guild_id: BigInt(id),
+		},
+		create: {
+			guild_id: BigInt(id),
+		},
+		update: {},
+	});
+
+	revalidatePath('/');
+};

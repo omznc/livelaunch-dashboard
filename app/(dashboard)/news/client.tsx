@@ -1,21 +1,40 @@
 'use client';
 
 import { enabled_guilds, news_filter, news_sites } from '@prisma/client';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDebounce } from '@lib/hooks';
 import { cn } from '@lib/utils';
 import { Input } from '@components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@components/ui/table';
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow,
+} from '@components/ui/table';
 import { Checkbox } from '@components/ui/checkbox';
 import Image from 'next/image';
-import { updateSettings } from '@app/(dashboard)/news-sites/actions';
+import { updateSettings } from '@app/(dashboard)/news/actions';
 import { Tabs, TabsList, TabsTrigger } from '@components/ui/tabs';
 import { Setting, SettingGroup } from '@components/ui/setting';
+import { RESTGetAPIGuildChannelsResult } from 'discord.js';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+} from '@components/ui/select';
+import { updateChannel, disableFeature } from '@app/(dashboard)/news/actions';
+import toast from 'react-hot-toast';
+import { FaHashtag } from 'react-icons/fa';
+import { Button } from '@components/ui/button';
 
 interface ClientProps {
 	newsSites: news_sites[];
 	enabledNewsSites: news_filter[];
 	guild: enabled_guilds;
+	channels: RESTGetAPIGuildChannelsResult;
 }
 
 export interface NewsSite extends news_sites {
@@ -27,21 +46,25 @@ export interface NewsSitesSettings {
 }
 
 export default function Client({
-								   newsSites,
-								   enabledNewsSites,
-								   guild,
-							   }: ClientProps) {
+	newsSites,
+	enabledNewsSites,
+	guild,
+	channels,
+}: ClientProps) {
 	const [selectedNewsSites, setSelectedNewsSites] = useState<NewsSite[]>(
 		newsSites.map(a => ({
 			...a,
-			selected: !enabledNewsSites.some(
-				e => e.news_site_id === a.news_site_id,
+			selected: enabledNewsSites.some(
+				e => e.news_site_id === a.news_site_id
 			),
-		})),
+		}))
 	);
 	const [settings, setSettings] = useState<NewsSitesSettings>({
 		whitelist: Boolean(guild.news_include_exclude),
 	});
+	const [selectedChannelID, setSelectedChannelID] = useState<
+		string | undefined
+	>(guild.news_channel_id?.toString());
 	const [mounted, setMounted] = useState(false);
 	const [searchQuery, setSearchQuery] = useState('');
 
@@ -56,20 +79,95 @@ export default function Client({
 	}, [debounced]);
 
 	const filtered = selectedNewsSites.filter(
-		a => a.news_site_name?.toLowerCase().includes(searchQuery.toLowerCase()),
+		a => a.news_site_name?.toLowerCase().includes(searchQuery.toLowerCase())
 	);
 
 	return (
 		<div className='flex flex-col gap-4'>
+			<SettingGroup title={'Feature'}></SettingGroup>
+			<Setting
+				label={'Disable Feature'}
+				description={'Disable this feature for your server.'}
+				active={false}
+				className='flex flex-col gap-4'
+				disabled={guild.news_channel_id === null}
+			>
+				<Button
+					onClick={() => {
+						toast.promise(disableFeature(String(guild.guild_id)), {
+							loading: 'Disabling...',
+							success: () => {
+								setSelectedChannelID(undefined);
+								return 'Disabled.';
+							},
+							error: 'Failed to disable.',
+						});
+					}}
+					className='w-fit whitespace-nowrap'
+					variant='outline'
+				>
+					Disable
+				</Button>
+			</Setting>
 			<SettingGroup title={'Exclusions'}>
 				{'Whether to show or hide news sites'}
 			</SettingGroup>
 			<Setting
+				label={'News Channel'}
+				description={
+					'Choose which channel the bot should send news to.'
+				}
+				active={false}
+			>
+				<Select
+					onValueChange={value => {
+						setSelectedChannelID(value);
+						updateChannel(String(guild.guild_id), value).catch(
+							() => {
+								toast.error('Failed to save.');
+							}
+						);
+					}}
+				>
+					<SelectTrigger className='w-full md:w-fit-content md:max-w-[350px]'>
+						{(() => {
+							const chan = channels.find(
+								channel => channel.id === selectedChannelID
+							);
+							if (chan) {
+								return (
+									<span>
+										<FaHashtag className='inline-block mr-2' />
+										{chan.name}
+									</span>
+								);
+							}
+							return 'No channel selected';
+						})()}
+					</SelectTrigger>
+					<SelectContent>
+						{channels.map(channel => (
+							<SelectItem
+								key={channel.id}
+								onClick={() => {
+									console.log(channel);
+								}}
+								value={channel.id}
+							>
+								<FaHashtag className='inline-block mr-2' />
+								{channel.name}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			</Setting>
+			<Setting
 				label={'Exclusion Mode'}
 				description={
-					'When on \'Exclude\' mode, all news sites will be used except for the ones you select. When on \'Include\' mode, only the news sites you select will be used.'
+					"When on 'Exclude' mode, all news sites will be used except for the ones you select. When on 'Include' mode, only the news sites you select will be used."
 				}
 				active={settings.whitelist}
+				disabled={guild.news_channel_id === null}
 			>
 				<Tabs
 					defaultValue={
@@ -92,7 +190,7 @@ export default function Client({
 					</TabsList>
 				</Tabs>
 			</Setting>
-			<SettingGroup title={'Modify Agencies'}>
+			<SettingGroup title={'Modify News Sites'}>
 				Select the news sites you want to{' '}
 				{settings.whitelist ? 'show' : 'hide'}.
 			</SettingGroup>
@@ -103,7 +201,7 @@ export default function Client({
 				}}
 			/>
 			<div className='flex border rounded-md flex-col overflow-hidden'>
-				{filtered.length > 0 ? (
+				{filtered.length > 0 && guild.news_channel_id !== null ? (
 					<Table className='overflow-scroll w-full'>
 						<TableHeader className='border-b-2 h-14 font-medium bg-background'>
 							<TableRow className='bg-muted/50 snap-start align-right'>
@@ -113,7 +211,7 @@ export default function Client({
 										className='grid place-items-center h-6 w-6 m-2 rounded-[5px]'
 										checked={
 											selectedNewsSites.every(
-												a => a.selected,
+												a => a.selected
 											) && selectedNewsSites.length > 0
 										}
 										onClick={e => {
@@ -123,7 +221,7 @@ export default function Client({
 												prev.map(p => ({
 													...p,
 													selected: !p.selected,
-												})),
+												}))
 											);
 										}}
 									/>
@@ -138,7 +236,7 @@ export default function Client({
 										'hover:bg-foreground align-middle w-full h-8 h-18 hover:bg-muted/50',
 										{
 											'bg-muted/30': a.selected,
-										},
+										}
 									)}
 									onMouseDown={e => {
 										if (e.button === 0) {
@@ -148,12 +246,12 @@ export default function Client({
 													p.news_site_id ===
 													a.news_site_id
 														? {
-															...p,
-															selected:
-																!p.selected,
-														}
-														: p,
-												),
+																...p,
+																selected:
+																	!p.selected,
+														  }
+														: p
+												)
 											);
 										}
 									}}
@@ -165,12 +263,12 @@ export default function Client({
 													p.news_site_id ===
 													a.news_site_id
 														? {
-															...p,
-															selected:
-																!p.selected,
-														}
-														: p,
-												),
+																...p,
+																selected:
+																	!p.selected,
+														  }
+														: p
+												)
 											);
 										}
 									}}
@@ -212,13 +310,13 @@ export default function Client({
 														p.news_site_id ===
 														a.news_site_id
 															? {
-																...p,
-																selected:
-																	(checked as boolean) ??
-																	false,
-															}
-															: p,
-													),
+																	...p,
+																	selected:
+																		(checked as boolean) ??
+																		false,
+															  }
+															: p
+													)
 												);
 											}}
 										/>
@@ -230,7 +328,7 @@ export default function Client({
 				) : (
 					<div className='flex flex-col justify-center items-center h-full'>
 						<p className='text-sm opacity-50 p-8'>
-							No agencies matched your search query
+							There is nothing here
 						</p>
 					</div>
 				)}

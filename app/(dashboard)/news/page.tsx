@@ -1,26 +1,17 @@
 import prisma from '@lib/prisma';
 import { unstable_cache as cache } from 'next/cache';
-import Client from '@app/(dashboard)/news-sites/client';
+import Client from '@app/(dashboard)/news/client';
+import { getBotChannels } from '@lib/discord-api';
 
 export default async function NewsSites({
-											searchParams,
-										}: {
+	searchParams,
+}: {
 	searchParams: {
 		g: string | undefined;
 	};
 }) {
 	const guildId = searchParams?.g;
 	if (!guildId) return null;
-
-	// const newsSites = await prisma.news_sites.findMany();
-	const newsSites = await cache(
-		async () => prisma.news_sites.findMany(),
-		['news-sites'],
-		{
-			tags: ['news-sites'],
-			revalidate: 60 * 60,
-		},
-	)();
 
 	const guild = await prisma.enabled_guilds.findFirst({
 		where: {
@@ -30,17 +21,30 @@ export default async function NewsSites({
 
 	if (!guild) return null;
 
-	const enabledNewsSites = await prisma.news_filter.findMany({
-		where: {
-			guild_id: BigInt(guildId),
-		},
-	});
+	const newsSites = await cache(
+		async () => prisma.news_sites.findMany(),
+		['news-sites'],
+		{
+			tags: ['news-sites'],
+			revalidate: 60 * 60,
+		}
+	)();
+
+	const [enabledNewsSites, channels] = await Promise.all([
+		prisma.news_filter.findMany({
+			where: {
+				guild_id: BigInt(guildId),
+			},
+		}),
+		getBotChannels(guildId),
+	]);
 
 	return (
 		<Client
 			newsSites={newsSites}
 			enabledNewsSites={enabledNewsSites}
 			guild={guild}
+			channels={channels}
 		/>
 	);
 }

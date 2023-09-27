@@ -1,9 +1,10 @@
 import prisma from '@lib/prisma';
 import Client from './client';
+import { getBotChannels } from '@lib/discord-api';
 
 export default async function Agencies({
-										   searchParams,
-									   }: {
+	searchParams,
+}: {
 	searchParams: {
 		g: string | undefined;
 	};
@@ -19,5 +20,7 @@ export default async function Agencies({
 
 	if (!guild) return null;
 
-	return <Client guild={guild} />;
+	const channels = await getBotChannels(guildId);
+
+	return <Client guild={guild} channels={channels} />;
 }
