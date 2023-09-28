@@ -1,13 +1,15 @@
 'use server';
 
 import prisma from '@lib/prisma';
-import { NewsSitesSettings } from '@app/(dashboard)/news/client';
-import { createWebhook } from '@lib/discord-api';
+import { NewsSite, NewsSitesSettings } from '@app/(dashboard)/news/client';
+import { createWebhook, getUserGuilds } from '@lib/discord-api';
 import { REST } from '@discordjs/rest';
 import env from '@env';
-const rest = new REST({ version: '9' }).setToken(env.DISCORD_BOT_TOKEN);
 import { Routes } from 'discord-api-types/v10';
 import { revalidatePath } from 'next/cache';
+import { Logger } from 'next-axiom';
+const rest = new REST({ version: '9' }).setToken(env.DISCORD_BOT_TOKEN);
+const log = new Logger();
 
 export async function updateSettings(
 	guildId: string,
@@ -91,4 +93,40 @@ export const disableFeature = async (guildId: string): Promise<void> => {
 	});
 
 	revalidatePath('/news');
+};
+
+export const setNewsSites = async (newsSites: NewsSite[], guildId: string) => {
+	const authorized = await getUserGuilds().then(guilds =>
+		guilds.find(g => g.id === guildId)
+	);
+
+	if (!authorized) {
+		log.error('Guild not found', {
+			guildId,
+		});
+		await log.flush();
+		throw new Error('Guild not found');
+	}
+
+	return Promise.all([
+		prisma.news_filter.deleteMany({
+			where: {
+				guild_id: BigInt(guildId),
+				news_site_id: {
+					in: newsSites
+						.filter(n => !n.selected)
+						.map(n => n.news_site_id),
+				},
+			},
+		}),
+		prisma.news_filter.createMany({
+			data: newsSites
+				.filter(n => n.selected)
+				.map(n => ({
+					guild_id: BigInt(guildId),
+					news_site_id: n.news_site_id,
+				})),
+			skipDuplicates: true,
+		}),
+	]);
 };

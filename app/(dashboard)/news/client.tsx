@@ -15,7 +15,7 @@ import {
 } from '@components/ui/table';
 import { Checkbox } from '@components/ui/checkbox';
 import Image from 'next/image';
-import { updateSettings } from '@app/(dashboard)/news/actions';
+import { setNewsSites, updateSettings } from '@app/(dashboard)/news/actions';
 import { Tabs, TabsList, TabsTrigger } from '@components/ui/tabs';
 import { Setting, SettingGroup } from '@components/ui/setting';
 import { RESTGetAPIGuildChannelsResult } from 'discord.js';
@@ -59,6 +59,7 @@ export default function Client({
 			),
 		}))
 	);
+
 	const [settings, setSettings] = useState<NewsSitesSettings>({
 		whitelist: Boolean(guild.news_include_exclude),
 	});
@@ -75,7 +76,11 @@ export default function Client({
 			setMounted(true);
 			return;
 		}
-		console.log(debounced);
+		toast.promise(setNewsSites(selectedNewsSites, String(guild.guild_id)), {
+			loading: 'Saving...',
+			success: 'Saved!',
+			error: 'Failed to save!',
+		});
 	}, [debounced]);
 
 	const filtered = selectedNewsSites.filter(

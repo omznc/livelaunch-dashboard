@@ -26,13 +26,13 @@ export const SetAgencies = async (agencies: Agency[], guildId: string) => {
 			where: {
 				guild_id: BigInt(guildId),
 				agency_id: {
-					in: agencies.filter(a => a.selected).map(a => a.agency_id),
+					in: agencies.filter(a => !a.selected).map(a => a.agency_id),
 				},
 			},
 		}),
 		prisma.ll2_agencies_filter.createMany({
 			data: agencies
-				.filter(a => !a.selected)
+				.filter(a => a.selected)
 				.map(a => ({
 					guild_id: BigInt(guildId),
 					agency_id: a.agency_id,
