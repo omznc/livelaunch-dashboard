@@ -32,6 +32,8 @@ export const getBotChannels = async (guildId: string) => {
 		}
 	).then(resp => resp.json() as Promise<RESTGetAPIGuildChannelsResult>);
 
+	if (!resp) return [];
+
 	return resp?.filter(channel => channel.type in [0, 5]);
 };
 
