@@ -11,31 +11,26 @@ const env = createEnv({
 			})
 			.url({
 				message: 'DATABASE_URL must be a valid URL (mysql://)',
-			}),
+			})
+			.optional(),
 		DISCORD_CLIENT_SECRET: z
 			.string({
 				description: 'Discord client secret',
 				required_error: 'DISCORD_CLIENT_SECRET is required',
 			})
-			.min(
-				1,
-				'DISCORD_CLIENT_SECRET must be a valid Discord client secret',
-			),
+			.optional(),
 		DISCORD_BOT_TOKEN: z
 			.string({
 				description: 'Discord bot token',
 				required_error: 'DISCORD_BOT_TOKEN is required',
 			})
-			.min(1, 'DISCORD_BOT_TOKEN must be a valid Discord bot token'),
+			.optional(),
 		NEXTAUTH_SECRET: z
 			.string({
 				description: 'NextAuth secret',
 				required_error: 'NEXTAUTH_SECRET is required',
 			})
-			.min(
-				24,
-				'NEXTAUTH_SECRET must be a valid NextAuth secret (>24 characters)',
-			),
+			.optional(),
 		NEXTAUTH_URL: z
 			.string({
 				description: 'NextAuth URL',
@@ -64,7 +59,7 @@ const env = createEnv({
 	runtimeEnv: {
 		DATABASE_URL: process.env.DATABASE_URL,
 		NEXT_PUBLIC_DISCORD_CLIENT_ID:
-		process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID,
+			process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID,
 		DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
 		DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
 		NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
