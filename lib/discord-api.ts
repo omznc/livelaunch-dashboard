@@ -49,6 +49,7 @@ export const getBotGuilds = async () => {
 		},
 	}).then(async resp => {
 		const json = await resp.json();
+		console.log(json);
 
 		return json as Promise<RESTAPIPartialCurrentUserGuild[]>;
 	});
@@ -66,6 +67,7 @@ export const getUserGuilds = async () => {
 		},
 	}).then(async resp => {
 		const json = await resp.json();
+		console.log(json);
 		return json as Promise<RESTAPIPartialCurrentUserGuild[]>;
 	});
 

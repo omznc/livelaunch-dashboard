@@ -12,8 +12,6 @@ import { getBotGuilds, getUserGuilds } from '@lib/discord-api';
 import env from '@env';
 
 export default async function Layout({ children }: { children: ReactNode }) {
-	console.log(env);
-
 	const session = await getServerSession(authOptions);
 
 	if (!session?.user) {
@@ -67,10 +65,11 @@ const filterGuilds = async () => {
 		getBotGuilds(),
 	]);
 
-	if (!userGuilds || !botGuilds) {
+	if (!Array.isArray(userGuilds) || !Array.isArray(botGuilds)) {
 		return [];
 	}
-	// return the guilds the bot and user share
+
+	// Filter and map the guilds
 	const guilds: GuildsResponse[] = botGuilds
 		.filter(guild =>
 			userGuilds.some(userGuild => userGuild.id === guild.id)
