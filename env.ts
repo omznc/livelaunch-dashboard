@@ -11,26 +11,19 @@ const env = createEnv({
 			})
 			.url({
 				message: 'DATABASE_URL must be a valid URL (mysql://)',
-			})
-			.optional(),
-		DISCORD_CLIENT_SECRET: z
-			.string({
-				description: 'Discord client secret',
-				required_error: 'DISCORD_CLIENT_SECRET is required',
-			})
-			.optional(),
-		DISCORD_BOT_TOKEN: z
-			.string({
-				description: 'Discord bot token',
-				required_error: 'DISCORD_BOT_TOKEN is required',
-			})
-			.optional(),
-		NEXTAUTH_SECRET: z
-			.string({
-				description: 'NextAuth secret',
-				required_error: 'NEXTAUTH_SECRET is required',
-			})
-			.optional(),
+			}),
+		DISCORD_CLIENT_SECRET: z.string({
+			description: 'Discord client secret',
+			required_error: 'DISCORD_CLIENT_SECRET is required',
+		}),
+		DISCORD_BOT_TOKEN: z.string({
+			description: 'Discord bot token',
+			required_error: 'DISCORD_BOT_TOKEN is required',
+		}),
+		NEXTAUTH_SECRET: z.string({
+			description: 'NextAuth secret',
+			required_error: 'NEXTAUTH_SECRET is required',
+		}),
 		NEXTAUTH_URL: z
 			.string({
 				description: 'NextAuth URL',
@@ -43,12 +36,10 @@ const env = createEnv({
 	},
 	// These are visible to both server-side and client-side code
 	client: {
-		NEXT_PUBLIC_DISCORD_CLIENT_ID: z
-			.string({
-				description: 'Discord client ID',
-				required_error: 'DISCORD_CLIENT_ID is required',
-			})
-			.min(1, 'DISCORD_CLIENT_ID must be a valid Discord client ID'),
+		NEXT_PUBLIC_DISCORD_CLIENT_ID: z.string({
+			description: 'Discord client ID',
+			required_error: 'DISCORD_CLIENT_ID is required',
+		}),
 		NEXT_PUBLIC_AXIOM_DATASET: z.string({
 			description: 'Axiom dataset',
 		}),

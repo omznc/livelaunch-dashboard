@@ -1,166 +1,166 @@
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
-  url      = env("DATABASE_URL")
+    provider = "mysql"
+    url      = env("DATABASE_URL")
 }
 
 model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  providerAccountId String
-  access_token      String? @db.Text
-  expires_at        Int?
-  id_token          String? @db.Text
-  provider          String
-  refresh_token     String? @db.Text
-  scope             String?
-  session_state     String?
-  token_type        String?
-  type              String
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    id                String  @id @default(cuid())
+    userId            String
+    providerAccountId String
+    access_token      String? @db.Text
+    expires_at        Int?
+    id_token          String? @db.Text
+    provider          String
+    refresh_token     String? @db.Text
+    scope             String?
+    session_state     String?
+    token_type        String?
+    type              String
+    user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([provider, providerAccountId])
-  @@index([userId], map: "Account_userId_fkey")
+    @@unique([provider, providerAccountId])
+    @@index([userId], map: "Account_userId_fkey")
 }
 
 model Session {
-  id           String   @id @default(cuid())
-  userId       String
-  expires      DateTime
-  sessionToken String   @unique
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+    id           String   @id @default(cuid())
+    userId       String
+    expires      DateTime
+    sessionToken String   @unique
+    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId], map: "Session_userId_fkey")
+    @@index([userId], map: "Session_userId_fkey")
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime?
-  image         String?
-  accounts      Account[]
-  sessions      Session[]
+    id            String    @id @default(cuid())
+    name          String?
+    email         String?   @unique
+    emailVerified DateTime?
+    image         String?
+    accounts      Account[]
+    sessions      Session[]
 }
 
 model enabled_guilds {
-  guild_id                     BigInt                   @id @db.UnsignedBigInt
-  channel_id                   BigInt?                  @db.UnsignedBigInt
-  webhook_url                  String?                  @db.Text
-  scheduled_events             Int?                     @default(0) @db.UnsignedTinyInt
-  se_launch                    Int?                     @default(1) @db.UnsignedTinyInt
-  se_event                     Int?                     @default(1) @db.UnsignedTinyInt
-  se_no_url                    Int?                     @default(0) @db.UnsignedTinyInt
-  news_channel_id              BigInt?                  @db.UnsignedBigInt
-  news_webhook_url             String?                  @db.Text
-  news_include_exclude         Int?                     @default(0) @db.UnsignedTinyInt
-  notification_channel_id      BigInt?                  @db.UnsignedBigInt
-  notification_webhook_url     String?                  @db.Text
-  notification_launch          Int?                     @default(0) @db.UnsignedTinyInt
-  notification_event           Int?                     @default(0) @db.UnsignedTinyInt
-  notification_t0_change       Int?                     @default(0) @db.UnsignedTinyInt
-  notification_tbd             Int?                     @default(0) @db.UnsignedTinyInt
-  notification_tbc             Int?                     @default(0) @db.UnsignedTinyInt
-  notification_go              Int?                     @default(0) @db.UnsignedTinyInt
-  notification_liftoff         Int?                     @default(0) @db.UnsignedTinyInt
-  notification_hold            Int?                     @default(0) @db.UnsignedTinyInt
-  notification_end_status      Int?                     @default(0) @db.UnsignedTinyInt
-  notification_scheduled_event Int?                     @default(0) @db.UnsignedTinyInt
-  notification_button_fc       Int?                     @default(1) @db.UnsignedTinyInt
-  notification_button_g4l      Int?                     @default(1) @db.UnsignedTinyInt
-  notification_button_sln      Int?                     @default(1) @db.UnsignedTinyInt
-  agencies_include_exclude     Int                      @default(0) @db.UnsignedTinyInt
-  ll2_agencies_filter          ll2_agencies_filter[]
-  news_filter                  news_filter[]
-  notification_countdown       notification_countdown[]
-  scheduled_events_arr         scheduled_events[]
+    guild_id                     BigInt                   @id @db.UnsignedBigInt
+    channel_id                   BigInt?                  @db.UnsignedBigInt
+    webhook_url                  String?                  @db.Text
+    scheduled_events             Int?                     @default(0) @db.UnsignedTinyInt
+    se_launch                    Int?                     @default(1) @db.UnsignedTinyInt
+    se_event                     Int?                     @default(1) @db.UnsignedTinyInt
+    se_no_url                    Int?                     @default(0) @db.UnsignedTinyInt
+    news_channel_id              BigInt?                  @db.UnsignedBigInt
+    news_webhook_url             String?                  @db.Text
+    news_include_exclude         Int?                     @default(0) @db.UnsignedTinyInt
+    notification_channel_id      BigInt?                  @db.UnsignedBigInt
+    notification_webhook_url     String?                  @db.Text
+    notification_launch          Int?                     @default(0) @db.UnsignedTinyInt
+    notification_event           Int?                     @default(0) @db.UnsignedTinyInt
+    notification_t0_change       Int?                     @default(0) @db.UnsignedTinyInt
+    notification_tbd             Int?                     @default(0) @db.UnsignedTinyInt
+    notification_tbc             Int?                     @default(0) @db.UnsignedTinyInt
+    notification_go              Int?                     @default(0) @db.UnsignedTinyInt
+    notification_liftoff         Int?                     @default(0) @db.UnsignedTinyInt
+    notification_hold            Int?                     @default(0) @db.UnsignedTinyInt
+    notification_end_status      Int?                     @default(0) @db.UnsignedTinyInt
+    notification_scheduled_event Int?                     @default(0) @db.UnsignedTinyInt
+    notification_button_fc       Int?                     @default(1) @db.UnsignedTinyInt
+    notification_button_g4l      Int?                     @default(1) @db.UnsignedTinyInt
+    notification_button_sln      Int?                     @default(1) @db.UnsignedTinyInt
+    agencies_include_exclude     Int                      @default(0) @db.UnsignedTinyInt
+    ll2_agencies_filter          ll2_agencies_filter[]
+    news_filter                  news_filter[]
+    notification_countdown       notification_countdown[]
+    scheduled_events_arr         scheduled_events[]
 }
 
 model ll2_agencies {
-  agency_id           Int                   @id @db.UnsignedSmallInt
-  name                String?               @db.Text
-  logo_url            String?               @db.Text
-  ll2_agencies_filter ll2_agencies_filter[]
-  ll2_events          ll2_events[]
+    agency_id           Int                   @id @db.UnsignedSmallInt
+    name                String?               @db.Text
+    logo_url            String?               @db.Text
+    ll2_agencies_filter ll2_agencies_filter[]
+    ll2_events          ll2_events[]
 }
 
 model ll2_agencies_filter {
-  guild_id       BigInt         @db.UnsignedBigInt
-  agency_id      Int            @db.UnsignedSmallInt
-  enabled_guilds enabled_guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: NoAction, map: "ll2_agencies_filter_ibfk_1")
-  ll2_agencies   ll2_agencies   @relation(fields: [agency_id], references: [agency_id], onDelete: NoAction, onUpdate: NoAction, map: "ll2_agencies_filter_ibfk_2")
+    guild_id       BigInt         @db.UnsignedBigInt
+    agency_id      Int            @db.UnsignedSmallInt
+    enabled_guilds enabled_guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: NoAction, map: "ll2_agencies_filter_ibfk_1")
+    ll2_agencies   ll2_agencies   @relation(fields: [agency_id], references: [agency_id], onDelete: NoAction, onUpdate: NoAction, map: "ll2_agencies_filter_ibfk_2")
 
-  @@id([guild_id, agency_id])
-  @@index([agency_id], map: "agency_id")
+    @@id([guild_id, agency_id])
+    @@index([agency_id], map: "agency_id")
 }
 
 model ll2_events {
-  ll2_id           String             @id @db.VarChar(36)
-  agency_id        Int?               @db.UnsignedSmallInt
-  name             String?            @db.Text
-  status           Int?               @db.TinyInt
-  description      String?            @db.Text
-  url              String?            @db.Text
-  image_url        String?            @db.Text
-  start            DateTime?          @db.DateTime(0)
-  end              DateTime?          @db.DateTime(0)
-  webcast_live     Int?               @default(0) @db.TinyInt
-  slug             String?            @db.Text
-  flightclub       Int?               @default(0) @db.UnsignedTinyInt
-  ll2_agencies     ll2_agencies?      @relation(fields: [agency_id], references: [agency_id], onDelete: NoAction, onUpdate: NoAction, map: "ll2_events_ibfk_1")
-  scheduled_events scheduled_events[]
+    ll2_id           String             @id @db.VarChar(36)
+    agency_id        Int?               @db.UnsignedSmallInt
+    name             String?            @db.Text
+    status           Int?               @db.TinyInt
+    description      String?            @db.Text
+    url              String?            @db.Text
+    image_url        String?            @db.Text
+    start            DateTime?          @db.DateTime(0)
+    end              DateTime?          @db.DateTime(0)
+    webcast_live     Int?               @default(0) @db.TinyInt
+    slug             String?            @db.Text
+    flightclub       Int?               @default(0) @db.UnsignedTinyInt
+    ll2_agencies     ll2_agencies?      @relation(fields: [agency_id], references: [agency_id], onDelete: NoAction, onUpdate: NoAction, map: "ll2_events_ibfk_1")
+    scheduled_events scheduled_events[]
 
-  @@index([agency_id], map: "agency_id")
+    @@index([agency_id], map: "agency_id")
 }
 
 model news_filter {
-  guild_id       BigInt         @db.UnsignedBigInt
-  news_site_id   Int            @db.UnsignedSmallInt
-  enabled_guilds enabled_guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: NoAction, map: "news_filter_ibfk_1")
-  news_sites     news_sites     @relation(fields: [news_site_id], references: [news_site_id], onDelete: NoAction, onUpdate: NoAction, map: "news_filter_ibfk_2")
+    guild_id       BigInt         @db.UnsignedBigInt
+    news_site_id   Int            @db.UnsignedSmallInt
+    enabled_guilds enabled_guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: NoAction, map: "news_filter_ibfk_1")
+    news_sites     news_sites     @relation(fields: [news_site_id], references: [news_site_id], onDelete: NoAction, onUpdate: NoAction, map: "news_filter_ibfk_2")
 
-  @@id([guild_id, news_site_id])
-  @@index([news_site_id], map: "news_site_id")
+    @@id([guild_id, news_site_id])
+    @@index([news_site_id], map: "news_site_id")
 }
 
 model news_sites {
-  news_site_id   Int           @id @default(autoincrement()) @db.UnsignedSmallInt
-  news_site_name String?       @db.Text
-  logo_url       String?       @db.Text
-  news_filter    news_filter[]
+    news_site_id   Int           @id @default(autoincrement()) @db.UnsignedSmallInt
+    news_site_name String?       @db.Text
+    logo_url       String?       @db.Text
+    news_filter    news_filter[]
 }
 
 model notification_countdown {
-  guild_id       BigInt         @db.UnsignedBigInt
-  minutes        Int            @db.UnsignedSmallInt
-  enabled_guilds enabled_guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: NoAction, map: "notification_countdown_ibfk_1")
+    guild_id       BigInt         @db.UnsignedBigInt
+    minutes        Int            @db.UnsignedSmallInt
+    enabled_guilds enabled_guilds @relation(fields: [guild_id], references: [guild_id], onDelete: Cascade, onUpdate: NoAction, map: "notification_countdown_ibfk_1")
 
-  @@id([guild_id, minutes])
+    @@id([guild_id, minutes])
 }
 
 model scheduled_events {
-  scheduled_event_id BigInt          @id @db.UnsignedBigInt
-  guild_id           BigInt?         @db.UnsignedBigInt
-  ll2_id             String?         @db.VarChar(36)
-  enabled_guilds     enabled_guilds? @relation(fields: [guild_id], references: [guild_id], onDelete: NoAction, onUpdate: NoAction, map: "scheduled_events_ibfk_1")
-  ll2_events         ll2_events?     @relation(fields: [ll2_id], references: [ll2_id], onDelete: Cascade, onUpdate: NoAction, map: "scheduled_events_ibfk_2")
+    scheduled_event_id BigInt          @id @db.UnsignedBigInt
+    guild_id           BigInt?         @db.UnsignedBigInt
+    ll2_id             String?         @db.VarChar(36)
+    enabled_guilds     enabled_guilds? @relation(fields: [guild_id], references: [guild_id], onDelete: NoAction, onUpdate: NoAction, map: "scheduled_events_ibfk_1")
+    ll2_events         ll2_events?     @relation(fields: [ll2_id], references: [ll2_id], onDelete: Cascade, onUpdate: NoAction, map: "scheduled_events_ibfk_2")
 
-  @@index([guild_id], map: "guild_id")
-  @@index([ll2_id], map: "ll2_id")
+    @@index([guild_id], map: "guild_id")
+    @@index([ll2_id], map: "ll2_id")
 }
 
 model sent_news {
-  snapi_id Int       @id @db.UnsignedMediumInt
-  datetime DateTime? @db.DateTime(0)
+    snapi_id Int       @id @db.UnsignedMediumInt
+    datetime DateTime? @db.DateTime(0)
 }
 
 /// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
 model sent_streams {
-  yt_vid_id String?   @db.Text
-  datetime  DateTime? @db.DateTime(0)
+    yt_vid_id String?   @db.Text
+    datetime  DateTime? @db.DateTime(0)
 
-  @@ignore
+    @@ignore
 }
