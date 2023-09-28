@@ -25,7 +25,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
 			<div className='flex flex-col items-center h-[100dvh] w-full'>
 				<div className='hidden flex-row w-full justify-between border-b md:flex'>
 					<div className='flex h-16 items-center px-4'>
-						<GuildSwitcher guilds={await filterGuilds()} />
+						{/*<GuildSwitcher guilds={await filterGuilds()} />*/}
 						<Nav className='mx-6' />
 					</div>
 					<div className='flex h-16 items-center gap-4 px-4'>
@@ -37,7 +37,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
 				<div className='flex w-full flex-col md:hidden gap-4'>
 					<div className='flex h-16 items-center justify-between px-4'>
 						<div className='flex items-center'>
-							<GuildSwitcher guilds={await filterGuilds()} />
+							{/*<GuildSwitcher guilds={await filterGuilds()} />*/}
 						</div>
 						<div className='flex items-center gap-2'>
 							<ThemeToggle />

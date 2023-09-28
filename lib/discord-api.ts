@@ -10,7 +10,7 @@ import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v10';
 import avatar from '@public/LiveLaunch_Webhook_Avatar.png';
 
-const rest = new REST({ version: '9' }).setToken(env.DISCORD_BOT_TOKEN);
+const rest = new REST({ version: '10' }).setToken(env.DISCORD_BOT_TOKEN);
 
 /**
  * Gets the channels the bot can send messages in
