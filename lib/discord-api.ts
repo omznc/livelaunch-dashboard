@@ -33,9 +33,6 @@ export const getGuildChannels = async (guildId: string) => {
 	);
 
 	if (!resp) return [];
-
-	console.log(resp);
-
 	return resp?.filter(channel => channel.type === 0 || channel.type === 5);
 };
 

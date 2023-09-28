@@ -59,7 +59,7 @@ interface NavProps extends React.HTMLAttributes<HTMLElement> {}
 export function Nav({ className, ...props }: NavProps) {
 	const path = usePathname();
 	const params = useSearchParams();
-	const guildId = params.get('g');
+	const guildId = params.get('g') ?? '';
 	const [guild, setGuild] = useState<enabled_guilds | null | undefined>(null);
 	const [mounted, setMounted] = useState(false);
 	const [showHelpDialog, setShowHelpDialog] = useState(false);
@@ -69,7 +69,6 @@ export function Nav({ className, ...props }: NavProps) {
 			setMounted(true);
 			return;
 		}
-		if (!guildId) return;
 		getGuild(guildId).then(value => setGuild(value));
 	}, [guildId, mounted]);
 
