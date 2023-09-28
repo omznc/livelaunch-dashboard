@@ -56,6 +56,5 @@
     "typescript": "5.2.2",
     "zod": "^3.22.2",
     "zustand": "^4.4.1"
-  },
-  "trustedDependencies": ["sharp"]
+  }
 }
