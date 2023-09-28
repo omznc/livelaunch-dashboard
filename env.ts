@@ -62,6 +62,4 @@ const env = createEnv({
 	skipValidation: process.env.SKIP_ENV_VALIDATION === '1',
 });
 
-console.log(process.env.SKIP_ENV_VALIDATION);
-
 export default env;
