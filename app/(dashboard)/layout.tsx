@@ -9,8 +9,11 @@ import User from '@app/(dashboard)/components/user';
 import { RESTAPIPartialCurrentUserGuild } from 'discord.js';
 import { ReactNode } from 'react';
 import { getBotGuilds, getUserGuilds } from '@lib/discord-api';
+import env from '@env';
 
 export default async function Layout({ children }: { children: ReactNode }) {
+	console.log(env);
+
 	const session = await getServerSession(authOptions);
 
 	if (!session?.user) {
