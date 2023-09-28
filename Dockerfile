@@ -4,7 +4,7 @@ FROM node:18-alpine AS node
 FROM bun AS deps
 WORKDIR /app
 COPY package.json ./
-RUN npm i
+RUN bun i
 
 FROM node AS builder
 WORKDIR /app
