@@ -42,6 +42,4 @@ export const enableGuild = async (id: string) => {
 		},
 		update: {},
 	});
-
-	revalidatePath('/');
 };

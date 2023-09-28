@@ -54,6 +54,12 @@ const env = createEnv({
 				required_error: 'DISCORD_CLIENT_ID is required',
 			})
 			.min(1, 'DISCORD_CLIENT_ID must be a valid Discord client ID'),
+		NEXT_PUBLIC_AXIOM_DATASET: z.string({
+			description: 'Axiom dataset',
+		}),
+		NEXT_PUBLIC_AXIOM_TOKEN: z.string({
+			description: 'Axiom token',
+		}),
 	},
 	runtimeEnv: {
 		DATABASE_URL: process.env.DATABASE_URL,
@@ -64,6 +70,8 @@ const env = createEnv({
 		NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
 		NEXTAUTH_URL: process.env.NEXTAUTH_URL,
 		NODE_ENV: process.env.NODE_ENV,
+		NEXT_PUBLIC_AXIOM_DATASET: process.env.NEXT_PUBLIC_AXIOM_DATASET,
+		NEXT_PUBLIC_AXIOM_TOKEN: process.env.NEXT_PUBLIC_AXIOM_TOKEN,
 	},
 });
 

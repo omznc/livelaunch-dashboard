@@ -4,6 +4,9 @@ import { AgenciesSettings, Agency } from '@app/(dashboard)/agencies/client';
 import prisma from '@lib/prisma';
 
 import { getUserGuilds } from '@lib/discord-api';
+import { Logger } from 'next-axiom';
+
+const log = new Logger();
 
 export const SetAgencies = async (agencies: Agency[], guildId: string) => {
 	const authorized = await getUserGuilds().then(guilds =>
@@ -11,6 +14,10 @@ export const SetAgencies = async (agencies: Agency[], guildId: string) => {
 	);
 
 	if (!authorized) {
+		log.error('Guild not found', {
+			guildId,
+		});
+		await log.flush();
 		throw new Error('Guild not found');
 	}
 

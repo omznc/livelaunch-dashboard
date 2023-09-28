@@ -1,4 +1,5 @@
 /** @type {import('next').NextConfig} */
+const { withAxiom } = require('next-axiom');
 const nextConfig = {
 	experimental: {
 		serverActions: true,
@@ -15,9 +16,13 @@ const nextConfig = {
 				protocol: 'https',
 				hostname: 'cdn.discordapp.com',
 			},
+			{
+				protocol: 'https',
+				hostname: 'avatars.githubusercontent.com',
+			},
 		],
 	},
-	// swcMinify: true,
+	swcMinify: true,
 	// webpack: (config, { dev, isServer }) => {
 	// 	if (!isServer) {
 	// 		Object.assign(config.resolve.alias, {
@@ -31,4 +36,4 @@ const nextConfig = {
 	// },
 };
 
-module.exports = nextConfig;
+module.exports = withAxiom(nextConfig);

@@ -18,15 +18,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
 		return redirect('/login');
 	}
 
-	const guilds = await filterGuilds()
-		.then(guilds => {
-			console.log('Fetched guilds successfully ', guilds.length);
-			return guilds;
-		})
-		.catch(err => {
-			console.error('Failed to fetch guilds ', err);
-			return [];
-		});
+	const guilds = await filterGuilds();
 
 	return (
 		<AuthProvider session={session}>
@@ -57,7 +49,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
 				<div className='w-full h-full overflow-scroll flex p-8 justify-center'>
 					<div className='flex flex-col mb-8 w-full max-w-[1000px] transition-all'>
 						{children}
-						<div className={'min-h-[2rem]'}></div>
+						<div className={'min-h-[2rem] -z-50'}></div>
 					</div>
 				</div>
 			</div>

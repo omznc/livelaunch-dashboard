@@ -5,12 +5,14 @@ import {
 	CountdownSetting,
 	NotificationsFilterSettings,
 } from '@app/(dashboard)/notifications/client';
-const rest = new REST({ version: '9' }).setToken(env.DISCORD_BOT_TOKEN);
 import { Routes } from 'discord-api-types/v10';
 import env from '@env';
 import { REST } from '@discordjs/rest';
 import { createWebhook } from '@lib/discord-api';
 import { revalidatePath } from 'next/cache';
+import { Logger } from 'next-axiom';
+const rest = new REST({ version: '9' }).setToken(env.DISCORD_BOT_TOKEN);
+const log = new Logger();
 
 export const updateFilters = async (
 	guildId: string,
@@ -36,12 +38,27 @@ export const addCountdown = async (
 	settings: CountdownSetting
 ): Promise<void> => {
 	if (settings.days < 0 || settings.days > 31) {
+		log.error('Invalid days', {
+			guildId,
+			settings,
+		});
+		await log.flush();
 		throw new Error('Invalid days');
 	}
 	if (settings.hours < 0 || settings.hours > 24) {
+		log.error('Invalid hours', {
+			guildId,
+			settings,
+		});
+		await log.flush();
 		throw new Error('Invalid hours');
 	}
 	if (settings.minutes < 0 || settings.minutes > 60) {
+		log.error('Invalid minutes', {
+			guildId,
+			settings,
+		});
+		await log.flush();
 		throw new Error('Invalid minutes');
 	}
 
@@ -52,7 +69,12 @@ export const addCountdown = async (
 	});
 
 	if (current > 64) {
-		throw new Error('Cooldown limit reached');
+		log.error('Countdown limit reached', {
+			guildId,
+			settings,
+		});
+		await log.flush();
+		throw new Error('Countdown limit reached');
 	}
 
 	await prisma.notification_countdown.create({

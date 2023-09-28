@@ -1,5 +1,6 @@
 import {
 	Card,
+	CardContent,
 	CardDescription,
 	CardFooter,
 	CardHeader,
@@ -17,6 +18,17 @@ import {
 	TooltipProvider,
 	TooltipTrigger,
 } from '@components/ui/tooltip';
+import PartnerTheSpaceDevs from '@public/Partner_TheSpaceDevs.png';
+import PartnerOmznc from '@public/Partner_omznc.jpg';
+import Image from 'next/image';
+import {
+	HoverCard,
+	HoverCardContent,
+	HoverCardTrigger,
+} from '@components/ui/hover-card';
+import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar';
+import RetainQueryLink from '@components/retain-query-link';
+import React from 'react';
 
 export default async function Home() {
 	return (
@@ -26,10 +38,16 @@ export default async function Home() {
 					{/*<LuRocket />*/}
 					LiveLaunch Dashboard
 				</h1>
-				<p className='text-xl font-medium'>
+				<p className='inline text-lg font-medium'>
 					{
-						'Creates space related events and sends news, notifications and live streams!'
+						'Creates space related events and sends news, notifications and live streams! '
 					}
+					<Link
+						href={'https://juststephen.com/projects/LiveLaunch'}
+						className='inline-flex items-center gap-1 brightness-125 hover:underline'
+					>
+						Learn More <FaArrowUp className='rotate-45' />
+					</Link>
 				</p>
 			</div>
 			<div className='flex w-full flex-wrap h-full gap-4 justify-center items-stretch max-h-[300px]'>
@@ -158,6 +176,89 @@ export default async function Home() {
 							<FaArrowUp className='rotate-45' />
 						</Link>
 					</CardFooter>
+				</Card>
+				<Card className='w-[400px] flex-grow justify-between flex-col flex'>
+					<CardHeader>
+						<CardTitle>Partners</CardTitle>
+						<CardDescription>
+							{
+								'LiveLaunch is powered by some amazing partners. Check them out!'
+							}
+						</CardDescription>
+					</CardHeader>
+					<CardContent className={'grid grid-cols-2 gap-2'}>
+						<HoverCard openDelay={200}>
+							<HoverCardTrigger asChild>
+								<Link
+									href={'https://thespacedevs.com/'}
+									target={'_blank'}
+									className={
+										'w-full border rounded-lg overflow-hidden transition-all hover:brightness-125'
+									}
+								>
+									<Image
+										src={PartnerTheSpaceDevs}
+										alt={'TheSpaceDevs'}
+									/>
+								</Link>
+							</HoverCardTrigger>
+							<HoverCardContent className='flex flex-col gap-4'>
+								<div className='flex gap-2 items-center space-between'>
+									<h3 className={'font-bold'}>
+										The Space Devs
+									</h3>
+								</div>
+								<div className={'flex flex-col gap-2'}>
+									<p className={'text-sm'}>
+										{'The Space Devs were very helpful during the development of LiveLaunch. ' +
+											'They came up with great ideas for better integration between their LL2 API ' +
+											'and the LiveLaunch Discord bot. '}
+									</p>
+									<p className={'text-sm'}>
+										{'Perhaps in the future LiveLaunch will have more features ' +
+											'thanks to the great data from their APIs. '}
+									</p>
+								</div>
+							</HoverCardContent>
+						</HoverCard>
+						<HoverCard openDelay={200}>
+							<HoverCardTrigger asChild>
+								<Link
+									href={'https://omarzunic.com'}
+									target={'_blank'}
+									className={
+										'w-full border rounded-lg overflow-hidden transition-all hover:brightness-125'
+									}
+								>
+									<Image
+										src={PartnerOmznc}
+										alt={'Omar Zunic'}
+									/>
+								</Link>
+							</HoverCardTrigger>
+							<HoverCardContent className='flex flex-col gap-4'>
+								<div className='flex gap-2 items-center space-between'>
+									<Avatar>
+										<AvatarImage
+											src={
+												'https://avatars.githubusercontent.com/u/38432561'
+											}
+											alt={'Omar Zunic'}
+										/>
+										<AvatarFallback>OZ</AvatarFallback>
+									</Avatar>
+									<h3 className={'font-bold'}>Omar Zunic</h3>
+								</div>
+								<div className={'flex flex-col gap-2'}>
+									<p className={'text-sm'}>
+										{
+											'A software developer from Bosnia and Herzegovina, and the creator of this dashboard.'
+										}
+									</p>
+								</div>
+							</HoverCardContent>
+						</HoverCard>
+					</CardContent>
 				</Card>
 			</div>
 		</div>

@@ -96,8 +96,6 @@ export const disableFeature = async (guildId: string): Promise<void> => {
 		},
 	});
 
-	console.log(resp?.webhook_url?.split('/')[5]);
-
 	if (resp?.webhook_url) {
 		await rest.delete(Routes.webhook(resp.webhook_url.split('/')[5]));
 	}

@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import RetainQueryLink from '@components/retain-query-link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { enabled_guilds } from '@prisma/client';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
@@ -25,6 +25,7 @@ import {
 import { Button, buttonVariants } from '@components/ui/button';
 import Link from 'next/link';
 import { Skeleton } from '@components/ui/skeleton';
+import toast from 'react-hot-toast';
 
 const links = [
 	{
@@ -61,7 +62,6 @@ export function Nav({ className, ...props }: NavProps) {
 	const guildId = params.get('g');
 	const [guild, setGuild] = useState<enabled_guilds | null | undefined>(null);
 	const [mounted, setMounted] = useState(false);
-	const [ranGetGuild, setRanGetGuild] = useState(false);
 	const [showHelpDialog, setShowHelpDialog] = useState(false);
 
 	useEffect(() => {
@@ -70,18 +70,8 @@ export function Nav({ className, ...props }: NavProps) {
 			return;
 		}
 		if (!guildId) return;
-		setRanGetGuild(true);
 		getGuild(guildId).then(value => setGuild(value));
 	}, [guildId, mounted]);
-
-	if (!mounted || !ranGetGuild)
-		return (
-			<div className='ml-4 flex items-center justify-evenly md:justify-start space-x-4 lg:space-x-6'>
-				{links.map(({ href, label }) => (
-					<Skeleton key={href} className={cn(`h-4`, `w-16`)} />
-				))}
-			</div>
-		);
 
 	return (
 		<>
@@ -182,12 +172,19 @@ export function Nav({ className, ...props }: NavProps) {
 							Close
 						</Button>
 						<Button
-							variant='outline'
+							variant='secondary'
 							onClick={() => {
-								enableGuild(String(guildId));
+								toast.promise(enableGuild(String(guildId)), {
+									loading: 'Enabling...',
+									success: () => {
+										window.location.reload();
+										return 'Enabled!';
+									},
+									error: 'Failed to enable.',
+								});
 							}}
 						>
-							Enable
+							Enable Automatically
 						</Button>
 						<Link
 							className={buttonVariants({
