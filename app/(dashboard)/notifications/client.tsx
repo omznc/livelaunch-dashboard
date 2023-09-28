@@ -58,6 +58,9 @@ export interface NotificationsFilterSettings {
 	notification_liftoff: boolean;
 	notification_tbc: boolean;
 	notification_tbd: boolean;
+	notification_t0_change: boolean;
+	notification_launch: boolean;
+	notification_event: boolean;
 }
 
 export default function Client({ guild, countdowns, channels }: ClientProps) {
@@ -68,6 +71,9 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 		notification_go: Boolean(guild.notification_go),
 		notification_tbc: Boolean(guild.notification_tbc),
 		notification_tbd: Boolean(guild.notification_tbd),
+		notification_t0_change: Boolean(guild.notification_t0_change),
+		notification_launch: Boolean(guild.notification_launch),
+		notification_event: Boolean(guild.notification_event),
 	});
 
 	const [selectedChannelID, setSelectedChannelID] = useState<
@@ -372,7 +378,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 				))}
 			</div>
 
-			<SettingGroup title={'Filtering'}>
+			<SettingGroup title={'Status Filtering'}>
 				{
 					'Choose which launch statuses the bot should send notifications for.'
 				}
@@ -513,6 +519,77 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 						}));
 					}}
 					defaultChecked={settings.notification_tbd}
+				/>
+			</Setting>
+
+			<SettingGroup title={'General Filtering'}>
+				{'Other filters that can be applied to notifications.'}
+			</SettingGroup>
+
+			<Setting
+				label={'T-0 Change'}
+				description={
+					'Will the bot send a notification when the launch time changes?'
+				}
+				active={settings.notification_t0_change}
+				disabled={guild.notification_channel_id === null}
+			>
+				<Switch
+					onCheckedChange={checked => {
+						updateFilters(String(guild.guild_id), {
+							...settings,
+							notification_t0_change: checked,
+						});
+						setSettings(prev => ({
+							...prev,
+							notification_t0_change: checked,
+						}));
+					}}
+					defaultChecked={settings.notification_t0_change}
+				/>
+			</Setting>
+
+			<Setting
+				label={'Launch'}
+				description={'Will the bot send notifications for launches?'}
+				active={settings.notification_launch}
+				disabled={guild.notification_channel_id === null}
+			>
+				<Switch
+					onCheckedChange={checked => {
+						updateFilters(String(guild.guild_id), {
+							...settings,
+							notification_launch: checked,
+						});
+						setSettings(prev => ({
+							...prev,
+							notification_launch: checked,
+						}));
+					}}
+					defaultChecked={settings.notification_launch}
+				/>
+			</Setting>
+
+			<Setting
+				label={'Event'}
+				description={
+					'Will the bot send notifications for space events?'
+				}
+				active={settings.notification_event}
+				disabled={guild.notification_channel_id === null}
+			>
+				<Switch
+					onCheckedChange={checked => {
+						updateFilters(String(guild.guild_id), {
+							...settings,
+							notification_event: checked,
+						});
+						setSettings(prev => ({
+							...prev,
+							notification_event: checked,
+						}));
+					}}
+					defaultChecked={settings.notification_event}
 				/>
 			</Setting>
 		</div>

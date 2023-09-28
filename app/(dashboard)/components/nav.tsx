@@ -82,7 +82,7 @@ export function Nav({ className, ...props }: NavProps) {
 				)}
 				{...props}
 			>
-				{!guild && (
+				{!guild && guildId && (
 					<Button
 						variant='outline'
 						onClick={() => setShowHelpDialog(true)}
