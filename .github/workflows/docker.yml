@@ -27,12 +27,9 @@ jobs:
   build-docker-images:
     needs: setup
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        tag: [latest, $(date +%s)]
     steps:
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: omznc/livelaunch-dashboard:${{ matrix.tag }}
+          tags: omznc/livelaunch-dashboard:$(date +%s), omznc/livelaunch-dashboard:latest
