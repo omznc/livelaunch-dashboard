@@ -60,13 +60,13 @@ export default async function Home() {
 							}
 						</CardDescription>
 					</CardHeader>
-					<CardFooter className='flex gap-2 justify-between'>
+					<CardFooter className='flex flex-wrap gap-2 justify-between'>
 						<Link
 							className={cn(
 								buttonVariants({
 									variant: 'secondary',
 								}),
-								'inline-flex gap-2'
+								'inline-flex gap-2 w-full md:w-fit'
 							)}
 							href={
 								'https://github.com/omznc/livelaunch-dashboard'
@@ -82,7 +82,7 @@ export default async function Home() {
 								buttonVariants({
 									variant: 'default',
 								}),
-								'inline-flex gap-2'
+								'inline-flex gap-2 w-full md:w-fit'
 							)}
 							href={'https://github.com/juststephen/livelaunch'}
 							target={'_blank'}
@@ -103,13 +103,13 @@ export default async function Home() {
 							`}
 						</CardDescription>
 					</CardHeader>
-					<CardFooter className='flex justify-end'>
+					<CardFooter className='flex flex-wrap justify-end'>
 						<Link
 							className={cn(
 								buttonVariants({
 									variant: 'default',
 								}),
-								'inline-flex gap-2'
+								'inline-flex gap-2 w-full md:w-fit'
 							)}
 							href={`https://top.gg/bot/${
 								env.NODE_ENV === 'development'
@@ -132,17 +132,19 @@ export default async function Home() {
 							message a developer.
 						</CardDescription>
 					</CardHeader>
-					<CardFooter className='flex justify-between'>
-						<div className='flex gap-2'>
+					<CardFooter className='flex flex-wrap gap-2 justify-between'>
+						<div className='flex gap-2 w-full md:w-fit'>
 							<TooltipProvider>
 								<Tooltip>
-									<TooltipTrigger>
+									<TooltipTrigger
+										className={'w-full md:w-fit'}
+									>
 										<Link
 											className={cn(
 												buttonVariants({
 													variant: 'secondary',
 												}),
-												'inline-flex gap-2'
+												'inline-flex gap-2 w-full md:w-fit'
 											)}
 											href={
 												'discord://-/channels/151026584164237312/967838544766836777'
@@ -166,7 +168,7 @@ export default async function Home() {
 								buttonVariants({
 									variant: 'default',
 								}),
-								'inline-flex gap-2'
+								'inline-flex gap-2 w-full md:w-fit'
 							)}
 							href={`https://discord.gg/nztN2FXe7A`}
 							target={'_blank'}
