@@ -23,7 +23,11 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '@components/ui/dialog';
-import { Popover, PopoverContent, PopoverTrigger } from '@components/ui/popover';
+import {
+	Popover,
+	PopoverContent,
+	PopoverTrigger,
+} from '@components/ui/popover';
 import { RxCaretSort } from 'react-icons/rx';
 import { CheckIcon, PlusCircle } from 'lucide-react';
 import { GuildsResponse } from '@app/(dashboard)/layout';
@@ -45,9 +49,9 @@ interface GuildSwitcherProps extends PopoverTriggerProps {
 }
 
 export default function GuildSwitcher({
-										  className,
-										  guilds,
-									  }: GuildSwitcherProps) {
+	className,
+	guilds,
+}: GuildSwitcherProps) {
 	const [open, setOpen] = React.useState(false);
 	const [showNewGuildDialog, setShowNewGuildDialog] = React.useState(false);
 	const [revalidating, setRevalidating] = React.useState(false);
@@ -59,7 +63,7 @@ export default function GuildSwitcher({
 	const [pending, startTransition] = useTransition();
 
 	useEffect(() => {
-		if (!selectedGuild) {
+		if (!selectedGuild && guilds.length !== 0) {
 			router.push(`?g=${guilds[0].id}`);
 		}
 	}, [guilds, router, selectedGuild]);
@@ -89,7 +93,7 @@ export default function GuildSwitcher({
 									className,
 									{
 										'animate-pulse': pending,
-									},
+									}
 								)}
 							>
 								{selectedGuild ? (
@@ -133,12 +137,12 @@ export default function GuildSwitcher({
 														setOpen(false);
 														startTransition(() => {
 															router.push(
-																`/?g=${guild.id}`,
+																`/?g=${guild.id}`
 															);
 														});
 													} else {
 														setShowNewGuildDialog(
-															true,
+															true
 														);
 													}
 												}}
@@ -162,9 +166,9 @@ export default function GuildSwitcher({
 													className={cn(
 														'ml-auto h-4 w-4',
 														selectedGuild?.id ===
-														guild.id
+															guild.id
 															? 'opacity-100'
-															: 'opacity-0',
+															: 'opacity-0'
 													)}
 												/>
 											</CommandItem>
@@ -247,7 +251,7 @@ export default function GuildSwitcher({
 						className={buttonVariants({
 							variant: 'secondary',
 						})}
-						href={`https://discord.com/oauth2/authorize?client_id=${env.NEXT_PUBLIC_DISCORD_CLIENT_ID}&scope=bot%20applications.commands&guild_id=${guilds[0].id}&disable_guild_select=true&permissions=8`}
+						href={`https://discord.com/oauth2/authorize?client_id=${env.NEXT_PUBLIC_DISCORD_CLIENT_ID}&scope=bot%20applications.commands&permissions=8`}
 						target={'_blank'}
 					>
 						Open in Browser
