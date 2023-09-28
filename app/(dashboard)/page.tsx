@@ -34,7 +34,7 @@ export default async function Home() {
 	return (
 		<div className='flex flex-col gap-24'>
 			<div className='flex flex-col gap-2 p-2 w-full h-full justify-center items-center'>
-				<h1 className='text-6xl inline-flex text-center w-full items-center gap-2 font-bold'>
+				<h1 className='text-6xl inline-flex text-center items-center gap-2 font-bold'>
 					{/*<LuRocket />*/}
 					LiveLaunch Dashboard
 				</h1>

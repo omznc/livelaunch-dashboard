@@ -137,8 +137,9 @@ export default function GuildSwitcher({
 														setOpen(false);
 														startTransition(() => {
 															router.push(
-																`/?g=${guild.id}`
+																`?g=${guild.id}`
 															);
+															window.location.reload();
 														});
 													} else {
 														setShowNewGuildDialog(
