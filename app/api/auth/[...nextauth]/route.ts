@@ -11,6 +11,7 @@ export const authOptions: AuthOptions = {
 		DiscordProvider({
 			clientId: env.NEXT_PUBLIC_DISCORD_CLIENT_ID,
 			clientSecret: env.DISCORD_CLIENT_SECRET,
+			authorization: { params: { scope: 'identify guilds' } },
 		}),
 	],
 	secret: env.NEXTAUTH_SECRET,
