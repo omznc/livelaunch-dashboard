@@ -1,7 +1,7 @@
 import prisma from '@lib/prisma';
 import { unstable_cache as cache } from 'next/cache';
 import Client from '@app/(dashboard)/news/client';
-import { getBotChannels } from '@lib/discord-api';
+import { getGuildChannels } from '@lib/discord-api';
 
 export default async function NewsSites({
 	searchParams,
@@ -36,7 +36,7 @@ export default async function NewsSites({
 				guild_id: BigInt(guildId),
 			},
 		}),
-		getBotChannels(guildId),
+		getGuildChannels(guildId),
 	]);
 
 	return (

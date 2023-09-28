@@ -1,6 +1,6 @@
 import prisma from '@lib/prisma';
 import Client from './client';
-import { getBotChannels } from '@lib/discord-api';
+import { getGuildChannels } from '@lib/discord-api';
 
 export default async function Agencies({
 	searchParams,
@@ -26,7 +26,7 @@ export default async function Agencies({
 				guild_id: BigInt(guildId),
 			},
 		}),
-		getBotChannels(guildId),
+		getGuildChannels(guildId),
 	]);
 
 	return <Client guild={guild} countdowns={countdowns} channels={channels} />;

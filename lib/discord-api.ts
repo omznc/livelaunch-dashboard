@@ -15,10 +15,7 @@ const rest = new REST({ version: '10' }).setToken(env.DISCORD_BOT_TOKEN);
 /**
  * Gets the channels the bot can send messages in
  */
-export const getBotChannels = async (guildId: string) => {
-	const session = await getServerSession(authOptions);
-	if (!session) return [];
-
+export const getGuildChannels = async (guildId: string) => {
 	const resp = await fetch(
 		`https://discord.com/api/guilds/${guildId}/channels`,
 		{
@@ -27,7 +24,7 @@ export const getBotChannels = async (guildId: string) => {
 			},
 			next: {
 				revalidate: 60 * 5,
-				tags: [`get-bot-channels-${session?.account?.id}`],
+				tags: [`get-guild-channels-${guildId}`],
 			},
 		}
 	).then(async resp => {
@@ -57,13 +54,13 @@ export const getBotGuilds = async () => {
 
 export const getUserGuilds = async () => {
 	const session = await getServerSession(authOptions);
-	if (!session) return [];
+	if (!session?.account?.access_token) return [];
 
 	const resp = await fetch('https://discord.com/api/users/@me/guilds', {
-		headers: { authorization: `Bearer ${session?.account?.access_token}` },
+		headers: { authorization: `Bearer ${session.account.access_token}` },
 		next: {
 			revalidate: 60 * 5,
-			tags: [`get-user-guilds-${session?.account?.id}`],
+			tags: [`get-user-guilds-${session.account.id}`],
 		},
 	}).then(async resp => {
 		const json = await resp.json();
