@@ -1,10 +1,10 @@
 FROM oven/bun:latest AS bun
 FROM node:18-alpine AS node
 
-FROM bun AS deps
+FROM node AS deps
 WORKDIR /app
 COPY package.json ./
-RUN bun i
+RUN npm i
 
 FROM node AS builder
 WORKDIR /app
