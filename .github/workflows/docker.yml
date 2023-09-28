@@ -26,4 +26,6 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           push: true
-          tags: omznc/livelaunch-dashboard:latest
+          tags: |
+            omznc/livelaunch-dashboard:latest
+            omznc/livelaunch-dashboard:${{ github.sha }}
