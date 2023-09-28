@@ -64,6 +64,9 @@ const filterGuilds = async () => {
 		getBotGuilds(),
 	]);
 
+	if (!userGuilds || !botGuilds) {
+		return [];
+	}
 	// return the guilds the bot and user share
 	const guilds: GuildsResponse[] = botGuilds
 		.filter(guild =>

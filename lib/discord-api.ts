@@ -57,6 +57,8 @@ export const getUserGuilds = async () => {
 		},
 	}).then(resp => resp.json() as Promise<RESTAPIPartialCurrentUserGuild[]>);
 
+	if (!resp) return [];
+
 	return resp?.filter(guild => (parseInt(guild.permissions) & 0x8) === 0x8);
 };
 
