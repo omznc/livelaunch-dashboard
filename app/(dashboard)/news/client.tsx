@@ -5,27 +5,14 @@ import React, { useEffect, useState } from 'react';
 import { useDebounce } from '@lib/hooks';
 import { cn } from '@lib/utils';
 import { Input } from '@components/ui/input';
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from '@components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@components/ui/table';
 import { Checkbox } from '@components/ui/checkbox';
 import Image from 'next/image';
-import { setNewsSites, updateSettings } from '@app/(dashboard)/news/actions';
+import { disableFeature, setNewsSites, updateChannel, updateSettings } from '@app/(dashboard)/news/actions';
 import { Tabs, TabsList, TabsTrigger } from '@components/ui/tabs';
 import { Setting, SettingGroup } from '@components/ui/setting';
 import { RESTGetAPIGuildChannelsResult } from 'discord.js';
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-} from '@components/ui/select';
-import { updateChannel, disableFeature } from '@app/(dashboard)/news/actions';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '@components/ui/select';
 import toast from 'react-hot-toast';
 import { FaHashtag } from 'react-icons/fa';
 import { Button } from '@components/ui/button';
@@ -46,18 +33,18 @@ export interface NewsSitesSettings {
 }
 
 export default function Client({
-	newsSites,
-	enabledNewsSites,
-	guild,
-	channels,
-}: ClientProps) {
+								   newsSites,
+								   enabledNewsSites,
+								   guild,
+								   channels,
+							   }: ClientProps) {
 	const [selectedNewsSites, setSelectedNewsSites] = useState<NewsSite[]>(
 		newsSites.map(a => ({
 			...a,
 			selected: enabledNewsSites.some(
-				e => e.news_site_id === a.news_site_id
+				e => e.news_site_id === a.news_site_id,
 			),
-		}))
+		})),
 	);
 
 	const [settings, setSettings] = useState<NewsSitesSettings>({
@@ -84,7 +71,7 @@ export default function Client({
 	}, [debounced]);
 
 	const filtered = selectedNewsSites.filter(
-		a => a.news_site_name?.toLowerCase().includes(searchQuery.toLowerCase())
+		a => a.news_site_name?.toLowerCase().includes(searchQuery.toLowerCase()),
 	);
 
 	return (
@@ -130,14 +117,14 @@ export default function Client({
 						updateChannel(String(guild.guild_id), value).catch(
 							() => {
 								toast.error('Failed to save.');
-							}
+							},
 						);
 					}}
 				>
 					<SelectTrigger className='w-full md:w-fit-content md:max-w-[350px]'>
 						{(() => {
 							const chan = channels.find(
-								channel => channel.id === selectedChannelID
+								channel => channel.id === selectedChannelID,
 							);
 							if (chan) {
 								return (
@@ -169,7 +156,7 @@ export default function Client({
 			<Setting
 				label={'Exclusion Mode'}
 				description={
-					"When on 'Exclude' mode, all news sites will be used except for the ones you select. When on 'Include' mode, only the news sites you select will be used."
+					'When on \'Exclude\' mode, all news sites will be used except for the ones you select. When on \'Include\' mode, only the news sites you select will be used.'
 				}
 				active={settings.whitelist}
 				disabled={guild.news_channel_id === null}
@@ -216,7 +203,7 @@ export default function Client({
 										className='grid place-items-center h-6 w-6 m-2 rounded-[5px]'
 										checked={
 											selectedNewsSites.every(
-												a => a.selected
+												a => a.selected,
 											) && selectedNewsSites.length > 0
 										}
 										onClick={e => {
@@ -226,7 +213,7 @@ export default function Client({
 												prev.map(p => ({
 													...p,
 													selected: !p.selected,
-												}))
+												})),
 											);
 										}}
 									/>
@@ -241,7 +228,7 @@ export default function Client({
 										'hover:bg-foreground align-middle w-full h-8 h-18 hover:bg-muted/50',
 										{
 											'bg-muted/30': a.selected,
-										}
+										},
 									)}
 									onMouseDown={e => {
 										if (e.button === 0) {
@@ -251,12 +238,12 @@ export default function Client({
 													p.news_site_id ===
 													a.news_site_id
 														? {
-																...p,
-																selected:
-																	!p.selected,
-														  }
-														: p
-												)
+															...p,
+															selected:
+																!p.selected,
+														}
+														: p,
+												),
 											);
 										}
 									}}
@@ -268,12 +255,12 @@ export default function Client({
 													p.news_site_id ===
 													a.news_site_id
 														? {
-																...p,
-																selected:
-																	!p.selected,
-														  }
-														: p
-												)
+															...p,
+															selected:
+																!p.selected,
+														}
+														: p,
+												),
 											);
 										}
 									}}
@@ -315,13 +302,13 @@ export default function Client({
 														p.news_site_id ===
 														a.news_site_id
 															? {
-																	...p,
-																	selected:
-																		(checked as boolean) ??
-																		false,
-															  }
-															: p
-													)
+																...p,
+																selected:
+																	(checked as boolean) ??
+																	false,
+															}
+															: p,
+													),
 												);
 											}}
 										/>

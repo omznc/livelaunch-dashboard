@@ -1,27 +1,25 @@
 'use server';
 
 import prisma from '@lib/prisma';
-import {
-	CountdownSetting,
-	NotificationsFilterSettings,
-} from '@app/(dashboard)/notifications/client';
+import { CountdownSetting, NotificationsFilterSettings } from '@app/(dashboard)/notifications/client';
 import { Routes } from 'discord-api-types/v10';
 import env from '@env';
 import { REST } from '@discordjs/rest';
 import { createWebhook } from '@lib/discord-api';
 import { revalidatePath } from 'next/cache';
 import { Logger } from 'next-axiom';
+
 const rest = new REST({ version: '9' }).setToken(env.DISCORD_BOT_TOKEN);
 const log = new Logger();
 
 export const updateFilters = async (
 	guildId: string,
-	settings: NotificationsFilterSettings
+	settings: NotificationsFilterSettings,
 ): Promise<void> => {
 	// remove countdown key
 
 	const data = Object.fromEntries(
-		Object.entries(settings).map(([key, value]) => [key, Number(value)])
+		Object.entries(settings).map(([key, value]) => [key, Number(value)]),
 	);
 	await prisma.enabled_guilds.update({
 		where: {
@@ -35,7 +33,7 @@ export const updateFilters = async (
 
 export const addCountdown = async (
 	guildId: string,
-	settings: CountdownSetting
+	settings: CountdownSetting,
 ): Promise<void> => {
 	if (settings.days < 0 || settings.days > 31) {
 		log.error('Invalid days', {
@@ -92,7 +90,7 @@ export const addCountdown = async (
 
 export const removeCountdown = async (
 	guildId: string,
-	minutes: number
+	minutes: number,
 ): Promise<void> => {
 	await prisma.notification_countdown.delete({
 		where: {
@@ -108,7 +106,7 @@ export const removeCountdown = async (
 
 export const updateChannel = async (
 	guildId: string,
-	channelId: string
+	channelId: string,
 ): Promise<void> => {
 	await prisma.enabled_guilds.update({
 		where: {
@@ -133,7 +131,7 @@ export const updateChannel = async (
 
 	if (resp?.notification_webhook_url) {
 		await rest.delete(
-			Routes.webhook(resp.notification_webhook_url.split('/')[5])
+			Routes.webhook(resp.notification_webhook_url.split('/')[5]),
 		);
 	}
 
@@ -163,7 +161,7 @@ export const disableFeature = async (guildId: string): Promise<void> => {
 
 	if (resp?.notification_webhook_url) {
 		await rest.delete(
-			Routes.webhook(resp.notification_webhook_url.split('/')[5])
+			Routes.webhook(resp.notification_webhook_url.split('/')[5]),
 		);
 	}
 

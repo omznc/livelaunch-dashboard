@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import RetainQueryLink from '@components/retain-query-link';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { enabled_guilds } from '@prisma/client';
 import * as React from 'react';
 import { useEffect, useState } from 'react';
@@ -16,15 +16,9 @@ import {
 	DialogTitle,
 } from '@components/ui/dialog';
 import { DialogBody } from 'next/dist/client/components/react-dev-overlay/internal/components/Dialog';
-import {
-	Accordion,
-	AccordionContent,
-	AccordionItem,
-	AccordionTrigger,
-} from '@components/ui/accordion';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@components/ui/accordion';
 import { Button, buttonVariants } from '@components/ui/button';
 import Link from 'next/link';
-import { Skeleton } from '@components/ui/skeleton';
 import toast from 'react-hot-toast';
 
 const links = [
@@ -54,7 +48,8 @@ const links = [
 	},
 ];
 
-interface NavProps extends React.HTMLAttributes<HTMLElement> {}
+interface NavProps extends React.HTMLAttributes<HTMLElement> {
+}
 
 export function Nav({ className, ...props }: NavProps) {
 	const path = usePathname();
@@ -77,7 +72,7 @@ export function Nav({ className, ...props }: NavProps) {
 			<nav
 				className={cn(
 					'flex animate-fade-in items-center justify-evenly md:justify-start space-x-4 lg:space-x-6',
-					className
+					className,
 				)}
 				{...props}
 			>
@@ -94,7 +89,7 @@ export function Nav({ className, ...props }: NavProps) {
 					.filter(
 						({ requiresGuildEnabled }) =>
 							!requiresGuildEnabled ||
-							(requiresGuildEnabled && guild)
+							(requiresGuildEnabled && guild),
 					)
 					.map(({ href, label }) => (
 						<RetainQueryLink
@@ -104,7 +99,7 @@ export function Nav({ className, ...props }: NavProps) {
 								'text-sm font-medium text-center opacity-80 transition-all',
 								{
 									'font-bold opacity-100': path === href,
-								}
+								},
 							)}
 						>
 							{label}

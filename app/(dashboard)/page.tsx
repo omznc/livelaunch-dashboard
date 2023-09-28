@@ -27,7 +27,6 @@ import {
 	HoverCardTrigger,
 } from '@components/ui/hover-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar';
-import RetainQueryLink from '@components/retain-query-link';
 import React from 'react';
 
 export default async function Home() {
@@ -201,6 +200,7 @@ export default async function Home() {
 									<Image
 										src={PartnerTheSpaceDevs}
 										alt={'TheSpaceDevs'}
+										placeholder={'blur'}
 									/>
 								</Link>
 							</HoverCardTrigger>
@@ -235,6 +235,7 @@ export default async function Home() {
 									<Image
 										src={PartnerOmznc}
 										alt={'Omar Zunic'}
+										placeholder={'blur'}
 									/>
 								</Link>
 							</HoverCardTrigger>

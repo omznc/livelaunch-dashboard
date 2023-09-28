@@ -2,7 +2,7 @@
 
 // components/RetainQueryLink.tsx
 import Link, { LinkProps } from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { PropsWithChildren } from 'react';
 
 interface RetainQueryLinkProps extends LinkProps, PropsWithChildren {
@@ -10,10 +10,10 @@ interface RetainQueryLinkProps extends LinkProps, PropsWithChildren {
 }
 
 const RetainQueryLink = ({
-	href,
-	className,
-	...props
-}: RetainQueryLinkProps) => {
+							 href,
+							 className,
+							 ...props
+						 }: RetainQueryLinkProps) => {
 	const params = useSearchParams();
 	const pathname = typeof href === 'object' ? href.pathname : href;
 

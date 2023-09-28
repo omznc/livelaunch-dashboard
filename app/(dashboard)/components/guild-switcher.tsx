@@ -23,11 +23,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from '@components/ui/dialog';
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from '@components/ui/popover';
+import { Popover, PopoverContent, PopoverTrigger } from '@components/ui/popover';
 import { RxCaretSort } from 'react-icons/rx';
 import { CheckIcon, PlusCircle } from 'lucide-react';
 import { GuildsResponse } from '@app/(dashboard)/layout';
@@ -49,9 +45,9 @@ interface GuildSwitcherProps extends PopoverTriggerProps {
 }
 
 export default function GuildSwitcher({
-	className,
-	guilds,
-}: GuildSwitcherProps) {
+										  className,
+										  guilds,
+									  }: GuildSwitcherProps) {
 	const [open, setOpen] = React.useState(false);
 	const [showNewGuildDialog, setShowNewGuildDialog] = React.useState(false);
 	const [revalidating, setRevalidating] = React.useState(false);
@@ -93,7 +89,7 @@ export default function GuildSwitcher({
 									className,
 									{
 										'animate-pulse': pending,
-									}
+									},
 								)}
 							>
 								{selectedGuild ? (
@@ -138,11 +134,11 @@ export default function GuildSwitcher({
 														startTransition(() => {
 															const currentURL =
 																new URL(
-																	window.location.href
+																	window.location.href,
 																);
 															currentURL.searchParams.set(
 																'g',
-																guild.id
+																guild.id,
 															);
 
 															window.location.href =
@@ -150,7 +146,7 @@ export default function GuildSwitcher({
 														});
 													} else {
 														setShowNewGuildDialog(
-															true
+															true,
 														);
 													}
 												}}
@@ -174,9 +170,9 @@ export default function GuildSwitcher({
 													className={cn(
 														'ml-auto h-4 w-4',
 														selectedGuild?.id ===
-															guild.id
+														guild.id
 															? 'opacity-100'
-															: 'opacity-0'
+															: 'opacity-0',
 													)}
 												/>
 											</CommandItem>

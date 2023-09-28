@@ -8,12 +8,13 @@ import env from '@env';
 import { Routes } from 'discord-api-types/v10';
 import { revalidatePath } from 'next/cache';
 import { Logger } from 'next-axiom';
+
 const rest = new REST({ version: '9' }).setToken(env.DISCORD_BOT_TOKEN);
 const log = new Logger();
 
 export async function updateSettings(
 	guildId: string,
-	settings: NewsSitesSettings
+	settings: NewsSitesSettings,
 ): Promise<void> {
 	await prisma.enabled_guilds.update({
 		where: {
@@ -27,7 +28,7 @@ export async function updateSettings(
 
 export const updateChannel = async (
 	guildId: string,
-	channelId: string
+	channelId: string,
 ): Promise<void> => {
 	await prisma.enabled_guilds.update({
 		where: {
@@ -97,7 +98,7 @@ export const disableFeature = async (guildId: string): Promise<void> => {
 
 export const setNewsSites = async (newsSites: NewsSite[], guildId: string) => {
 	const authorized = await getUserGuilds().then(guilds =>
-		guilds.find(g => g.id === guildId)
+		guilds.find(g => g.id === guildId),
 	);
 
 	if (!authorized) {

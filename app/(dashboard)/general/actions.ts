@@ -12,10 +12,10 @@ const rest = new REST({ version: '9' }).setToken(env.DISCORD_BOT_TOKEN);
 
 export const updateSettings = async (
 	guildId: string,
-	settings: GeneralSettings
+	settings: GeneralSettings,
 ): Promise<void> => {
 	const data = Object.fromEntries(
-		Object.entries(settings).map(([key, value]) => [key, Number(value)])
+		Object.entries(settings).map(([key, value]) => [key, Number(value)]),
 	);
 	await prisma.enabled_guilds.update({
 		where: {
@@ -29,7 +29,7 @@ export const updateSettings = async (
 
 export const updateChannel = async (
 	guildId: string,
-	channelId: string
+	channelId: string,
 ): Promise<void> => {
 	const [webhookUrl, resp] = await Promise.all([
 		createWebhook(channelId, 'Messages'),
@@ -70,7 +70,7 @@ export const updateChannel = async (
 
 export const updateNumberOfEvents = async (
 	guildId: string,
-	num: number
+	num: number,
 ): Promise<void> => {
 	if (num > 50 || num < 0) return;
 

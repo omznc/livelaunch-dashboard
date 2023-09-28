@@ -3,7 +3,7 @@ import DiscordProvider from 'next-auth/providers/discord';
 import env from '@env';
 import prisma from '@lib/prisma';
 import { PrismaAdapter } from '@auth/prisma-adapter';
-import { withAxiom, AxiomRequest } from 'next-axiom';
+import { AxiomRequest, withAxiom } from 'next-axiom';
 
 export const authOptions: AuthOptions = {
 	// @ts-ignore
@@ -47,9 +47,9 @@ const handler = NextAuth(authOptions);
 // export { handler as GET, handler as POST };
 
 export const GET = withAxiom(
-	async (req: AxiomRequest, res) => await handler(req, res)
+	async (req: AxiomRequest, res) => await handler(req, res),
 );
 
 export const POST = withAxiom(
-	async (req: AxiomRequest, res) => await handler(req, res)
+	async (req: AxiomRequest, res) => await handler(req, res),
 );
