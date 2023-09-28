@@ -30,7 +30,10 @@ export const getBotChannels = async (guildId: string) => {
 				tags: [`get-bot-channels-${session?.account?.id}`],
 			},
 		}
-	).then(resp => resp.json() as Promise<RESTGetAPIGuildChannelsResult>);
+	).then(async resp => {
+		const json = await resp.json();
+		return json as Promise<RESTGetAPIGuildChannelsResult>;
+	});
 
 	if (!resp) return [];
 
@@ -44,7 +47,11 @@ export const getBotGuilds = async () => {
 			revalidate: 60,
 			tags: ['get-bot-guilds'],
 		},
-	}).then(resp => resp.json() as Promise<RESTAPIPartialCurrentUserGuild[]>);
+	}).then(async resp => {
+		const json = await resp.json();
+
+		return json as Promise<RESTAPIPartialCurrentUserGuild[]>;
+	});
 };
 
 export const getUserGuilds = async () => {
@@ -57,7 +64,10 @@ export const getUserGuilds = async () => {
 			revalidate: 60 * 5,
 			tags: [`get-user-guilds-${session?.account?.id}`],
 		},
-	}).then(resp => resp.json() as Promise<RESTAPIPartialCurrentUserGuild[]>);
+	}).then(async resp => {
+		const json = await resp.json();
+		return json as Promise<RESTAPIPartialCurrentUserGuild[]>;
+	});
 
 	if (!resp) return [];
 
