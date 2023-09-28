@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - 'main'
+    paths-ignore:
+      - '**.md'
+      - '**.toml'
+      - 'docker-compose.yml'
 
 jobs:
   docker:
