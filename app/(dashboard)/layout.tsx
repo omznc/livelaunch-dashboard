@@ -33,9 +33,8 @@ export default async function Layout({ children }: { children: ReactNode }) {
 						<User />
 					</div>
 				</div>
-				{/* Mobile version */}
 				<div className='flex w-full flex-col md:hidden gap-4'>
-					<div className='flex h-16 items-center justify-between px-4'>
+					<div className='flex h-16 items-center gap-2 justify-between px-4'>
 						<div className='flex items-center'>
 							<GuildSwitcher guilds={guilds} />
 						</div>
@@ -47,9 +46,9 @@ export default async function Layout({ children }: { children: ReactNode }) {
 					<Nav className='mx-6' />
 				</div>
 				<div className='w-full h-full overflow-scroll flex p-8 justify-center'>
-					<div className='flex flex-col mb-8 w-full max-w-[1000px] transition-all'>
+					<div className='flex flex-col pb-2 w-full overflow-scroll max-w-[1000px] transition-all'>
 						{children}
-						<div className={'min-h-[2rem] -z-50'}></div>
+						<div className={'min-h-[2rem] mb-8 -z-50'}></div>
 					</div>
 				</div>
 			</div>

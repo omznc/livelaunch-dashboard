@@ -78,14 +78,14 @@ export const getUserGuilds = async () => {
 /**
  * Creates a webhook in the specified channel
  * @param channelId Channel ID
- * @param category Category name, uppercase
+ * @param category Category name
  */
 export const createWebhook = async (channelId: string, category: string) => {
 	const resp = await fetch(`${process.env.NEXTAUTH_URL}${avatar.src}`);
 	const base64 = Buffer.from(await resp.arrayBuffer()).toString('base64');
 	const webhook = (await rest.post(Routes.channelWebhooks(channelId), {
 		body: {
-			name: `LiveLaunch ${category.toUpperCase()}`,
+			name: `LiveLaunch ${category}`,
 			avatar: `data:image/png;base64,${base64}`,
 		},
 	})) as RESTPostAPIChannelWebhookResult;

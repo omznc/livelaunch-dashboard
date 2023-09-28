@@ -33,12 +33,12 @@ import React from 'react';
 export default async function Home() {
 	return (
 		<div className='flex flex-col gap-24'>
-			<div className='flex flex-col gap-2 w-full h-full justify-center items-center'>
-				<h1 className='text-6xl inline-flex items-center gap-2 font-bold'>
+			<div className='flex flex-col gap-2 p-2 w-full h-full justify-center items-center'>
+				<h1 className='text-6xl inline-flex text-center w-full items-center gap-2 font-bold'>
 					{/*<LuRocket />*/}
 					LiveLaunch Dashboard
 				</h1>
-				<p className='inline text-lg font-medium'>
+				<p className='inline text-lg text-center w-full font-medium'>
 					{
 						'Creates space related events and sends news, notifications and live streams! '
 					}
@@ -51,7 +51,7 @@ export default async function Home() {
 				</p>
 			</div>
 			<div className='flex w-full flex-wrap h-full gap-4 justify-center items-stretch max-h-[300px]'>
-				<Card className='w-[400px] flex-grow justify-between flex-col flex'>
+				<Card className='w-full md:w-[400px] flex-grow justify-between flex-col flex'>
 					<CardHeader>
 						<CardTitle>LiveLaunch is open source</CardTitle>
 						<CardDescription>
@@ -93,7 +93,7 @@ export default async function Home() {
 						</Link>
 					</CardFooter>
 				</Card>
-				<Card className='w-[400px] flex-grow justify-between flex-col flex'>
+				<Card className='w-full md:w-[400px] flex-grow justify-between flex-col flex'>
 					<CardHeader>
 						<CardTitle>Vote for LiveLaunch</CardTitle>
 						<CardDescription>
@@ -124,7 +124,7 @@ export default async function Home() {
 						</Link>
 					</CardFooter>
 				</Card>
-				<Card className='w-[400px] flex-grow justify-between flex-col flex'>
+				<Card className='w-full md:w-[400px] flex-grow justify-between flex-col flex'>
 					<CardHeader>
 						<CardTitle>Support</CardTitle>
 						<CardDescription>
@@ -177,7 +177,7 @@ export default async function Home() {
 						</Link>
 					</CardFooter>
 				</Card>
-				<Card className='w-[400px] flex-grow justify-between flex-col flex'>
+				<Card className='w-full md:w-[400px] flex-grow justify-between flex-col flex'>
 					<CardHeader>
 						<CardTitle>Partners</CardTitle>
 						<CardDescription>

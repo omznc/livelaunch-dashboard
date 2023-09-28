@@ -37,7 +37,7 @@ export const updateChannel = async (
 	});
 
 	const [webhookUrl, resp] = await Promise.all([
-		createWebhook(channelId, 'NEWS'),
+		createWebhook(channelId, 'News'),
 		prisma.enabled_guilds.findFirst({
 			where: {
 				guild_id: BigInt(guildId),
