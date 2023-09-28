@@ -59,6 +59,9 @@ const env = createEnv({
 		NEXT_PUBLIC_AXIOM_DATASET: process.env.NEXT_PUBLIC_AXIOM_DATASET,
 		NEXT_PUBLIC_AXIOM_TOKEN: process.env.NEXT_PUBLIC_AXIOM_TOKEN,
 	},
+	skipValidation: process.env.SKIP_ENV_VALIDATION === '1',
 });
+
+console.log(process.env.SKIP_ENV_VALIDATION);
 
 export default env;
