@@ -67,6 +67,7 @@ export default function Client({
 			success: 'Saved!',
 			error: 'Failed to save!',
 		});
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [debounced]);
 
 	const hash = useHash();

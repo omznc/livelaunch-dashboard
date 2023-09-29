@@ -78,7 +78,6 @@ export default function Client({
 
 	const debounced = useDebounce(selectedNewsSites, 1000 * 1.5);
 
-	// @eslint-ignore react-hooks/exhaustive-deps
 	useEffect(() => {
 		if (!mounted) {
 			setMounted(true);
@@ -89,6 +88,7 @@ export default function Client({
 			success: 'Saved!',
 			error: 'Failed to save!',
 		});
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [debounced]);
 
 	// sort by name, alphabetically

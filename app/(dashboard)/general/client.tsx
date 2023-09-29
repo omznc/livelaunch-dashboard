@@ -58,20 +58,18 @@ export default function Client({ guild, channels }: ClientProps) {
 		string | undefined
 	>(guild.channel_id?.toString());
 	const [mounted, setMounted] = useState(false);
-	const debouncedNumberOfEvents = useDebounce(numberOfEvents, 1000);
+	const debounced = useDebounce(numberOfEvents, 1000);
 
 	useEffect(() => {
 		if (!mounted) {
 			setMounted(true);
 			return;
 		}
-		updateNumberOfEvents(
-			String(guild.guild_id),
-			debouncedNumberOfEvents
-		).catch(() => {
+		updateNumberOfEvents(String(guild.guild_id), debounced).catch(() => {
 			toast.error('Failed to save.');
 		});
-	}, [debouncedNumberOfEvents]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [debounced]);
 
 	return (
 		<div className='flex flex-col gap-4'>
