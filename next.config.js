@@ -23,7 +23,6 @@ const nextConfig = {
 	// 	],
 	//
 	// },
-	// unoptimized: true,
 	images: {
 		domains: [
 			'juststephen.com',
@@ -31,6 +30,8 @@ const nextConfig = {
 			'avatars.githubusercontent.com',
 		],
 	},
+	// unoptimized: true,
+
 	swcMinify: true,
 	// webpack: (config, { dev, isServer }) => {
 	// 	if (!isServer) {
