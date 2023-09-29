@@ -16,18 +16,18 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
 	return (
 		<html lang='en' suppressHydrationWarning>
-		<AxiomWebVitals />
-		<body className={inter.className}>
-		<ThemeProvider
-			attribute='class'
-			defaultTheme='system'
-			enableSystem
-			disableTransitionOnChange
-		>
-			<Toast />
-			{children}
-		</ThemeProvider>
-		</body>
+			<AxiomWebVitals />
+			<body className={inter.className}>
+				<ThemeProvider
+					attribute='class'
+					defaultTheme='system'
+					enableSystem
+					disableTransitionOnChange
+				>
+					<Toast />
+					{children}
+				</ThemeProvider>
+			</body>
 		</html>
 	);
 }

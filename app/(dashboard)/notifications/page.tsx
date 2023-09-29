@@ -3,8 +3,8 @@ import Client from './client';
 import { getGuildChannels } from '@lib/discord-api';
 
 export default async function Agencies({
-										   searchParams,
-									   }: {
+	searchParams,
+}: {
 	searchParams: {
 		g: string | undefined;
 	};

@@ -4,6 +4,8 @@
 
 Made with Next 13, because I love it.
 
-This is open-source for the sake of it, but it's going to take some effort if you'd like to self-host it alongside the bot.
+This is open-source for the sake of it, but it's going to take some effort if
+you'd like to self-host it alongside the bot.
 
-I will not be providing a tutorial on how to do so, because if you're already doing it, you'll know.
+I will not be providing a tutorial on how to do so, because if you're already
+doing it, you'll know.

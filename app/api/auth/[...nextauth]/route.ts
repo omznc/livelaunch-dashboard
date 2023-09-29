@@ -47,9 +47,9 @@ const handler = NextAuth(authOptions);
 // export { handler as GET, handler as POST };
 
 export const GET = withAxiom(
-	async (req: AxiomRequest, res) => await handler(req, res),
+	async (req: AxiomRequest, res) => await handler(req, res)
 );
 
 export const POST = withAxiom(
-	async (req: AxiomRequest, res) => await handler(req, res),
+	async (req: AxiomRequest, res) => await handler(req, res)
 );

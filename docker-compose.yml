@@ -1,22 +1,9 @@
 version: '3.8'
 
 services:
-  mysql:
-    image: mysql:latest
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: LiveLaunch
-    volumes:
-      - ./mysql-data:/var/lib/mysql
-    ports:
-      - "3306:3306"
-  web:
-    build: .
-    ports:
-      - "3000:3000"
-    env_file:
-      - .env
-    environment:
-      - DATABASE_URL=mysql://root:root@mysql:3306/LiveLaunch
-    depends_on:
-      - mysql
+    web:
+        image: livelaunch
+        ports:
+            - '3000:3000'
+        env_file:
+            - .env

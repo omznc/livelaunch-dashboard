@@ -10,10 +10,10 @@ interface RetainQueryLinkProps extends LinkProps, PropsWithChildren {
 }
 
 const RetainQueryLink = ({
-							 href,
-							 className,
-							 ...props
-						 }: RetainQueryLinkProps) => {
+	href,
+	className,
+	...props
+}: RetainQueryLinkProps) => {
 	const params = useSearchParams();
 	const pathname = typeof href === 'object' ? href.pathname : href;
 

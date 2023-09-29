@@ -8,9 +8,9 @@ import { Inter } from 'next/font/google';
 const inter = Inter({ subsets: ['latin'] });
 
 export default function GlobalError({
-										error,
-										reset,
-									}: {
+	error,
+	reset,
+}: {
 	error: Error;
 	reset: () => void;
 }) {
@@ -21,15 +21,15 @@ export default function GlobalError({
 	});
 	return (
 		<html lang='en' suppressHydrationWarning>
-		<body
-			className={cn(
-				'w-screen h-screen flex flex-col gap-4 justify-center items-center',
-				inter.className,
-			)}
-		>
-		<h1 className='text-4xl font-bold'>Something went wrong!</h1>
-		<Button onClick={() => reset()}>Try again</Button>
-		</body>
+			<body
+				className={cn(
+					'w-screen h-screen flex flex-col gap-4 justify-center items-center',
+					inter.className
+				)}
+			>
+				<h1 className='text-4xl font-bold'>Something went wrong!</h1>
+				<Button onClick={() => reset()}>Try again</Button>
+			</body>
 		</html>
 	);
 }

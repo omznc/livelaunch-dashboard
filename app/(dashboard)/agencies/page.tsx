@@ -3,8 +3,8 @@ import { unstable_cache as cache } from 'next/dist/server/web/spec-extension/uns
 import Client from '@app/(dashboard)/agencies/client';
 
 export default async function Agencies({
-										   searchParams,
-									   }: {
+	searchParams,
+}: {
 	searchParams: {
 		g: string | undefined;
 	};
@@ -18,7 +18,7 @@ export default async function Agencies({
 		{
 			tags: ['agencies'],
 			revalidate: 60 * 60,
-		},
+		}
 	)();
 
 	const guild = await prisma.enabled_guilds.findFirst({
