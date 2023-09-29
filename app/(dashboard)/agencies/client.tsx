@@ -71,9 +71,12 @@ export default function Client({
 
 	const hash = useHash();
 
-	const filtered = selectedAgencies.filter(
-		a => a.name?.toLowerCase().includes(searchQuery.toLowerCase())
-	);
+	const filtered = selectedAgencies
+		.filter(a => a.name?.toLowerCase().includes(searchQuery.toLowerCase()))
+		.sort((a, b) => {
+			if (!a.name || !b.name) return 0;
+			return a.name.localeCompare(b.name);
+		});
 
 	return (
 		<div className='flex flex-col gap-4'>
@@ -139,8 +142,7 @@ export default function Client({
 											setSelectedAgencies(prev =>
 												prev.map(p => ({
 													...p,
-													selected:
-														!settings.whitelist,
+													selected: !p.selected,
 												}))
 											);
 										}}

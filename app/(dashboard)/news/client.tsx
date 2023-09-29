@@ -91,9 +91,18 @@ export default function Client({
 		});
 	}, [debounced]);
 
-	const filtered = selectedNewsSites.filter(
-		a => a.news_site_name?.toLowerCase().includes(searchQuery.toLowerCase())
-	);
+	// sort by name, alphabetically
+	const filtered = selectedNewsSites
+		.filter(
+			a =>
+				a.news_site_name
+					?.toLowerCase()
+					.includes(searchQuery.toLowerCase())
+		)
+		.sort((a, b) => {
+			if (!a.news_site_name || !b.news_site_name) return 0;
+			return a.news_site_name.localeCompare(b.news_site_name);
+		});
 
 	return (
 		<div className='flex flex-col gap-4'>
