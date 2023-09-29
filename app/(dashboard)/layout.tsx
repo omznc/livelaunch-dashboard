@@ -63,11 +63,10 @@ export default async function Layout({ children }: { children: ReactNode }) {
 					</div>
 					<Nav className='mx-6' />
 				</div>
-				<div className='w-full h-full overflow-scroll flex p-8 mb-8 justify-center'>
+				<div className='w-full h-full overflow-auto flex p-8 mb-8 justify-center'>
 					<div className='flex flex-col pb-2 w-full max-w-[1000px] transition-all'>
 						{children}
 					</div>
-					<div className={'min-h-[2rem] pb-8 -z-50'}></div>
 				</div>
 			</div>
 		</AuthProvider>
