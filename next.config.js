@@ -5,22 +5,27 @@ const nextConfig = {
 		serverActions: true,
 	},
 	output: 'standalone',
+	// images: {
+	// 	remotePatterns: [
+	// 		{
+	// 			protocol: 'https',
+	// 			hostname: 'juststephen.com',
+	// 			pathname: '/LiveLaunch/*/**',
+	// 		},
+	// 		{
+	// 			protocol: 'https',
+	// 			hostname: 'cdn.discordapp.com',
+	// 		},
+	// 		{
+	// 			protocol: 'https',
+	// 			hostname: 'avatars.githubusercontent.com',
+	// 		},
+	// 	],
+	//
+	// },
+	// unoptimized: true,
 	images: {
-		remotePatterns: [
-			{
-				protocol: 'https',
-				hostname: 'juststephen.com',
-				pathname: '/LiveLaunch/*/**',
-			},
-			{
-				protocol: 'https',
-				hostname: 'cdn.discordapp.com',
-			},
-			{
-				protocol: 'https',
-				hostname: 'avatars.githubusercontent.com',
-			},
-		],
+		unoptimized: true,
 	},
 	swcMinify: true,
 	// webpack: (config, { dev, isServer }) => {
