@@ -4,7 +4,12 @@ import { cn } from '@lib/utils';
 import Image from 'next/image';
 import { FaHashtag } from 'react-icons/fa';
 import toast from 'react-hot-toast';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@components/ui/tooltip';
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from '@components/ui/tooltip';
 import { useHash } from '@lib/hooks';
 import { FaCopy } from 'react-icons/fa6';
 
@@ -19,14 +24,14 @@ interface SettingProps {
 }
 
 export function Setting({
-							label,
-							description,
-							active,
-							children,
-							image,
-							className,
-							disabled,
-						}: SettingProps) {
+	label,
+	description,
+	active,
+	children,
+	image,
+	className,
+	disabled,
+}: SettingProps) {
 	return (
 		<div
 			className={cn(
@@ -35,12 +40,11 @@ export function Setting({
 					'bg-muted/30': active,
 					'space-x-2': !disabled,
 				},
-				className,
+				className
 			)}
 		>
 			{disabled && (
-				<div
-					className='z-10 absolute w-full h-full flex filter items-center justify-center rounded-md -ml-4 backdrop-blur-sm bg-opacity-10 border-none'>
+				<div className='z-10 absolute w-full h-full flex filter items-center justify-center rounded-md -ml-4 backdrop-blur-sm bg-opacity-10 border-none'>
 					<p className='text-sm absolute font-semibold select-none'>
 						This setting is disabled
 					</p>
@@ -53,7 +57,7 @@ export function Setting({
 						alt={label}
 						width={42}
 						height={42}
-						className='rounded-full h-full max-h-[42px] w-auto bg-white'
+						className='rounded-full h-full max-h-[42px] w-auto bg-black'
 					/>
 				)}
 				<div className='flex flex-col gap-2'>
@@ -87,7 +91,7 @@ export function SettingGroup({ title, children }: SettingGroupProps) {
 								'group scroll-m-20 w-fit inline-flex cursor-pointer items-center gap-1 text-xl font-semibold tracking-tight',
 								{
 									'font-bold': id === hash.slice(1),
-								},
+								}
 							)}
 							id={id}
 							onClick={() => {
@@ -99,7 +103,7 @@ export function SettingGroup({ title, children }: SettingGroupProps) {
 									})
 									.catch(() => {
 										toast.error(
-											'Failed to copy to clipboard!',
+											'Failed to copy to clipboard!'
 										);
 									});
 							}}
@@ -109,7 +113,7 @@ export function SettingGroup({ title, children }: SettingGroupProps) {
 									'opacity-50 transition-all group-hover:opacity-100',
 									{
 										'opacity-100': id === hash.slice(1),
-									},
+									}
 								)}
 							/>
 							{title}
