@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Build the image
-docker build -t livelaunch .
+DOCKER_BUILDKIT=1 docker build -t livelaunch .
 
 # Stop the compose
 docker compose down
