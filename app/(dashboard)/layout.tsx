@@ -9,6 +9,8 @@ import User from '@app/(dashboard)/components/user';
 import { RESTAPIPartialCurrentUserGuild } from 'discord.js';
 import { ReactNode } from 'react';
 import { getBotGuilds, getUserGuilds } from '@lib/discord-api';
+import Link from 'next/link';
+import env from '@env';
 
 export default async function Layout({ children }: { children: ReactNode }) {
 	const session = await getServerSession(authOptions);
@@ -22,6 +24,23 @@ export default async function Layout({ children }: { children: ReactNode }) {
 	return (
 		<AuthProvider session={session}>
 			<div className='flex flex-col items-center h-[100dvh] w-full'>
+				{/* beta bar */}
+				{env.IS_BETA && (
+					<div className='flex w-full justify-center bg-primary text-white'>
+						<p className='p-2 text-center'>
+							<strong>LiveLaunch Dashboard is in beta.</strong> If
+							you find any bugs, report them{' '}
+							<Link
+								href={'https://discord.gg/nztN2FXe7A'}
+								className='font-bold'
+								target={'_blank'}
+							>
+								here
+							</Link>
+							.
+						</p>
+					</div>
+				)}
 				<div className='hidden flex-row w-full justify-between border-b md:flex'>
 					<div className='flex h-16 items-center px-4'>
 						<GuildSwitcher guilds={guilds} />
@@ -72,7 +91,7 @@ const filterGuilds = async () => {
 	// Filter and map the guilds
 	const guilds: GuildsResponse[] = botGuilds
 		.filter(guild =>
-			userGuilds.some(userGuild => userGuild.id === guild.id),
+			userGuilds.some(userGuild => userGuild.id === guild.id)
 		)
 		.map(guild => ({ ...guild, botAccess: true }));
 

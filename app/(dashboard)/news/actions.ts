@@ -2,20 +2,27 @@
 
 import prisma from '@lib/prisma';
 import { NewsSite, NewsSitesSettings } from '@app/(dashboard)/news/client';
-import { createWebhook, getUserGuilds } from '@lib/discord-api';
+import { createWebhook } from '@lib/discord-api';
 import { REST } from '@discordjs/rest';
 import env from '@env';
 import { Routes } from 'discord-api-types/v10';
 import { revalidatePath } from 'next/cache';
 import { Logger } from 'next-axiom';
 
+import { isAuthorized } from '@lib/server-utils';
+
 const rest = new REST({ version: '9' }).setToken(env.DISCORD_BOT_TOKEN);
 const log = new Logger();
 
 export async function updateSettings(
 	guildId: string,
-	settings: NewsSitesSettings,
+	settings: NewsSitesSettings
 ): Promise<void> {
+	const authorized = await isAuthorized(guildId);
+	if (!authorized) {
+		throw new Error('Unauthorized');
+	}
+
 	await prisma.enabled_guilds.update({
 		where: {
 			guild_id: BigInt(guildId),
@@ -28,46 +35,62 @@ export async function updateSettings(
 
 export const updateChannel = async (
 	guildId: string,
-	channelId: string,
+	channelId: string
 ): Promise<void> => {
+	const authorized = await isAuthorized(guildId);
+	if (!authorized) {
+		throw new Error('Unauthorized');
+	}
+
+	const [newWebhookURL, guild] = await Promise.all([
+		createWebhook(channelId, 'News'),
+		prisma.enabled_guilds.findFirst({
+			where: {
+				guild_id: BigInt(guildId),
+			},
+		}),
+	]);
+
 	await prisma.enabled_guilds.update({
 		where: {
 			guild_id: BigInt(guildId),
 		},
 		data: {
 			news_channel_id: BigInt(channelId),
+			news_webhook_url: newWebhookURL,
 		},
 	});
 
-	const [webhookUrl, resp] = await Promise.all([
-		createWebhook(channelId, 'News'),
-		prisma.enabled_guilds.findFirst({
-			where: {
-				guild_id: BigInt(guildId),
-			},
-			select: {
-				news_webhook_url: true,
-			},
-		}),
-	]);
+	if (guild?.news_webhook_url) {
+		await rest
+			.delete(Routes.webhook(guild.news_webhook_url.split('/')[5]))
+			// cleanup on error
+			.catch(async e => {
+				await prisma.enabled_guilds.update({
+					where: {
+						guild_id: BigInt(guildId),
+					},
+					data: {
+						news_channel_id: null,
+						news_webhook_url: null,
+					},
+				});
+				await rest.delete(Routes.webhook(newWebhookURL.split('/')[5]));
 
-	if (resp?.news_webhook_url) {
-		await rest.delete(Routes.webhook(resp.news_webhook_url.split('/')[5]));
+				revalidatePath('/news');
+				throw e;
+			});
+	} else {
+		revalidatePath('/news');
 	}
-
-	await prisma.enabled_guilds.update({
-		where: {
-			guild_id: BigInt(guildId),
-		},
-		data: {
-			news_webhook_url: webhookUrl,
-		},
-	});
-
-	revalidatePath('/news');
 };
 
 export const disableFeature = async (guildId: string): Promise<void> => {
+	const authorized = await isAuthorized(guildId);
+	if (!authorized) {
+		throw new Error('Unauthorized');
+	}
+
 	const resp = await prisma.enabled_guilds.findFirst({
 		where: {
 			guild_id: BigInt(guildId),
@@ -77,10 +100,12 @@ export const disableFeature = async (guildId: string): Promise<void> => {
 		},
 	});
 
-	console.log(resp?.news_webhook_url?.split('/')[5]);
-
 	if (resp?.news_webhook_url) {
-		await rest.delete(Routes.webhook(resp.news_webhook_url.split('/')[5]));
+		await rest
+			.delete(Routes.webhook(resp.news_webhook_url.split('/')[5]))
+			.catch(e => {
+				console.error(e);
+			});
 	}
 
 	await prisma.enabled_guilds.update({
@@ -97,9 +122,10 @@ export const disableFeature = async (guildId: string): Promise<void> => {
 };
 
 export const setNewsSites = async (newsSites: NewsSite[], guildId: string) => {
-	const authorized = await getUserGuilds().then(guilds =>
-		guilds.find(g => g.id === guildId),
-	);
+	const authorized = await isAuthorized(guildId);
+	if (!authorized) {
+		throw new Error('Unauthorized');
+	}
 
 	if (!authorized) {
 		log.error('Guild not found', {

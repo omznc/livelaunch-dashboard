@@ -2,23 +2,15 @@
 
 import { AgenciesSettings, Agency } from '@app/(dashboard)/agencies/client';
 import prisma from '@lib/prisma';
-
-import { getUserGuilds } from '@lib/discord-api';
 import { Logger } from 'next-axiom';
+import { isAuthorized } from '@lib/server-utils';
 
 const log = new Logger();
 
 export const SetAgencies = async (agencies: Agency[], guildId: string) => {
-	const authorized = await getUserGuilds().then(guilds =>
-		guilds.find(g => g.id === guildId)
-	);
-
+	const authorized = await isAuthorized(guildId);
 	if (!authorized) {
-		log.error('Guild not found', {
-			guildId,
-		});
-		await log.flush();
-		throw new Error('Guild not found');
+		throw new Error('Unauthorized');
 	}
 
 	return Promise.all([
@@ -46,6 +38,11 @@ export const updateSettings = async (
 	guildId: string,
 	settings: AgenciesSettings
 ): Promise<void> => {
+	const authorized = await isAuthorized(guildId);
+	if (!authorized) {
+		throw new Error('Unauthorized');
+	}
+
 	await prisma.enabled_guilds.update({
 		where: {
 			guild_id: BigInt(guildId),

@@ -3,13 +3,24 @@
 import { enabled_guilds, notification_countdown } from '@prisma/client';
 import { FaArrowUp, FaHashtag, FaTimes } from 'react-icons/fa';
 import React, { useState } from 'react';
-import { addCountdown, disableFeature, removeCountdown, updateChannel, updateFilters } from './actions';
+import {
+	addCountdown,
+	disableFeature,
+	removeCountdown,
+	updateChannel,
+	updateFilters,
+} from './actions';
 import RetainQueryLink from '@components/retain-query-link';
 import { Switch } from '@components/ui/switch';
 import { Setting, SettingGroup } from '@components/ui/setting';
 import toast from 'react-hot-toast';
 import { RESTGetAPIGuildChannelsResult } from 'discord.js';
-import { Select, SelectContent, SelectItem, SelectTrigger } from '@components/ui/select';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+} from '@components/ui/select';
 
 import {
 	Dialog,
@@ -24,6 +35,7 @@ import { DialogBody } from 'next/dist/client/components/react-dev-overlay/intern
 import { Input } from '@components/ui/input';
 import { Label } from '@components/ui/label';
 import { Badge } from '@components/ui/badge';
+import { useRouter } from 'next/navigation';
 
 interface ClientProps {
 	guild: enabled_guilds;
@@ -50,6 +62,8 @@ export interface NotificationsFilterSettings {
 }
 
 export default function Client({ guild, countdowns, channels }: ClientProps) {
+	const router = useRouter();
+
 	const [settings, setSettings] = useState<NotificationsFilterSettings>({
 		notification_end_status: Boolean(guild.notification_end_status),
 		notification_hold: Boolean(guild.notification_hold),
@@ -137,15 +151,18 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 							{
 								loading: 'Saving...',
 								success: 'Saved.',
-								error: 'Failed to save.',
-							},
+								error: () => {
+									router.refresh();
+									return 'Failed to save.';
+								},
+							}
 						);
 					}}
 				>
 					<SelectTrigger className='w-full md:w-fit-content md:max-w-[350px]'>
 						{(() => {
 							const chan = channels.find(
-								channel => channel.id === selectedChannelID,
+								channel => channel.id === selectedChannelID
 							);
 							if (chan) {
 								return (
@@ -221,7 +238,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 											e.target.value = clamp(
 												e.target.valueAsNumber,
 												0,
-												31,
+												31
 											).toString();
 											setNewCountdown(prev => ({
 												...prev,
@@ -243,7 +260,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 											e.target.value = clamp(
 												e.target.valueAsNumber,
 												0,
-												24,
+												24
 											).toString();
 											setNewCountdown(prev => ({
 												...prev,
@@ -267,7 +284,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 											e.target.value = clamp(
 												e.target.valueAsNumber,
 												0,
-												60,
+												60
 											).toString();
 											setNewCountdown(prev => ({
 												...prev,
@@ -294,7 +311,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 								onClick={() => {
 									addCountdown(
 										String(guild.guild_id),
-										newCountdown,
+										newCountdown
 									).catch(() => {
 										toast.error('Failed to add countdown.');
 									});
@@ -310,7 +327,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 			<h2 className='text-sm'>
 				{countdowns.length > 0
 					? 'Current Countdowns'
-					: 'This is where you\'d see your countdowns, if you had any.'}
+					: "This is where you'd see your countdowns, if you had any."}
 			</h2>
 			<div className='flex flex-wrap gap-2'>
 				{countdowns.map(countdown => (
@@ -320,7 +337,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					>
 						{(() => {
 							const days = Math.floor(
-								countdown.minutes / 60 / 24,
+								countdown.minutes / 60 / 24
 							);
 							const hours =
 								Math.floor(countdown.minutes / 60) % 24;
@@ -353,7 +370,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 							onClick={() => {
 								removeCountdown(
 									String(guild.guild_id),
-									countdown.minutes,
+									countdown.minutes
 								).catch(() => {
 									toast.error('Failed to remove countdown.');
 								});

@@ -20,7 +20,7 @@ import {
 	setNewsSites,
 	updateChannel,
 	updateSettings,
-} from '@app/(dashboard)/news/actions';
+} from './actions';
 import { Tabs, TabsList, TabsTrigger } from '@components/ui/tabs';
 import { Setting, SettingGroup } from '@components/ui/setting';
 import { RESTGetAPIGuildChannelsResult } from 'discord.js';
@@ -33,6 +33,7 @@ import {
 import toast from 'react-hot-toast';
 import { FaHashtag } from 'react-icons/fa';
 import { Button } from '@components/ui/button';
+import { useRouter } from 'next/navigation';
 
 interface ClientProps {
 	newsSites: news_sites[];
@@ -55,6 +56,8 @@ export default function Client({
 	guild,
 	channels,
 }: ClientProps) {
+	const router = useRouter();
+
 	const [selectedNewsSites, setSelectedNewsSites] = useState<NewsSite[]>(
 		newsSites.map(a => ({
 			...a,
@@ -132,9 +135,15 @@ export default function Client({
 				<Select
 					onValueChange={value => {
 						setSelectedChannelID(value);
-						updateChannel(String(guild.guild_id), value).catch(
-							() => {
-								toast.error('Failed to save.');
+						toast.promise(
+							updateChannel(String(guild.guild_id), value),
+							{
+								loading: 'Saving...',
+								success: 'Saved.',
+								error: () => {
+									router.refresh();
+									return 'Failed to save.';
+								},
 							}
 						);
 					}}

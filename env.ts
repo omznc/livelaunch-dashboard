@@ -30,6 +30,7 @@ const env = createEnv({
 				required_error: 'NEXTAUTH_URL is required',
 			})
 			.default('http://localhost:3000'),
+		IS_BETA: z.string().transform(val => val === 'true' || val === '1'),
 	},
 	// These are visible to both server-side and client-side code
 	client: {
@@ -54,6 +55,7 @@ const env = createEnv({
 		NEXTAUTH_URL: process.env.NEXTAUTH_URL,
 		NEXT_PUBLIC_AXIOM_DATASET: process.env.NEXT_PUBLIC_AXIOM_DATASET,
 		NEXT_PUBLIC_AXIOM_TOKEN: process.env.NEXT_PUBLIC_AXIOM_TOKEN,
+		IS_BETA: process.env.IS_BETA,
 	},
 });
 

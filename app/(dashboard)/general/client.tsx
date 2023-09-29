@@ -4,16 +4,27 @@ import { enabled_guilds } from '@prisma/client';
 import { FaArrowUp, FaHashtag } from 'react-icons/fa';
 import { Switch } from '@components/ui/switch';
 import React, { useEffect, useState } from 'react';
-import { disableFeature, updateChannel, updateNumberOfEvents, updateSettings } from '@app/(dashboard)/general/actions';
+import {
+	disableFeature,
+	updateChannel,
+	updateNumberOfEvents,
+	updateSettings,
+} from './actions';
 import Link from 'next/link';
 import { Setting, SettingGroup } from '@components/ui/setting';
 import { RESTGetAPIGuildChannelsResult } from 'discord.js';
-import { Select, SelectContent, SelectItem, SelectTrigger } from '@components/ui/select';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+} from '@components/ui/select';
 import toast from 'react-hot-toast';
 import { Label } from '@components/ui/label';
 import { Input } from '@components/ui/input';
 import { useDebounce } from '@lib/hooks';
 import { Button } from '@components/ui/button';
+import { useRouter } from 'next/navigation';
 
 interface ClientProps {
 	guild: enabled_guilds;
@@ -30,6 +41,8 @@ export interface GeneralSettings {
 }
 
 export default function Client({ guild, channels }: ClientProps) {
+	const router = useRouter();
+
 	const [settings, setSettings] = useState<GeneralSettings>({
 		notification_button_fc: Boolean(guild.notification_button_fc),
 		notification_button_g4l: Boolean(guild.notification_button_g4l),
@@ -39,7 +52,7 @@ export default function Client({ guild, channels }: ClientProps) {
 		se_no_url: Boolean(guild.se_no_url),
 	});
 	const [numberOfEvents, setNumberOfEvents] = useState<number>(
-		guild.scheduled_events ?? 0,
+		guild.scheduled_events ?? 0
 	);
 	const [selectedChannelID, setSelectedChannelID] = useState<
 		string | undefined
@@ -54,7 +67,7 @@ export default function Client({ guild, channels }: ClientProps) {
 		}
 		updateNumberOfEvents(
 			String(guild.guild_id),
-			debouncedNumberOfEvents,
+			debouncedNumberOfEvents
 		).catch(() => {
 			toast.error('Failed to save.');
 		});
@@ -100,17 +113,23 @@ export default function Client({ guild, channels }: ClientProps) {
 				<Select
 					onValueChange={value => {
 						setSelectedChannelID(value);
-						updateChannel(String(guild.guild_id), value).catch(
-							() => {
-								toast.error('Failed to save.');
-							},
+						toast.promise(
+							updateChannel(String(guild.guild_id), value),
+							{
+								loading: 'Saving...',
+								success: 'Saved.',
+								error: () => {
+									router.refresh();
+									return 'Failed to save.';
+								},
+							}
 						);
 					}}
 				>
 					<SelectTrigger className='w-full md:w-fit-content md:max-w-[350px]'>
 						{(() => {
 							const chan = channels.find(
-								channel => channel.id === selectedChannelID,
+								channel => channel.id === selectedChannelID
 							);
 							if (chan) {
 								return (
@@ -252,10 +271,10 @@ export default function Client({ guild, channels }: ClientProps) {
 							e.target.value = clamp(
 								e.target.valueAsNumber,
 								0,
-								50,
+								50
 							).toString();
 							setNumberOfEvents(
-								clamp(e.target.valueAsNumber, 0, 50),
+								clamp(e.target.valueAsNumber, 0, 50)
 							);
 						}}
 					/>
