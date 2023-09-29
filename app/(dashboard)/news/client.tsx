@@ -75,6 +75,7 @@ export default function Client({
 
 	const debounced = useDebounce(selectedNewsSites, 1000 * 1.5);
 
+	// @eslint-ignore react-hooks/exhaustive-deps
 	useEffect(() => {
 		if (!mounted) {
 			setMounted(true);
@@ -288,11 +289,11 @@ export default function Client({
 												alt='Agency Logo'
 												width={42}
 												height={42}
-												className='rounded-full bg-white'
+												className='rounded-full bg-black'
 											/>
 										) : (
 											<div
-												className='flex h-[42px] w-[42px] items-center justify-center rounded-full bg-[#1e1f22]'
+												className='flex h-[42px] w-[42px] items-center text-white justify-center rounded-full bg-[#1e1f22]'
 												title={
 													a.news_site_name ??
 													'Unknown'

@@ -1,30 +1,23 @@
-FROM oven/bun:latest AS bun
 FROM node:18-alpine AS node
 
-FROM bun AS deps
+FROM node AS deps
 WORKDIR /app
 COPY package.json ./
-RUN bun i
+RUN npm i
 
 FROM node AS builder
 WORKDIR /app
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-ENV NEXT_TELEMETRY_DISABLED 1
-
-ENV NEXT_PUBLIC_AXIOM_TOKEN $NEXT_PUBLIC_AXIOM_TOKEN
-ENV NEXT_PUBLIC_AXIOM_DATASET $NEXT_PUBLIC_AXIOM_DATASET
-ENV NEXT_PUBLIC_DISCORD_CLIENT_ID $NEXT_PUBLIC_DISCORD_CLIENT_ID
 
 RUN npx prisma generate
-RUN SKIP_ENV_VALIDATION=1 npm run build
+RUN npm run build
 
 FROM node AS runner
 WORKDIR /app
 
 ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs

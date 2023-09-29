@@ -30,9 +30,6 @@ const env = createEnv({
 				required_error: 'NEXTAUTH_URL is required',
 			})
 			.default('http://localhost:3000'),
-		NODE_ENV: z.string({
-			description: 'Node environment',
-		}),
 	},
 	// These are visible to both server-side and client-side code
 	client: {
@@ -55,11 +52,9 @@ const env = createEnv({
 		DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
 		NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
 		NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-		NODE_ENV: process.env.NODE_ENV,
 		NEXT_PUBLIC_AXIOM_DATASET: process.env.NEXT_PUBLIC_AXIOM_DATASET,
 		NEXT_PUBLIC_AXIOM_TOKEN: process.env.NEXT_PUBLIC_AXIOM_TOKEN,
 	},
-	skipValidation: process.env.SKIP_ENV_VALIDATION === '1',
 });
 
 export default env;

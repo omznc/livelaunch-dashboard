@@ -110,11 +110,7 @@ export default async function Home() {
 								}),
 								'inline-flex gap-2 w-full md:w-fit'
 							)}
-							href={`https://top.gg/bot/${
-								env.NODE_ENV === 'development'
-									? '869969874036867082'
-									: env.NEXT_PUBLIC_DISCORD_CLIENT_ID
-							}/vote`}
+							href={`https://top.gg/bot/${env.NEXT_PUBLIC_DISCORD_CLIENT_ID}/vote`}
 							target={'_blank'}
 						>
 							<BiSolidUpvote />

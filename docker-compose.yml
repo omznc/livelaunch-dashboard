@@ -11,7 +11,7 @@ services:
     ports:
       - "3306:3306"
   web:
-    image: omznc/livelaunch-dashboard:latest
+    build: .
     ports:
       - "3000:3000"
     env_file:
