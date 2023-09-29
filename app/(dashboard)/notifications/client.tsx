@@ -98,7 +98,9 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 
 	return (
 		<div className='flex flex-col gap-4'>
-			<SettingGroup title={'Feature'}></SettingGroup>
+			<SettingGroup title={'Feature'}>
+				Settings for the notification feature.
+			</SettingGroup>
 			<Setting
 				label={'Disable Feature'}
 				description={'Disable this feature for your server.'}
@@ -123,19 +125,6 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					Disable
 				</Button>
 			</Setting>
-			<SettingGroup title={'Notifications'}>
-				{'Tweak how notifications work. Works well with'}
-				<RetainQueryLink
-					href={{
-						pathname: '/general',
-						hash: '#scheduled-events',
-					}}
-					className='inline-flex items-center gap-1 brightness-125 hover:underline'
-				>
-					Scheduled Events <FaArrowUp className='-rotate-45' />
-				</RetainQueryLink>
-			</SettingGroup>
-
 			<Setting
 				label={'Notification Channel'}
 				description={
@@ -153,6 +142,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 								success: 'Saved.',
 								error: () => {
 									router.refresh();
+									setSelectedChannelID(undefined);
 									return 'Failed to save.';
 								},
 							}
@@ -177,13 +167,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					</SelectTrigger>
 					<SelectContent>
 						{channels.map(channel => (
-							<SelectItem
-								key={channel.id}
-								onClick={() => {
-									console.log(channel);
-								}}
-								value={channel.id}
-							>
+							<SelectItem key={channel.id} value={channel.id}>
 								<FaHashtag className='inline-block mr-2' />
 								{channel.name}
 							</SelectItem>

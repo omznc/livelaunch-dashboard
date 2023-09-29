@@ -122,9 +122,6 @@ export default function Client({
 					Disable
 				</Button>
 			</Setting>
-			<SettingGroup title={'Exclusions'}>
-				{'Whether to show or hide news sites'}
-			</SettingGroup>
 			<Setting
 				label={'News Channel'}
 				description={
@@ -142,6 +139,7 @@ export default function Client({
 								success: 'Saved.',
 								error: () => {
 									router.refresh();
+									setSelectedChannelID(undefined);
 									return 'Failed to save.';
 								},
 							}
@@ -179,6 +177,9 @@ export default function Client({
 					</SelectContent>
 				</Select>
 			</Setting>
+			<SettingGroup title={'Exclusions'}>
+				{'Whether to show or hide news sites'}
+			</SettingGroup>
 			<Setting
 				label={'Exclusion Mode'}
 				description={

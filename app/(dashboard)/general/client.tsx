@@ -104,9 +104,9 @@ export default function Client({ guild, channels }: ClientProps) {
 				{'Uncategorized, general settings.'}
 			</SettingGroup>
 			<Setting
-				label={'Messages Channel'}
+				label={'Video Channel'}
 				description={
-					'Choose which channel the bot should general messages to.'
+					'Choose which channel the bot should send YouTube videos to.'
 				}
 				active={false}
 			>
@@ -120,6 +120,7 @@ export default function Client({ guild, channels }: ClientProps) {
 								success: 'Saved.',
 								error: () => {
 									router.refresh();
+									setSelectedChannelID(undefined);
 									return 'Failed to save.';
 								},
 							}
@@ -144,13 +145,7 @@ export default function Client({ guild, channels }: ClientProps) {
 					</SelectTrigger>
 					<SelectContent>
 						{channels.map(channel => (
-							<SelectItem
-								key={channel.id}
-								onClick={() => {
-									console.log(channel);
-								}}
-								value={channel.id}
-							>
+							<SelectItem key={channel.id} value={channel.id}>
 								<FaHashtag className='inline-block mr-2' />
 								{channel.name}
 							</SelectItem>
