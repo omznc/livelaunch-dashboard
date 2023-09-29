@@ -169,7 +169,7 @@ export default function Client({ guild, channels }: ClientProps) {
 				description={'Show the Flight Club button in embeds.'}
 				active={settings.notification_button_fc}
 				image={
-					'https://cdn.discordapp.com/emojis/972885637436964946.webp'
+					'https://juststephen.com/LiveLaunch/button_logo/FlightClub.png'
 				}
 			>
 				<Switch
@@ -192,7 +192,7 @@ export default function Client({ guild, channels }: ClientProps) {
 				description={'Show the Go4Liftoff button in embeds.'}
 				active={settings.notification_button_g4l}
 				image={
-					'https://cdn.discordapp.com/emojis/970384895593562192.webp'
+					'https://juststephen.com/LiveLaunch/button_logo/Go4Liftoff.png'
 				}
 			>
 				<Switch
@@ -215,7 +215,7 @@ export default function Client({ guild, channels }: ClientProps) {
 				description={'Show the Space Launch Now button in embeds.'}
 				active={settings.notification_button_sln}
 				image={
-					'https://cdn.discordapp.com/emojis/970384894985379960.webp?size=56&quality=lossless'
+					'https://juststephen.com/LiveLaunch/button_logo/SpaceLaunchNow.png'
 				}
 			>
 				<Switch
