@@ -25,6 +25,7 @@ import { Input } from '@components/ui/input';
 import { useDebounce } from '@lib/hooks';
 import { Button } from '@components/ui/button';
 import { useRouter } from 'next/navigation';
+import { BiSolidMegaphone } from 'react-icons/bi';
 
 interface ClientProps {
 	guild: enabled_guilds;
@@ -133,7 +134,11 @@ export default function Client({ guild, channels }: ClientProps) {
 							if (chan) {
 								return (
 									<span>
-										<FaHashtag className='inline-block mr-2' />
+										{chan.type === 0 ? (
+											<FaHashtag className='inline-block mr-2' />
+										) : (
+											<BiSolidMegaphone className='inline-block mr-2' />
+										)}
 										{chan.name}
 									</span>
 								);
@@ -144,7 +149,11 @@ export default function Client({ guild, channels }: ClientProps) {
 					<SelectContent>
 						{channels.map(channel => (
 							<SelectItem key={channel.id} value={channel.id}>
-								<FaHashtag className='inline-block mr-2' />
+								{channel.type === 0 ? (
+									<FaHashtag className='inline-block mr-2' />
+								) : (
+									<BiSolidMegaphone className='inline-block mr-2' />
+								)}
 								{channel.name}
 							</SelectItem>
 						))}
@@ -252,7 +261,9 @@ export default function Client({ guild, channels }: ClientProps) {
 				active={false}
 			>
 				<div className='grid max-w-sm items-center gap-1.5'>
-					<Label htmlFor='events'>Events (0-50)</Label>
+					<Label htmlFor='events' className='whitespace-nowrap'>
+						Events (0-50)
+					</Label>
 					<Input
 						type='number'
 						id='events'

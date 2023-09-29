@@ -34,6 +34,7 @@ import toast from 'react-hot-toast';
 import { FaHashtag } from 'react-icons/fa';
 import { Button } from '@components/ui/button';
 import { useRouter } from 'next/navigation';
+import { BiSolidMegaphone } from 'react-icons/bi';
 
 interface ClientProps {
 	newsSites: news_sites[];
@@ -163,7 +164,11 @@ export default function Client({
 							if (chan) {
 								return (
 									<span>
-										<FaHashtag className='inline-block mr-2' />
+										{chan.type === 0 ? (
+											<FaHashtag className='inline-block mr-2' />
+										) : (
+											<BiSolidMegaphone className='inline-block mr-2' />
+										)}
 										{chan.name}
 									</span>
 								);
@@ -179,7 +184,11 @@ export default function Client({
 					>
 						{channels.map(channel => (
 							<SelectItem key={channel.id} value={channel.id}>
-								<FaHashtag className='inline-block mr-2' />
+								{channel.type === 0 ? (
+									<FaHashtag className='inline-block mr-2' />
+								) : (
+									<BiSolidMegaphone className='inline-block mr-2' />
+								)}
 								{channel.name}
 							</SelectItem>
 						))}

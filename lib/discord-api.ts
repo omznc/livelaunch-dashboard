@@ -13,6 +13,7 @@ import { Logger } from 'next-axiom';
 
 const rest = new REST({ version: '10' }).setToken(env.DISCORD_BOT_TOKEN);
 const log = new Logger();
+
 /**
  * Gets the channels the bot can send messages in
  */
@@ -37,9 +38,11 @@ export const getGuildChannels = async (guildId: string) => {
 		return [];
 	}
 
-	return resp.filter(
-		channel => channel.type === 0 || channel.type === 5
-	) as RESTGetAPIGuildChannelsResult;
+	return resp
+		.filter(channel => channel.type === 0 || channel.type === 5)
+		.sort(
+			(a, b) => a.position - b.position
+		) as RESTGetAPIGuildChannelsResult;
 };
 
 /**
