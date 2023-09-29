@@ -25,7 +25,11 @@ const nextConfig = {
 	// },
 	// unoptimized: true,
 	images: {
-		unoptimized: true,
+		domains: [
+			'juststephen.com',
+			'cdn.discordapp.com',
+			'avatars.githubusercontent.com',
+		],
 	},
 	swcMinify: true,
 	// webpack: (config, { dev, isServer }) => {
