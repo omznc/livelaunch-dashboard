@@ -1,6 +1,7 @@
 import prisma from '@lib/prisma';
 import { unstable_cache as cache } from 'next/dist/server/web/spec-extension/unstable-cache';
 import Client from '@app/(dashboard)/agencies/client';
+import { isAuthorized } from '@lib/server-utils';
 
 export default async function Agencies({
 	searchParams,
@@ -11,6 +12,11 @@ export default async function Agencies({
 }) {
 	const guildId = searchParams?.g;
 	if (!guildId) return null;
+
+	const authorized = await isAuthorized(guildId);
+	if (!authorized) {
+		return null;
+	}
 
 	const agencies = await cache(
 		async () => prisma.ll2_agencies.findMany(),

@@ -1,6 +1,7 @@
 import prisma from '@lib/prisma';
 import Client from './client';
 import { getGuildChannels } from '@lib/discord-api';
+import { isAuthorized } from '@lib/server-utils';
 
 export default async function Agencies({
 	searchParams,
@@ -11,6 +12,11 @@ export default async function Agencies({
 }) {
 	const guildId = searchParams?.g;
 	if (!guildId) return null;
+
+	const authorized = await isAuthorized(guildId);
+	if (!authorized) {
+		return null;
+	}
 
 	const guild = await prisma.enabled_guilds.findFirst({
 		where: {

@@ -2,6 +2,7 @@ import prisma from '@lib/prisma';
 import { unstable_cache as cache } from 'next/cache';
 import Client from '@app/(dashboard)/news/client';
 import { getGuildChannels } from '@lib/discord-api';
+import { isAuthorized } from '@lib/server-utils';
 
 export default async function NewsSites({
 	searchParams,
@@ -12,6 +13,11 @@ export default async function NewsSites({
 }) {
 	const guildId = searchParams?.g;
 	if (!guildId) return null;
+
+	const authorized = await isAuthorized(guildId);
+	if (!authorized) {
+		return null;
+	}
 
 	const guild = await prisma.enabled_guilds.findFirst({
 		where: {
