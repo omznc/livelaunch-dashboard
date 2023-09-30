@@ -4,6 +4,7 @@ import { revalidatePath, revalidateTag } from 'next/cache';
 import { authOptions } from '@app/api/auth/[...nextauth]/route';
 import { getServerSession } from 'next-auth';
 import prisma from '@lib/prisma';
+import { isAuthorized } from '@lib/server-utils';
 
 export const revalidateGuilds = async () => {
 	const session = await getServerSession(authOptions);
@@ -19,8 +20,8 @@ export const revalidateAll = async () => {
 };
 
 export const getGuild = async (id: string) => {
-	const session = await getServerSession(authOptions);
-	if (!session?.user) return;
+	const authorized = await isAuthorized(id);
+	if (!authorized) return;
 
 	return prisma.enabled_guilds.findFirst({
 		where: {
@@ -30,8 +31,8 @@ export const getGuild = async (id: string) => {
 };
 
 export const enableGuild = async (id: string) => {
-	const session = await getServerSession(authOptions);
-	if (!session?.user) return;
+	const authorized = await isAuthorized(id);
+	if (!authorized) return;
 
 	await prisma.enabled_guilds.upsert({
 		where: {

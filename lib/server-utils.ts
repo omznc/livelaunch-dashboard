@@ -1,4 +1,4 @@
-'use server';
+import 'server-only';
 
 import { getUserGuilds } from '@lib/discord-api';
 
