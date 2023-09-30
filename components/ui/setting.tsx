@@ -21,6 +21,7 @@ interface SettingProps {
 	image?: string;
 	className?: string;
 	disabled?: boolean;
+	disabledMessage?: string;
 }
 
 export function Setting({
@@ -31,6 +32,7 @@ export function Setting({
 	image,
 	className,
 	disabled,
+	disabledMessage,
 }: SettingProps) {
 	return (
 		<div
@@ -46,7 +48,7 @@ export function Setting({
 			{disabled && (
 				<div className='z-10 absolute w-full h-full flex filter items-center justify-center rounded-md -ml-4 backdrop-blur-sm bg-opacity-10 border-none'>
 					<p className='text-sm absolute font-semibold select-none'>
-						This setting is disabled
+						{disabledMessage ?? 'This setting is disabled.'}
 					</p>
 				</div>
 			)}

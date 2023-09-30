@@ -91,6 +91,7 @@ export default function Client({
 				}
 				active={settings.whitelist}
 				disabled
+				disabledMessage={'Coming soon to a dashboard near you!'}
 			>
 				<Tabs
 					defaultValue={
