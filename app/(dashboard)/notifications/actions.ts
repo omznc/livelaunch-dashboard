@@ -73,6 +73,15 @@ export const addCountdown = async (
 		throw new Error('Invalid minutes');
 	}
 
+	if (settings.days + settings.hours + settings.minutes === 0) {
+		log.error('Invalid time', {
+			guildId,
+			settings,
+		});
+		await log.flush();
+		throw new Error('Invalid time');
+	}
+
 	const current = await prisma.notification_countdown.count({
 		where: {
 			guild_id: BigInt(guildId),
