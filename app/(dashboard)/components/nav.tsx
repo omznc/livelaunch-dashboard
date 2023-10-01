@@ -3,9 +3,8 @@
 import { cn } from '@/lib/utils';
 import RetainQueryLink from '@components/retain-query-link';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { enabled_guilds } from '@prisma/client';
 import * as React from 'react';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { enableGuild, getGuild } from '@app/(dashboard)/actions';
 import {
 	Dialog,
@@ -25,6 +24,7 @@ import {
 import { Button, buttonVariants } from '@components/ui/button';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
+import { GuildsResponse } from '@app/(dashboard)/layout';
 
 const links = [
 	{
@@ -53,23 +53,20 @@ const links = [
 	},
 ];
 
-interface NavProps extends React.HTMLAttributes<HTMLElement> {}
+interface NavProps extends React.HTMLAttributes<HTMLElement> {
+	guilds?: GuildsResponse[];
+}
 
-export function Nav({ className, ...props }: NavProps) {
+export function Nav({ className, guilds, ...props }: NavProps) {
 	const path = usePathname();
 	const params = useSearchParams();
 	const guildId = params.get('g') ?? '';
-	const [guild, setGuild] = useState<enabled_guilds | null | undefined>(null);
-	const [mounted, setMounted] = useState(false);
 	const [showHelpDialog, setShowHelpDialog] = useState(false);
 
-	useEffect(() => {
-		if (!mounted) {
-			setMounted(true);
-			return;
-		}
-		getGuild(guildId).then(value => setGuild(value));
-	}, [guildId, mounted]);
+	const guild = useMemo(() => {
+		if (!guilds) return null;
+		return guilds.find(guild => guild.id === guildId);
+	}, [guildId, guilds]);
 
 	return (
 		<>

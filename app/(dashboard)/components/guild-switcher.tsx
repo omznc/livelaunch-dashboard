@@ -135,19 +135,9 @@ export default function GuildSwitcher({
 												onSelect={async () => {
 													if (guild.botAccess) {
 														setOpen(false);
-														startTransition(() => {
-															const currentURL =
-																new URL(
-																	window.location.href
-																);
-															currentURL.searchParams.set(
-																'g',
-																guild.id
-															);
-
-															window.location.href =
-																currentURL.href;
-														});
+														router.push(
+															`?g=${guild.id}`
+														);
 													} else {
 														setShowNewGuildDialog(
 															true

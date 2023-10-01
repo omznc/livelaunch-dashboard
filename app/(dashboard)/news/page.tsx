@@ -51,6 +51,7 @@ export default async function NewsSites({
 			enabledNewsSites={enabledNewsSites}
 			guild={guild}
 			channels={channels}
+			key={guildId}
 		/>
 	);
 }

@@ -46,6 +46,7 @@ export default async function Agencies({
 			agencies={agencies}
 			enabledAgencies={enabledAgencies}
 			guild={guild}
+			key={guildId}
 		/>
 	);
 }

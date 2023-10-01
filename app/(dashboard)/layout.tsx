@@ -46,7 +46,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
 					<div className='hidden flex-row w-full justify-between border-b md:flex'>
 						<div className='flex h-16 items-center px-4'>
 							<GuildSwitcher guilds={guilds} />
-							<Nav className='mx-6' />
+							<Nav className='mx-6' guilds={guilds} />
 						</div>
 						<div className='flex h-16 items-center gap-4 px-4'>
 							<ThemeToggle />
@@ -63,7 +63,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
 								<User />
 							</div>
 						</div>
-						<Nav className='mx-6' />
+						<Nav className='mx-6' guilds={guilds} />
 					</div>
 				</div>
 				<div className='w-full flex p-8 justify-center'>

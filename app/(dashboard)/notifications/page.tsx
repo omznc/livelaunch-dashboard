@@ -35,5 +35,12 @@ export default async function Agencies({
 		getGuildChannels(guildId),
 	]);
 
-	return <Client guild={guild} countdowns={countdowns} channels={channels} />;
+	return (
+		<Client
+			guild={guild}
+			countdowns={countdowns}
+			channels={channels}
+			key={guildId}
+		/>
+	);
 }

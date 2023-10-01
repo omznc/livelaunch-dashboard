@@ -28,5 +28,5 @@ export default async function Agencies({
 
 	const channels = await getGuildChannels(guildId);
 
-	return <Client guild={guild} channels={channels} />;
+	return <Client guild={guild} channels={channels} key={guildId} />;
 }
