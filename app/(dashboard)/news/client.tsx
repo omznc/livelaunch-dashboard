@@ -254,10 +254,14 @@ export default function Client({
 										onClick={e => {
 											e.preventDefault();
 											e.stopPropagation();
+											const checkbox =
+												e.currentTarget as HTMLInputElement;
+											checkbox.checked =
+												!checkbox.checked;
 											setSelectedNewsSites(prev =>
 												prev.map(p => ({
 													...p,
-													selected: !p.selected,
+													selected: checkbox.checked,
 												}))
 											);
 										}}
