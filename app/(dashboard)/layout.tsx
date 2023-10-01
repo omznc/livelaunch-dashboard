@@ -11,15 +11,22 @@ import { ReactNode } from 'react';
 import { getBotGuilds, getUserGuilds } from '@lib/discord-api';
 import Link from 'next/link';
 import env from '@env';
+import prisma from '@lib/prisma';
 
 export default async function Layout({ children }: { children: ReactNode }) {
 	const session = await getServerSession(authOptions);
-
 	if (!session?.user) {
 		return redirect('/login');
 	}
 
 	const guilds = await filterGuilds();
+	const enabledGuilds = await prisma.enabled_guilds.findMany({
+		where: {
+			guild_id: {
+				in: guilds.map(guild => BigInt(guild.id)),
+			},
+		},
+	});
 
 	return (
 		<AuthProvider session={session}>
@@ -46,7 +53,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
 					<div className='hidden flex-row w-full justify-between border-b md:flex'>
 						<div className='flex h-16 items-center px-4'>
 							<GuildSwitcher guilds={guilds} />
-							<Nav className='mx-6' guilds={guilds} />
+							<Nav className='mx-6' guilds={enabledGuilds} />
 						</div>
 						<div className='flex h-16 items-center gap-4 px-4'>
 							<ThemeToggle />
@@ -63,7 +70,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
 								<User />
 							</div>
 						</div>
-						<Nav className='mx-6' guilds={guilds} />
+						<Nav className='mx-6' guilds={enabledGuilds} />
 					</div>
 				</div>
 				<div className='w-full flex p-8 justify-center'>

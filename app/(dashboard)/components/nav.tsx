@@ -24,7 +24,7 @@ import {
 import { Button, buttonVariants } from '@components/ui/button';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
-import { GuildsResponse } from '@app/(dashboard)/layout';
+import { enabled_guilds } from '@prisma/client';
 
 const links = [
 	{
@@ -54,7 +54,7 @@ const links = [
 ];
 
 interface NavProps extends React.HTMLAttributes<HTMLElement> {
-	guilds?: GuildsResponse[];
+	guilds?: enabled_guilds[];
 }
 
 export function Nav({ className, guilds, ...props }: NavProps) {
@@ -65,7 +65,7 @@ export function Nav({ className, guilds, ...props }: NavProps) {
 
 	const guild = useMemo(() => {
 		if (!guilds) return null;
-		return guilds.find(guild => guild.id === guildId);
+		return guilds.find(guild => guild.guild_id.toString() === guildId);
 	}, [guildId, guilds]);
 
 	return (
