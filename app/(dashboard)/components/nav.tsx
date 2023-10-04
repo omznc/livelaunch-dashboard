@@ -159,6 +159,11 @@ export function Nav({ className, guilds, ...props }: NavProps) {
 								</AccordionContent>
 							</AccordionItem>
 						</Accordion>
+						<DialogDescription>
+							{`Note: if you use 'Enable Automatically' you will
+								still need to enable at least one feature, otherwise
+								the bot will disable itself after a while.`}
+						</DialogDescription>
 					</DialogBody>
 					<DialogFooter>
 						<Button
@@ -174,6 +179,7 @@ export function Nav({ className, guilds, ...props }: NavProps) {
 									loading: 'Enabling...',
 									success: () => {
 										router.refresh();
+										setShowHelpDialog(false);
 										return 'Enabled!';
 									},
 									error: 'Failed to enable.',

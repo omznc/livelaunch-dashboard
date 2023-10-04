@@ -21,7 +21,9 @@ export const revalidateAll = async () => {
 
 export const getGuild = async (id: string) => {
 	const authorized = await isAuthorized(id);
-	if (!authorized) return;
+	if (!authorized) {
+		throw new Error('Unauthorized');
+	}
 
 	return prisma.enabled_guilds.findFirst({
 		where: {
@@ -32,7 +34,9 @@ export const getGuild = async (id: string) => {
 
 export const enableGuild = async (id: string) => {
 	const authorized = await isAuthorized(id);
-	if (!authorized) return;
+	if (!authorized) {
+		throw new Error('Unauthorized');
+	}
 
 	await prisma.enabled_guilds.upsert({
 		where: {
