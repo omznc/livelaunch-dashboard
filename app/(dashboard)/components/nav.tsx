@@ -2,7 +2,7 @@
 
 import { cn } from '@/lib/utils';
 import RetainQueryLink from '@components/retain-query-link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import * as React from 'react';
 import { useMemo, useState } from 'react';
 import { enableGuild, getGuild } from '@app/(dashboard)/actions';
@@ -62,6 +62,7 @@ export function Nav({ className, guilds, ...props }: NavProps) {
 	const params = useSearchParams();
 	const guildId = params.get('g') ?? '';
 	const [showHelpDialog, setShowHelpDialog] = useState(false);
+	const router = useRouter();
 
 	const guild = useMemo(() => {
 		if (!guilds) return null;
@@ -172,7 +173,7 @@ export function Nav({ className, guilds, ...props }: NavProps) {
 								toast.promise(enableGuild(String(guildId)), {
 									loading: 'Enabling...',
 									success: () => {
-										window.location.reload();
+										router.refresh();
 										return 'Enabled!';
 									},
 									error: 'Failed to enable.',
