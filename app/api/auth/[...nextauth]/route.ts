@@ -78,7 +78,7 @@ const refreshDiscordToken = async (account: Account) => {
 				id: account.id,
 			},
 		});
-		return null;
+		return undefined;
 	}
 	return await prisma.account.update({
 		where: {
