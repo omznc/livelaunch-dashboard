@@ -37,8 +37,8 @@ export const authOptions: AuthOptions = {
 				}
 			}
 			if (!session.account || !session.user) {
-				session.account = null;
-				session.user = null;
+				session.account = undefined;
+				session.user = undefined;
 			}
 			return session;
 		},
