@@ -64,7 +64,7 @@ const refreshDiscordToken = async (account: Account) => {
 			client_id: env.NEXT_PUBLIC_DISCORD_CLIENT_ID,
 			client_secret: env.DISCORD_CLIENT_SECRET,
 			grant_type: 'refresh_token',
-			refresh_token: account.refresh_token,
+			refresh_token: account.refresh_token || '',
 		}),
 	});
 	const data = await response.json();
