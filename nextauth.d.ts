@@ -7,8 +7,8 @@ declare module 'next-auth' {
 	interface User extends IUser {}
 
 	interface Session {
-		user?: User;
-		account?: Account;
+		user: User | null | undefined;
+		account: Account | null | undefined;
 	}
 
 	interface Profile {

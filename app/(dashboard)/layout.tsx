@@ -15,7 +15,7 @@ import prisma from '@lib/prisma';
 
 export default async function Layout({ children }: { children: ReactNode }) {
 	const session = await getServerSession(authOptions);
-	if (!session?.user) {
+	if (!session?.user || !session?.account) {
 		return redirect('/login');
 	}
 
