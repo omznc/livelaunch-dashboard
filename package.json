@@ -36,7 +36,7 @@
     "cmdk": "^0.2.0",
     "discord.js": "^14.13.0",
     "eslint": "8.50.0",
-    "eslint-config-next": "13.5.4",
+    "eslint-config-next": "13.5.5",
     "lucide-react": "^0.284.0",
     "next": "13.5.4",
     "next-auth": "^4.23.2",
