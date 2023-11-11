@@ -90,8 +90,6 @@ export default function Client({
 					"When on 'Exclude' mode, all agencies will be shown except for the ones you select. When on 'Include' mode, only the agencies you select will be shown."
 				}
 				active={settings.whitelist}
-				disabled
-				disabledMessage={'Coming soon to a dashboard near you!'}
 			>
 				<Tabs
 					defaultValue={

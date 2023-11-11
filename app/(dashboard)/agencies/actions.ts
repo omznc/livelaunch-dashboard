@@ -18,6 +18,7 @@ export const SetAgencies = async (agencies: Agency[], guildId: string) => {
 			where: {
 				guild_id: BigInt(guildId),
 				agency_id: {
+					// @ts-ignore
 					in: agencies.filter(a => !a.selected).map(a => a.agency_id),
 				},
 			},
