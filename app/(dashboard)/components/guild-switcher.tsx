@@ -230,7 +230,7 @@ export default function GuildSwitcher({
 								}}
 							>
 								{revalidating ? (
-									<BiRefresh className='animate-spin h-5 w-5' />
+									<BiRefresh className='animate-spin-reverse h-5 w-5' />
 								) : (
 									'Refresh'
 								)}
