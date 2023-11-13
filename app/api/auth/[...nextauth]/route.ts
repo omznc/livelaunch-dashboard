@@ -30,7 +30,7 @@ export const authOptions: AuthOptions = {
 						userId: session.user.id,
 					},
 				});
-				if (account?.expires_at && account?.expires_at < Date.now()) {
+				if (account?.expires_at && account?.expires_at >= Date.now()) {
 					session.account = await refreshDiscordToken(account);
 				} else {
 					session.account = account;
