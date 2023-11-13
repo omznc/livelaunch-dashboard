@@ -12,6 +12,7 @@ import {
 } from '@components/ui/tooltip';
 import { useHash } from '@lib/hooks';
 import { FaCopy } from 'react-icons/fa6';
+import { useRouter } from 'next/navigation';
 
 interface SettingProps {
 	label: string;
@@ -90,15 +91,17 @@ interface SettingGroupProps {
 export function SettingGroup({ title, children }: SettingGroupProps) {
 	const id = title.toLowerCase().replaceAll(' ', '-');
 	const hash = useHash();
+	const router = useRouter();
 
+	console.log(hash);
 	return (
-		<div className='flex flex-col gap-2'>
+		<div className='flex flex-col gap-2' key={hash}>
 			<TooltipProvider>
 				<Tooltip>
 					<TooltipTrigger asChild className={'w-fit'}>
 						<h4
 							className={cn(
-								'group scroll-m-20 w-fit inline-flex cursor-pointer items-center gap-1 text-xl font-semibold tracking-tight',
+								'group scroll-m-20 w-fit inline-flex cursor-pointer items-center gap-1 text-xl tracking-tight',
 								{
 									'font-bold': id === hash.slice(1),
 								}
@@ -116,6 +119,7 @@ export function SettingGroup({ title, children }: SettingGroupProps) {
 											'Failed to copy to clipboard!'
 										);
 									});
+								window.location.hash = id;
 							}}
 						>
 							<FaHashtag

@@ -27,7 +27,11 @@ export const useHash = () => {
 			setMounted(true);
 			return;
 		}
-		const handler = () => setHash(window.location.hash);
+		const handler = () => {
+			setHash(window.location.hash);
+		};
+		handler();
+
 		window.addEventListener('hashchange', handler);
 		return () => window.removeEventListener('hashchange', handler);
 	}, [mounted]);

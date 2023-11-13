@@ -70,8 +70,6 @@ export default function Client({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [debounced]);
 
-	const hash = useHash();
-
 	const filtered = selectedAgencies
 		.filter(a => a.name?.toLowerCase().includes(searchQuery.toLowerCase()))
 		.sort((a, b) => {
