@@ -2,7 +2,7 @@
 
 import * as React from 'react';
 import { useEffect, useTransition } from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar';
 import { Button, buttonVariants } from '@components/ui/button';
 import {

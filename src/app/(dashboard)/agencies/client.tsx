@@ -13,7 +13,7 @@ import {
 	TableHead,
 	TableHeader,
 	TableRow,
-} from '@/components/ui/table';
+} from '@components/ui/table';
 import { Checkbox } from '@components/ui/checkbox';
 import { useDebounce, useHash } from '@lib/hooks';
 import { cn } from '@lib/utils';

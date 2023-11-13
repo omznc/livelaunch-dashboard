@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from '@/lib/utils';
+import { cn } from '@lib/utils';
 import RetainQueryLink from '@components/retain-query-link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import * as React from 'react';
