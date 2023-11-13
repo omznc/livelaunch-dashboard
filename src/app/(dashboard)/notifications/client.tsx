@@ -141,7 +141,6 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 								loading: 'Saving...',
 								success: 'Saved.',
 								error: () => {
-									router.refresh();
 									setSelectedChannelID(undefined);
 									return 'Failed to save.';
 								},

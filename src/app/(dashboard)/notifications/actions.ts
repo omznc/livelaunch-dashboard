@@ -107,7 +107,7 @@ export const addCountdown = async (
 		},
 	});
 
-	revalidatePath('/notifications');
+	revalidatePath(`/notifications?g=${guildId}`);
 };
 
 export const removeCountdown = async (
@@ -128,7 +128,7 @@ export const removeCountdown = async (
 		},
 	});
 
-	revalidatePath('/notifications');
+	revalidatePath(`/notifications?g=${guildId}`);
 };
 
 export const updateChannel = async (
@@ -177,11 +177,12 @@ export const updateChannel = async (
 				});
 				await rest.delete(Routes.webhook(newWebhookURL.split('/')[5]));
 
-				revalidatePath('/notifications');
+				revalidatePath(`/notifications?g=${guildId}`);
+
 				throw e;
 			});
 	} else {
-		revalidatePath('/notifications');
+		revalidatePath(`/notifications?g=${guildId}`);
 	}
 };
 
@@ -220,5 +221,5 @@ export const disableFeature = async (guildId: string): Promise<void> => {
 		},
 	});
 
-	revalidatePath('/notifications');
+	revalidatePath(`/notifications?g=${guildId}`);
 };

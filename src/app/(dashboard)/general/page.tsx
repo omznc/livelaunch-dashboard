@@ -2,6 +2,7 @@ import prisma from '@lib/prisma';
 import Client from './client';
 import { getGuildChannels } from '@lib/discord-api';
 import { isAuthorized } from '@lib/server-utils';
+import NotEnabled from '@app/(dashboard)/components/not-enabled';
 
 export default async function Agencies({
 	searchParams,
@@ -24,7 +25,7 @@ export default async function Agencies({
 		},
 	});
 
-	if (!guild) return null;
+	if (!guild) return <NotEnabled />;
 
 	const channels = await getGuildChannels(guildId);
 

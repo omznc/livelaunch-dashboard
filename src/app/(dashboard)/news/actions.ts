@@ -77,11 +77,11 @@ export const updateChannel = async (
 				});
 				await rest.delete(Routes.webhook(newWebhookURL.split('/')[5]));
 
-				revalidatePath('/news');
+				revalidatePath(`/news?g=${guildId}`);
 				throw e;
 			});
 	} else {
-		revalidatePath('/news');
+		revalidatePath(`/news?g=${guildId}`);
 	}
 };
 
@@ -118,7 +118,7 @@ export const disableFeature = async (guildId: string): Promise<void> => {
 		},
 	});
 
-	revalidatePath('/news');
+	revalidatePath(`/news?g=${guildId}`);
 };
 
 export const setNewsSites = async (newsSites: NewsSite[], guildId: string) => {

@@ -3,6 +3,7 @@ import { unstable_cache as cache } from 'next/cache';
 import Client from '@app/(dashboard)/news/client';
 import { getGuildChannels } from '@lib/discord-api';
 import { isAuthorized } from '@lib/server-utils';
+import NotEnabled from '@app/(dashboard)/components/not-enabled';
 
 export default async function NewsSites({
 	searchParams,
@@ -25,7 +26,7 @@ export default async function NewsSites({
 		},
 	});
 
-	if (!guild) return null;
+	if (!guild) return <NotEnabled />;
 
 	const newsSites = await cache(
 		async () => prisma.news_sites.findMany(),

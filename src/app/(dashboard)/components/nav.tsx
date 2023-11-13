@@ -4,7 +4,7 @@ import { cn } from '@lib/utils';
 import RetainQueryLink from '@components/retain-query-link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import * as React from 'react';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { enableGuild } from '@app/(dashboard)/actions';
 import {
 	Dialog,
@@ -68,6 +68,18 @@ export function Nav({ className, guilds, ...props }: NavProps) {
 		if (!guilds) return null;
 		return guilds.find(guild => guild.guild_id.toString() === guildId);
 	}, [guildId, guilds]);
+
+	useEffect(() => {
+		const handleShowHelpDialog = (e: Event) => {
+			e.stopImmediatePropagation();
+			setShowHelpDialog(true);
+		};
+
+		window.addEventListener('showHelpDialog', handleShowHelpDialog);
+		return () => {
+			window.removeEventListener('showHelpDialog', handleShowHelpDialog);
+		};
+	}, []);
 
 	return (
 		<>

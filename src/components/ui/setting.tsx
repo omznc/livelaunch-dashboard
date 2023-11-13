@@ -41,14 +41,15 @@ export function Setting({
 				{
 					'bg-muted/30': active,
 					'space-x-2': !disabled,
+					'cursor-not-allowed': disabled,
 				},
 				className
 			)}
 		>
 			{disabled && (
-				<div className='z-10 -mt-4 md:mt-0 md:-ml-2 absolute w-full h-full flex filter items-center justify-center rounded-md backdrop-blur-sm bg-opacity-10 border-none'>
+				<div className='z-10 -mt-4 md:mt-0 md:-translate-x-4 absolute w-full h-full flex filter items-center justify-center rounded-md backdrop-blur-sm bg-opacity-10 border-none'>
 					<p className='text-sm absolute font-semibold text-center select-none'>
-						{disabledMessage ?? 'This setting is disabled.'}
+						{disabledMessage ?? 'This setting is disabled'}
 					</p>
 				</div>
 			)}

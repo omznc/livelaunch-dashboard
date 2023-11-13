@@ -77,11 +77,11 @@ export const updateChannel = async (
 				});
 				await rest.delete(Routes.webhook(newWebhookURL.split('/')[5]));
 
-				revalidatePath('/general');
+				revalidatePath(`/general?g=${guildId}`);
 				throw e;
 			});
 	} else {
-		revalidatePath('/general');
+		revalidatePath(`/general?g=${guildId}`);
 	}
 };
 
@@ -105,7 +105,7 @@ export const updateNumberOfEvents = async (
 		},
 	});
 
-	revalidatePath('/general');
+	revalidatePath(`/general?g=${guildId}`);
 };
 
 export const disableFeature = async (guildId: string): Promise<void> => {
@@ -141,5 +141,5 @@ export const disableFeature = async (guildId: string): Promise<void> => {
 		},
 	});
 
-	revalidatePath('/general');
+	revalidatePath(`/general?g=${guildId}`);
 };
