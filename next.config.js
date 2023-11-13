@@ -1,5 +1,7 @@
 /** @type {import('next').NextConfig} */
 const { withAxiom } = require('next-axiom');
+const million = require('million/compiler');
+
 const nextConfig = {
 	experimental: {},
 	output: 'standalone',
@@ -23,4 +25,4 @@ const nextConfig = {
 	swcMinify: true,
 };
 
-module.exports = withAxiom(nextConfig);
+module.exports = million.next(withAxiom(nextConfig), { auto: { rsc: true } });

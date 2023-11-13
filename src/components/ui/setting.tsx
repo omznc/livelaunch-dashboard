@@ -37,40 +37,47 @@ export function Setting({
 	return (
 		<div
 			className={cn(
-				`relative flex md:flex-row flex-col md:gap-0 gap-4 border rounded-md items-center transition-all justify-between p-4`,
+				`relative w-full flex justify-center items-center border rounded-md justify-center transition-all p-4`,
 				{
 					'bg-muted/30': active,
-					'space-x-2': !disabled,
-					'cursor-not-allowed': disabled,
+					'space-x-2 overflow-auto': !disabled,
+					'cursor-not-allowed overflow-hidden': disabled,
 				},
 				className
 			)}
 		>
 			{disabled && (
-				<div className='z-10 -mt-4 md:mt-0 md:-translate-x-4 absolute w-full h-full flex filter items-center justify-center rounded-md backdrop-blur-sm bg-opacity-10 border-none'>
-					<p className='text-sm absolute font-semibold text-center select-none'>
-						{disabledMessage ?? 'This setting is disabled'}
-					</p>
-				</div>
+				<p className='text-sm absolute font-semibold text-center select-none'>
+					{disabledMessage ?? 'This setting is disabled'}
+				</p>
 			)}
-			<div className={cn('flex h-full transition-all w-full gap-4')}>
-				{image && (
-					<Image
-						src={image}
-						alt={label}
-						width={42}
-						height={42}
-						className='rounded-full h-full max-h-[42px] w-auto bg-black'
-					/>
+			<div
+				className={cn(
+					'flex w-full md:flex-row flex-col md:gap-0 gap-4 rounded-md items-center transition-all justify-between',
+					{
+						'blur-sm': disabled,
+					}
 				)}
-				<div className='flex flex-col gap-2'>
-					<Label>{label}</Label>
-					<p className='text-sm select-none opacity-50'>
-						{description}
-					</p>
+			>
+				<div className={cn('flex h-full transition-all w-full gap-4')}>
+					{image && (
+						<Image
+							src={image}
+							alt={label}
+							width={42}
+							height={42}
+							className='rounded-full h-full max-h-[42px] w-auto bg-black'
+						/>
+					)}
+					<div className='flex flex-col gap-2'>
+						<Label>{label}</Label>
+						<p className='text-sm select-none opacity-50'>
+							{description}
+						</p>
+					</div>
 				</div>
+				{children}
 			</div>
-			{children}
 		</div>
 	);
 }
