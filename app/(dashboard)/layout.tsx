@@ -1,5 +1,4 @@
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@app/api/auth/[...nextauth]/route';
 import AuthProvider from '@components/auth-provider';
 import { redirect } from 'next/navigation';
 import GuildSwitcher from '@app/(dashboard)/components/guild-switcher';
@@ -12,6 +11,7 @@ import { getBotGuilds, getUserGuilds } from '@lib/discord-api';
 import Link from 'next/link';
 import env from '@env';
 import prisma from '@lib/prisma';
+import authOptions from '@app/api/auth/[...nextauth]/authOptions';
 
 export default async function Layout({ children }: { children: ReactNode }) {
 	const session = await getServerSession(authOptions);

@@ -1,7 +1,6 @@
 import 'server-only';
 
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@app/api/auth/[...nextauth]/route';
 import {
 	RESTAPIPartialCurrentUserGuild,
 	RESTGetAPIGuildChannelsResult,
@@ -12,6 +11,7 @@ import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v10';
 import avatar from '@public/LiveLaunch_Webhook_Avatar.png';
 import { Logger } from 'next-axiom';
+import authOptions from '@app/api/auth/[...nextauth]/authOptions';
 
 const rest = new REST({ version: '10' }).setToken(env.DISCORD_BOT_TOKEN);
 const log = new Logger();

@@ -5,7 +5,7 @@ import RetainQueryLink from '@components/retain-query-link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import * as React from 'react';
 import { useMemo, useState } from 'react';
-import { enableGuild, getGuild } from '@app/(dashboard)/actions';
+import { enableGuild } from '@app/(dashboard)/actions';
 import {
 	Dialog,
 	DialogContent,

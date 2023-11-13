@@ -2,7 +2,8 @@ import 'server-only';
 
 import { getUserGuilds } from '@lib/discord-api';
 import { getServerSession } from 'next-auth';
-import { authOptions } from '@app/api/auth/[...nextauth]/route';
+
+import authOptions from '@app/api/auth/[...nextauth]/authOptions';
 
 export async function isAuthorized(guildId: string) {
 	const session = await getServerSession(authOptions);

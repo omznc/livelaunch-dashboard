@@ -1,10 +1,10 @@
 'use server';
 
 import { revalidatePath, revalidateTag } from 'next/cache';
-import { authOptions } from '@app/api/auth/[...nextauth]/route';
 import { getServerSession } from 'next-auth';
 import prisma from '@lib/prisma';
 import { isAuthorized } from '@lib/server-utils';
+import authOptions from '@app/api/auth/[...nextauth]/authOptions';
 
 export const revalidateGuilds = async () => {
 	const session = await getServerSession(authOptions);

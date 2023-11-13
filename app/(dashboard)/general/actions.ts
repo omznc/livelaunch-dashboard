@@ -7,8 +7,6 @@ import { Routes } from 'discord-api-types/v10';
 import env from '@env';
 import { createWebhook } from '@lib/discord-api';
 import { revalidatePath } from 'next/cache';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@app/api/auth/[...nextauth]/route';
 import { isAuthorized } from '@lib/server-utils';
 
 const rest = new REST({ version: '9' }).setToken(env.DISCORD_BOT_TOKEN);
