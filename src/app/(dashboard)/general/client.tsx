@@ -42,8 +42,6 @@ export interface GeneralSettings {
 }
 
 export default function Client({ guild, channels }: ClientProps) {
-	const router = useRouter();
-
 	const [settings, setSettings] = useState<GeneralSettings>({
 		notification_button_fc: Boolean(guild.notification_button_fc),
 		notification_button_g4l: Boolean(guild.notification_button_g4l),
@@ -81,6 +79,9 @@ export default function Client({ guild, channels }: ClientProps) {
 				active={false}
 				className='flex flex-col gap-4'
 				disabled={guild.channel_id === null}
+				disabledMessage={
+					"You can't disable this feature if it's not enabled"
+				}
 			>
 				<Button
 					onClick={() => {
@@ -124,6 +125,7 @@ export default function Client({ guild, channels }: ClientProps) {
 							}
 						);
 					}}
+					key={selectedChannelID}
 				>
 					<SelectTrigger className='w-full md:w-fit-content md:max-w-[350px]'>
 						{(() => {
@@ -290,6 +292,7 @@ export default function Client({ guild, channels }: ClientProps) {
 				}
 				active={settings.se_launch}
 				disabled={numberOfEvents === 0}
+				disabledMessage={'You must enable at least 1 event to use this'}
 			>
 				<Switch
 					id={'toggle-se-launch'}
@@ -311,6 +314,7 @@ export default function Client({ guild, channels }: ClientProps) {
 				description={'Will the bot schedule an event for space events?'}
 				active={settings.se_event}
 				disabled={numberOfEvents === 0}
+				disabledMessage={'You must enable at least 1 event to use this'}
 			>
 				<Switch
 					id={'toggle-se-event'}
@@ -334,6 +338,7 @@ export default function Client({ guild, channels }: ClientProps) {
 				}
 				active={settings.se_no_url}
 				disabled={numberOfEvents === 0}
+				disabledMessage={'You must enable at least 1 event to use this'}
 			>
 				<Switch
 					id={'toggle-se-no-url'}

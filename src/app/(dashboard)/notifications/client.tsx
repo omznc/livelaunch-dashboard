@@ -107,6 +107,9 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 				active={false}
 				className='flex flex-col gap-4'
 				disabled={guild.notification_channel_id === null}
+				disabledMessage={
+					"You can't disable this feature if it's not enabled"
+				}
 			>
 				<Button
 					onClick={() => {
@@ -147,6 +150,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 							}
 						);
 					}}
+					key={selectedChannelID}
 				>
 					<SelectTrigger className='w-full md:w-fit-content md:max-w-[350px]'>
 						{(() => {
@@ -190,6 +194,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 				active={false}
 				className='flex flex-col gap-4'
 				disabled={guild.notification_channel_id === null}
+				disabledMessage={'Requires a notification channel to be set'}
 			>
 				<Dialog
 					open={addCountdownDialogOpen}
@@ -383,6 +388,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 				}
 				active={settings.notification_t0_change}
 				disabled={guild.notification_channel_id === null}
+				disabledMessage={'Requires a notification channel to be set'}
 			>
 				<Switch
 					onCheckedChange={checked => {
@@ -404,6 +410,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 				description={'Will the bot send notifications for launches?'}
 				active={settings.notification_launch}
 				disabled={guild.notification_channel_id === null}
+				disabledMessage={'Requires a notification channel to be set'}
 			>
 				<Switch
 					onCheckedChange={checked => {
@@ -427,6 +434,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 				}
 				active={settings.notification_event}
 				disabled={guild.notification_channel_id === null}
+				disabledMessage={'Requires a notification channel to be set'}
 			>
 				<Switch
 					onCheckedChange={checked => {
@@ -456,6 +464,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 				}
 				active={settings.notification_end_status}
 				disabled={guild.notification_channel_id === null}
+				disabledMessage={'Requires a notification channel to be set'}
 			>
 				<Switch
 					onCheckedChange={checked => {
@@ -479,6 +488,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 				}
 				active={settings.notification_hold}
 				disabled={guild.notification_channel_id === null}
+				disabledMessage={'Requires a notification channel to be set'}
 			>
 				<Switch
 					onCheckedChange={checked => {
@@ -502,6 +512,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 				}
 				active={settings.notification_liftoff}
 				disabled={guild.notification_channel_id === null}
+				disabledMessage={'Requires a notification channel to be set'}
 			>
 				<Switch
 					onCheckedChange={checked => {
@@ -525,6 +536,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 				}
 				active={settings.notification_go}
 				disabled={guild.notification_channel_id === null}
+				disabledMessage={'Requires a notification channel to be set'}
 			>
 				<Switch
 					onCheckedChange={checked => {
@@ -548,6 +560,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 				}
 				active={settings.notification_tbc}
 				disabled={guild.notification_channel_id === null}
+				disabledMessage={'Requires a notification channel to be set'}
 			>
 				<Switch
 					onCheckedChange={checked => {
@@ -571,6 +584,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 				}
 				active={settings.notification_tbd}
 				disabled={guild.notification_channel_id === null}
+				disabledMessage={'Requires a notification channel to be set'}
 			>
 				<Switch
 					onCheckedChange={checked => {

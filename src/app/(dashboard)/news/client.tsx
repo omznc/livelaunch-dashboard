@@ -114,6 +114,9 @@ export default function Client({
 				active={false}
 				className='flex flex-col gap-4'
 				disabled={guild.news_channel_id === null}
+				disabledMessage={
+					"You can't disable this feature if it's not enabled"
+				}
 			>
 				<Button
 					onClick={() => {
@@ -155,6 +158,7 @@ export default function Client({
 							}
 						);
 					}}
+					key={selectedChannelID}
 				>
 					<SelectTrigger className='w-full md:w-fit-content md:max-w-[350px]'>
 						{(() => {
@@ -205,6 +209,7 @@ export default function Client({
 				}
 				active={settings.whitelist}
 				disabled={guild.news_channel_id === null}
+				disabledMessage={'Requires a news channel to be set'}
 			>
 				<Tabs
 					defaultValue={
@@ -230,6 +235,12 @@ export default function Client({
 			<SettingGroup title={'Modify News Sites'}>
 				Select the news sites you want to{' '}
 				{settings.whitelist ? 'show' : 'hide'}.
+				{guild.news_channel_id === null && (
+					<span className='font-bold'>
+						{' '}
+						You need to set a news channel to use this feature.
+					</span>
+				)}
 			</SettingGroup>
 			<Input
 				placeholder={'Search...'}

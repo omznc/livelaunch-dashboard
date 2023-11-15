@@ -110,7 +110,7 @@ export function Nav({ className, guilds, ...props }: NavProps) {
 							key={`${href}${label}`}
 							href={href}
 							className={cn(
-								'text-sm font-medium text-center opacity-80 transition-all',
+								'text-sm font-monospace font-medium duration-100 text-center rounded-md opacity-80 transition-all py-4 hover:opacity-90',
 								{
 									'font-bold opacity-100': path === href,
 								}

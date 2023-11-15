@@ -5,7 +5,7 @@ import {
 	ll2_agencies,
 	ll2_agencies_filter,
 } from '@prisma/client';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
 	Table,
 	TableBody,

@@ -56,7 +56,7 @@ export function Setting({
 				className={cn(
 					'flex w-full md:flex-row flex-col md:gap-0 gap-4 rounded-md items-center transition-all justify-between',
 					{
-						'blur-sm': disabled,
+						'blur-sm pointer-events-none select-none': disabled,
 					}
 				)}
 			>
