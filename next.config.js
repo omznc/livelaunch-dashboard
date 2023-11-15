@@ -3,7 +3,11 @@ const { withAxiom } = require('next-axiom');
 const million = require('million/compiler');
 
 const nextConfig = {
-	experimental: {},
+	experimental: {
+		serverActions: {
+			allowedOrigins: ['localhost:3000', 'livelaunch.juststephen.com'],
+		},
+	},
 	output: 'standalone',
 	images: {
 		remotePatterns: [
