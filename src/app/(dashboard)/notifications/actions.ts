@@ -5,23 +5,21 @@ import {
 	CountdownSetting,
 	NotificationsFilterSettings,
 } from '@app/(dashboard)/notifications/client';
-import { Routes } from 'discord-api-types/v10';
+import {Routes} from 'discord-api-types/v10';
 import env from '@env';
-import { REST } from '@discordjs/rest';
-import { createWebhook } from '@lib/discord-api';
-import { revalidatePath } from 'next/cache';
-import { Logger } from 'next-axiom';
+import {REST} from '@discordjs/rest';
+import {createWebhook} from '@lib/discord-api';
+import {revalidatePath} from 'next/cache';
 
-import { isAuthorized } from '@lib/server-utils';
+import {isAuthorizedForGuild} from '@lib/server-utils';
 
-const rest = new REST({ version: '9' }).setToken(env.DISCORD_BOT_TOKEN);
-const log = new Logger();
+const rest = new REST({version: '9'}).setToken(env.DISCORD_BOT_TOKEN);
 
 export const updateFilters = async (
 	guildId: string,
 	settings: NotificationsFilterSettings
 ): Promise<void> => {
-	const authorized = await isAuthorized(guildId);
+	const authorized = await isAuthorizedForGuild(guildId);
 	if (!authorized) {
 		throw new Error('Unauthorized');
 	}
@@ -43,42 +41,38 @@ export const addCountdown = async (
 	guildId: string,
 	settings: CountdownSetting
 ): Promise<void> => {
-	const authorized = await isAuthorized(guildId);
+	const authorized = await isAuthorizedForGuild(guildId);
 	if (!authorized) {
 		throw new Error('Unauthorized');
 	}
 
 	if (settings.days < 0 || settings.days > 31) {
-		log.error('Invalid days', {
+		console.error('Invalid days', {
 			guildId,
 			settings,
 		});
-		await log.flush();
 		throw new Error('Invalid days');
 	}
 	if (settings.hours < 0 || settings.hours > 24) {
-		log.error('Invalid hours', {
+		console.error('Invalid hours', {
 			guildId,
 			settings,
 		});
-		await log.flush();
 		throw new Error('Invalid hours');
 	}
 	if (settings.minutes < 0 || settings.minutes > 60) {
-		log.error('Invalid minutes', {
+		console.error('Invalid minutes', {
 			guildId,
 			settings,
 		});
-		await log.flush();
 		throw new Error('Invalid minutes');
 	}
 
 	if (settings.days + settings.hours + settings.minutes === 0) {
-		log.error('Invalid time', {
+		console.error('Invalid time', {
 			guildId,
 			settings,
 		});
-		await log.flush();
 		throw new Error('Invalid time');
 	}
 
@@ -89,11 +83,10 @@ export const addCountdown = async (
 	});
 
 	if (current > 64) {
-		log.error('Countdown limit reached', {
+		console.error('Countdown limit reached', {
 			guildId,
 			settings,
 		});
-		await log.flush();
 		throw new Error('Countdown limit reached');
 	}
 
@@ -114,7 +107,7 @@ export const removeCountdown = async (
 	guildId: string,
 	minutes: number
 ): Promise<void> => {
-	const authorized = await isAuthorized(guildId);
+	const authorized = await isAuthorizedForGuild(guildId);
 	if (!authorized) {
 		throw new Error('Unauthorized');
 	}
@@ -135,7 +128,7 @@ export const updateChannel = async (
 	guildId: string,
 	channelId: string
 ): Promise<void> => {
-	const authorized = await isAuthorized(guildId);
+	const authorized = await isAuthorizedForGuild(guildId);
 	if (!authorized) {
 		throw new Error('Unauthorized');
 	}
@@ -187,7 +180,7 @@ export const updateChannel = async (
 };
 
 export const disableFeature = async (guildId: string): Promise<void> => {
-	const authorized = await isAuthorized(guildId);
+	const authorized = await isAuthorizedForGuild(guildId);
 	if (!authorized) {
 		throw new Error('Unauthorized');
 	}

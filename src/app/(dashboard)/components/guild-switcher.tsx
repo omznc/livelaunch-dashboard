@@ -1,10 +1,10 @@
 'use client';
 
 import * as React from 'react';
-import { useEffect, useTransition } from 'react';
-import { cn } from '@lib/utils';
-import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar';
-import { Button, buttonVariants } from '@components/ui/button';
+import {useEffect, useTransition} from 'react';
+import {cn} from '@lib/utils';
+import {Avatar, AvatarFallback, AvatarImage} from '@components/ui/avatar';
+import {Button, buttonVariants} from '@components/ui/button';
 import {
 	Command,
 	CommandEmpty,
@@ -28,16 +28,16 @@ import {
 	PopoverContent,
 	PopoverTrigger,
 } from '@components/ui/popover';
-import { RxCaretSort } from 'react-icons/rx';
-import { CheckIcon, PlusCircle } from 'lucide-react';
-import { GuildsResponse } from '@app/(dashboard)/layout';
-import { revalidateGuilds } from '@app/(dashboard)/actions';
-import { DialogBody } from 'next/dist/client/components/react-dev-overlay/internal/components/Dialog';
-import { BiRefresh } from 'react-icons/bi';
-import { useRouter, useSearchParams } from 'next/navigation';
+import {RxCaretSort} from 'react-icons/rx';
+import {CheckIcon, PlusCircle} from 'lucide-react';
+import {GuildsResponse} from '@app/(dashboard)/layout';
+import {revalidateGuilds} from '@app/(dashboard)/actions';
+import {DialogBody} from 'next/dist/client/components/react-dev-overlay/internal/components/Dialog';
+import {BiRefresh} from 'react-icons/bi';
+import {useRouter, useSearchParams} from 'next/navigation';
 import env from '@env';
 import Link from 'next/link';
-import { FaPlus } from 'react-icons/fa';
+import {FaPlus} from 'react-icons/fa';
 import toast from 'react-hot-toast';
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
@@ -49,9 +49,9 @@ interface GuildSwitcherProps extends PopoverTriggerProps {
 }
 
 export default function GuildSwitcher({
-	className,
-	guilds,
-}: GuildSwitcherProps) {
+	                                      className,
+	                                      guilds,
+                                      }: GuildSwitcherProps) {
 	const [open, setOpen] = React.useState(false);
 	const [showNewGuildDialog, setShowNewGuildDialog] = React.useState(false);
 	const [revalidating, setRevalidating] = React.useState(false);
@@ -79,7 +79,7 @@ export default function GuildSwitcher({
 							setShowNewGuildDialog(true);
 						}}
 					>
-						<FaPlus />
+						<FaPlus/>
 					</Button>
 					<Popover open={open} onOpenChange={setOpen}>
 						<PopoverTrigger asChild>
@@ -120,13 +120,13 @@ export default function GuildSwitcher({
 										Just a moment...
 									</span>
 								)}
-								<RxCaretSort className='ml-auto h-4 w-4 shrink-0 opacity-50' />
+								<RxCaretSort className='ml-auto h-4 w-4 shrink-0 opacity-50'/>
 							</Button>
 						</PopoverTrigger>
 						<PopoverContent className='w-[200px] p-0'>
 							<Command>
 								<CommandList>
-									<CommandInput placeholder='Search for a server...' />
+									<CommandInput placeholder='Search for a server...'/>
 									<CommandEmpty>No guild found.</CommandEmpty>
 									<CommandGroup heading={'Your Guilds'}>
 										{guilds.map(guild => (
@@ -164,7 +164,7 @@ export default function GuildSwitcher({
 													className={cn(
 														'ml-auto h-4 w-4',
 														selectedGuild?.id ===
-															guild.id
+														guild.id
 															? 'opacity-100'
 															: 'opacity-0'
 													)}
@@ -173,7 +173,7 @@ export default function GuildSwitcher({
 										))}
 									</CommandGroup>
 								</CommandList>
-								<CommandSeparator />
+								<CommandSeparator/>
 								<CommandList>
 									<CommandGroup>
 										<DialogTrigger asChild>
@@ -183,7 +183,7 @@ export default function GuildSwitcher({
 													setShowNewGuildDialog(true);
 												}}
 											>
-												<PlusCircle className='mr-2 h-5 w-5' />
+												<PlusCircle className='mr-2 h-5 w-5'/>
 												Add a Server
 											</CommandItem>
 										</DialogTrigger>
@@ -230,7 +230,7 @@ export default function GuildSwitcher({
 								}}
 							>
 								{revalidating ? (
-									<BiRefresh className='animate-spin-reverse h-5 w-5' />
+									<BiRefresh className='animate-spin-reverse h-5 w-5'/>
 								) : (
 									'Refresh'
 								)}
@@ -238,7 +238,7 @@ export default function GuildSwitcher({
 						</>
 					)}
 				</DialogBody>
-				<DialogFooter>
+				<DialogFooter className='gap-2 md:gap-1'>
 					<Button
 						variant='outline'
 						onClick={() => setShowNewGuildDialog(false)}

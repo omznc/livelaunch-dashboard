@@ -1,24 +1,22 @@
 'use server';
 
 import prisma from '@lib/prisma';
-import { NewsSite, NewsSitesSettings } from '@app/(dashboard)/news/client';
-import { createWebhook } from '@lib/discord-api';
-import { REST } from '@discordjs/rest';
+import {NewsSite, NewsSitesSettings} from '@app/(dashboard)/news/client';
+import {createWebhook} from '@lib/discord-api';
+import {REST} from '@discordjs/rest';
 import env from '@env';
-import { Routes } from 'discord-api-types/v10';
-import { revalidatePath } from 'next/cache';
-import { Logger } from 'next-axiom';
+import {Routes} from 'discord-api-types/v10';
+import {revalidatePath} from 'next/cache';
 
-import { isAuthorized } from '@lib/server-utils';
+import {isAuthorizedForGuild} from '@lib/server-utils';
 
-const rest = new REST({ version: '9' }).setToken(env.DISCORD_BOT_TOKEN);
-const log = new Logger();
+const rest = new REST({version: '9'}).setToken(env.DISCORD_BOT_TOKEN);
 
 export async function updateSettings(
 	guildId: string,
 	settings: NewsSitesSettings
 ): Promise<void> {
-	const authorized = await isAuthorized(guildId);
+	const authorized = await isAuthorizedForGuild(guildId);
 	if (!authorized) {
 		throw new Error('Unauthorized');
 	}
@@ -37,7 +35,7 @@ export const updateChannel = async (
 	guildId: string,
 	channelId: string
 ): Promise<void> => {
-	const authorized = await isAuthorized(guildId);
+	const authorized = await isAuthorizedForGuild(guildId);
 	if (!authorized) {
 		throw new Error('Unauthorized');
 	}
@@ -86,7 +84,7 @@ export const updateChannel = async (
 };
 
 export const disableFeature = async (guildId: string): Promise<void> => {
-	const authorized = await isAuthorized(guildId);
+	const authorized = await isAuthorizedForGuild(guildId);
 	if (!authorized) {
 		throw new Error('Unauthorized');
 	}
@@ -122,16 +120,15 @@ export const disableFeature = async (guildId: string): Promise<void> => {
 };
 
 export const setNewsSites = async (newsSites: NewsSite[], guildId: string) => {
-	const authorized = await isAuthorized(guildId);
+	const authorized = await isAuthorizedForGuild(guildId);
 	if (!authorized) {
 		throw new Error('Unauthorized');
 	}
 
 	if (!authorized) {
-		log.error('Guild not found', {
+		console.error('Guild not found', {
 			guildId,
 		});
-		await log.flush();
 		throw new Error('Guild not found');
 	}
 

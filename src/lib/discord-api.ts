@@ -1,20 +1,17 @@
 import 'server-only';
 
-import { getServerSession } from 'next-auth';
 import {
 	RESTAPIPartialCurrentUserGuild,
 	RESTGetAPIGuildChannelsResult,
 	RESTPostAPIChannelWebhookResult,
 } from 'discord.js';
 import env from '@env';
-import { REST } from '@discordjs/rest';
-import { Routes } from 'discord-api-types/v10';
+import {REST} from '@discordjs/rest';
+import {Routes} from 'discord-api-types/v10';
 import avatar from '@public/LiveLaunch_Webhook_Avatar.png';
-import { Logger } from 'next-axiom';
-import authOptions from '@app/api/auth/[...nextauth]/authOptions';
+import {isAuthorized} from "@lib/server-utils";
 
-const rest = new REST({ version: '10' }).setToken(env.DISCORD_BOT_TOKEN);
-const log = new Logger();
+const rest = new REST({version: '10'}).setToken(env.DISCORD_BOT_TOKEN);
 
 /**
  * Gets the channels the bot can send messages in
@@ -34,7 +31,7 @@ export const getGuildChannels = async (guildId: string) => {
 	).then(resp => resp.json());
 
 	if (!resp || !Array.isArray(resp)) {
-		log.debug('getGuildChannels received non-array', {
+		console.debug('getGuildChannels received non-array', {
 			resp,
 		});
 		return [];
@@ -52,7 +49,7 @@ export const getGuildChannels = async (guildId: string) => {
  */
 export const getBotGuilds = async () => {
 	const resp = await fetch('https://discord.com/api/users/@me/guilds', {
-		headers: { authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
+		headers: {authorization: `Bot ${env.DISCORD_BOT_TOKEN}`},
 		next: {
 			revalidate: 60,
 			tags: ['get-bot-guilds'],
@@ -60,7 +57,7 @@ export const getBotGuilds = async () => {
 	}).then(resp => resp.json());
 
 	if (!resp || !Array.isArray(resp)) {
-		log.debug('getBotGuilds received non-array', {
+		console.debug('getBotGuilds received non-array', {
 			resp,
 		});
 		return [];
@@ -73,14 +70,13 @@ export const getBotGuilds = async () => {
  * Gets the guilds the user is in
  */
 export const getUserGuilds = async () => {
-	const session = await getServerSession(authOptions);
-	if (!session?.account?.access_token) return [];
+	const {session, user} = await isAuthorized();
 
 	const resp = await fetch('https://discord.com/api/users/@me/guilds', {
-		headers: { authorization: `Bearer ${session.account.access_token}` },
+		headers: {authorization: `Bearer ${user.accessToken}`},
 		next: {
 			revalidate: 60 * 5,
-			tags: [`get-user-guilds-${session.account.id}`],
+			tags: [`get-user-guilds-${session.userId}`],
 		},
 	}).then(resp => resp.json());
 
@@ -97,7 +93,7 @@ export const getUserGuilds = async () => {
  * @param category Category name
  */
 export const createWebhook = async (channelId: string, category: string) => {
-	const resp = await fetch(`${process.env.NEXTAUTH_URL}${avatar.src}`);
+	const resp = await fetch(`${env.PUBLIC_URL}${avatar.src}`);
 	const webhook = (await rest.post(Routes.channelWebhooks(channelId), {
 		body: {
 			name: `LiveLaunch ${category}`,

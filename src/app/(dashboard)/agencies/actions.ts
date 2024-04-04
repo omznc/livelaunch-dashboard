@@ -1,14 +1,11 @@
 'use server';
 
-import { AgenciesSettings, Agency } from '@app/(dashboard)/agencies/client';
+import {AgenciesSettings, Agency} from '@app/(dashboard)/agencies/client';
 import prisma from '@lib/prisma';
-import { Logger } from 'next-axiom';
-import { isAuthorized } from '@lib/server-utils';
-
-const log = new Logger();
+import {isAuthorizedForGuild} from '@lib/server-utils';
 
 export const SetAgencies = async (agencies: Agency[], guildId: string) => {
-	const authorized = await isAuthorized(guildId);
+	const authorized = await isAuthorizedForGuild(guildId);
 	if (!authorized) {
 		throw new Error('Unauthorized');
 	}
@@ -39,7 +36,7 @@ export const updateSettings = async (
 	guildId: string,
 	settings: AgenciesSettings
 ): Promise<void> => {
-	const authorized = await isAuthorized(guildId);
+	const authorized = await isAuthorizedForGuild(guildId);
 	if (!authorized) {
 		throw new Error('Unauthorized');
 	}

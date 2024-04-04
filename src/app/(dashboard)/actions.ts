@@ -1,17 +1,16 @@
 'use server';
 
-import { revalidatePath, revalidateTag } from 'next/cache';
-import { getServerSession } from 'next-auth';
+import {revalidatePath, revalidateTag} from 'next/cache';
 import prisma from '@lib/prisma';
-import { isAuthorized } from '@lib/server-utils';
-import authOptions from '@app/api/auth/[...nextauth]/authOptions';
+import {isAuthorizedForGuild} from '@lib/server-utils';
+import {validateRequest} from "@lib/auth";
 
 export const revalidateGuilds = async () => {
-	const session = await getServerSession(authOptions);
-	if (!session?.user) return;
+	const {session} = await validateRequest();
+	if (!session) return;
 
 	revalidateTag('get-bot-guilds');
-	revalidateTag(`get-user-guilds-${session?.account?.id}`);
+	revalidateTag(`get-user-guilds-${session?.userId}`);
 };
 
 export const revalidateAll = async () => {
@@ -20,7 +19,7 @@ export const revalidateAll = async () => {
 };
 
 export const getGuild = async (id: string) => {
-	const authorized = await isAuthorized(id);
+	const authorized = await isAuthorizedForGuild(id);
 	if (!authorized) {
 		throw new Error('Unauthorized');
 	}
@@ -33,7 +32,7 @@ export const getGuild = async (id: string) => {
 };
 
 export const enableGuild = async (id: string) => {
-	const authorized = await isAuthorized(id);
+	const authorized = await isAuthorizedForGuild(id);
 	if (!authorized) {
 		throw new Error('Unauthorized');
 	}

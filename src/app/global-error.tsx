@@ -1,9 +1,11 @@
 'use client';
-
-import { useLogger } from 'next-axiom';
 import { Button } from '@components/ui/button';
 import { cn } from '@lib/utils';
 import { Inter } from 'next/font/google';
+import * as Sentry from "@sentry/nextjs";
+import Error from "next/error";
+import { useEffect } from "react";
+
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -14,11 +16,10 @@ export default function GlobalError({
 	error: Error;
 	reset: () => void;
 }) {
-	const log = useLogger();
+	useEffect(() => {
+		Sentry.captureException(error);
+	}, [error]);
 
-	log.error('Global Error', {
-		...error,
-	});
 	return (
 		<html lang='en' suppressHydrationWarning>
 			<body

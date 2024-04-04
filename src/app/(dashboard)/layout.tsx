@@ -1,23 +1,15 @@
-import { getServerSession } from 'next-auth';
-import AuthProvider from '@components/auth-provider';
-import { redirect } from 'next/navigation';
 import GuildSwitcher from '@app/(dashboard)/components/guild-switcher';
-import { Nav } from '@app/(dashboard)/components/nav';
-import { ThemeToggle } from '@components/theme-toggle';
+import {Nav} from '@app/(dashboard)/components/nav';
+import {ThemeToggle} from '@components/theme-toggle';
 import User from '@app/(dashboard)/components/user';
-import { RESTAPIPartialCurrentUserGuild } from 'discord.js';
-import { ReactNode } from 'react';
-import { getBotGuilds, getUserGuilds } from '@lib/discord-api';
-import Link from 'next/link';
-import env from '@env';
+import {RESTAPIPartialCurrentUserGuild} from 'discord.js';
+import {ReactNode} from 'react';
+import {getBotGuilds, getUserGuilds} from '@lib/discord-api';
 import prisma from '@lib/prisma';
-import authOptions from '@app/api/auth/[...nextauth]/authOptions';
+import {isAuthorized} from "@lib/server-utils";
 
-export default async function Layout({ children }: { children: ReactNode }) {
-	const session = await getServerSession(authOptions);
-	if (!session?.user || !session?.account) {
-		return redirect('/login');
-	}
+export default async function Layout({children}: { children: ReactNode }) {
+	await isAuthorized();
 
 	const guilds = await filterGuilds();
 	const enabledGuilds = await prisma.enabled_guilds.findMany({
@@ -29,57 +21,37 @@ export default async function Layout({ children }: { children: ReactNode }) {
 	});
 
 	return (
-		<AuthProvider session={session}>
-			<div className='flex flex-col items-center min-h-screen h-full max-h-screen w-full'>
-				<div className='sticky top-0 w-full bg-background z-50'>
-					{env.IS_BETA && (
-						<div className='flex w-full justify-center bg-primary text-white'>
-							<p className='p-2 text-center'>
-								<strong>
-									LiveLaunch Dashboard is in beta.
-								</strong>{' '}
-								If you find any bugs, report them{' '}
-								<Link
-									href={'https://discord.gg/nztN2FXe7A'}
-									className='font-bold'
-									target={'_blank'}
-								>
-									here
-								</Link>
-								.
-							</p>
-						</div>
-					)}
-					<div className='hidden flex-row w-full justify-between border-b md:flex'>
-						<div className='flex h-16 items-center px-4'>
-							<GuildSwitcher guilds={guilds} />
-							<Nav className='mx-6' guilds={enabledGuilds} />
-						</div>
-						<div className='flex h-16 items-center gap-4 px-4'>
-							<ThemeToggle />
-							<User />
-						</div>
+		<div className='flex flex-col items-center min-h-screen h-full max-h-screen w-full'>
+			<div className='sticky top-0 w-full bg-background z-50'>
+				<div className='hidden flex-row w-full justify-between border-b md:flex'>
+					<div className='flex h-16 items-center px-4'>
+						<GuildSwitcher guilds={guilds}/>
+						<Nav className='md:mx-6' guilds={enabledGuilds}/>
 					</div>
-					<div className='flex w-full flex-col md:hidden gap-4'>
-						<div className='flex h-16 items-center gap-2 justify-between px-4'>
-							<div className='flex items-center'>
-								<GuildSwitcher guilds={guilds} />
-							</div>
-							<div className='flex items-center gap-2'>
-								<ThemeToggle />
-								<User />
-							</div>
-						</div>
-						<Nav className='mx-6' guilds={enabledGuilds} />
+					<div className='flex h-16 items-center gap-4 px-4'>
+						<ThemeToggle/>
+						<User/>
 					</div>
 				</div>
-				<div className='w-full flex p-8 justify-center'>
-					<div className='w-full max-w-[1200px] flex flex-col gap-8'>
-						{children}
+				<div className='flex w-full flex-col md:hidden md:gap-4'>
+					<div className='flex h-16 items-center gap-2 justify-between px-4'>
+						<div className='flex items-center'>
+							<GuildSwitcher guilds={guilds}/>
+						</div>
+						<div className='flex items-center gap-2'>
+							<ThemeToggle/>
+							<User/>
+						</div>
 					</div>
+					<Nav className='md:mx-6' guilds={enabledGuilds}/>
 				</div>
 			</div>
-		</AuthProvider>
+			<div className='w-full flex p-8 justify-center'>
+				<div className='w-full max-w-[1200px] flex flex-col gap-8'>
+					{children}
+				</div>
+			</div>
+		</div>
 	);
 }
 
@@ -102,7 +74,7 @@ const filterGuilds = async () => {
 		.filter(guild =>
 			userGuilds.some(userGuild => userGuild.id === guild.id)
 		)
-		.map(guild => ({ ...guild, botAccess: true }));
+		.map(guild => ({...guild, botAccess: true}));
 
 	return guilds;
 };

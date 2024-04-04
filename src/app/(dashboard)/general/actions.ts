@@ -1,21 +1,21 @@
 'use server';
 
 import prisma from '@lib/prisma';
-import { GeneralSettings } from '@app/(dashboard)/general/client';
-import { REST } from '@discordjs/rest';
-import { Routes } from 'discord-api-types/v10';
+import {GeneralSettings} from '@app/(dashboard)/general/client';
+import {REST} from '@discordjs/rest';
+import {Routes} from 'discord-api-types/v10';
 import env from '@env';
-import { createWebhook } from '@lib/discord-api';
-import { revalidatePath } from 'next/cache';
-import { isAuthorized } from '@lib/server-utils';
+import {createWebhook} from '@lib/discord-api';
+import {revalidatePath} from 'next/cache';
+import {isAuthorizedForGuild} from '@lib/server-utils';
 
-const rest = new REST({ version: '9' }).setToken(env.DISCORD_BOT_TOKEN);
+const rest = new REST({version: '9'}).setToken(env.DISCORD_BOT_TOKEN);
 
 export const updateSettings = async (
 	guildId: string,
 	settings: GeneralSettings
 ): Promise<void> => {
-	const authorized = await isAuthorized(guildId);
+	const authorized = await isAuthorizedForGuild(guildId);
 	if (!authorized) {
 		throw new Error('Unauthorized');
 	}
@@ -37,7 +37,7 @@ export const updateChannel = async (
 	guildId: string,
 	channelId: string
 ): Promise<void> => {
-	const authorized = await isAuthorized(guildId);
+	const authorized = await isAuthorizedForGuild(guildId);
 	if (!authorized) {
 		throw new Error('Unauthorized');
 	}
@@ -89,7 +89,7 @@ export const updateNumberOfEvents = async (
 	guildId: string,
 	num: number
 ): Promise<void> => {
-	const authorized = await isAuthorized(guildId);
+	const authorized = await isAuthorizedForGuild(guildId);
 	if (!authorized) {
 		throw new Error('Unauthorized');
 	}
@@ -109,7 +109,7 @@ export const updateNumberOfEvents = async (
 };
 
 export const disableFeature = async (guildId: string): Promise<void> => {
-	const authorized = await isAuthorized(guildId);
+	const authorized = await isAuthorizedForGuild(guildId);
 	if (!authorized) {
 		throw new Error('Unauthorized');
 	}

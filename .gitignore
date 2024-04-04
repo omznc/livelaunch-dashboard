@@ -40,3 +40,6 @@ mysql-data
 
 # misc
 .idea
+
+# Sentry Config File
+.sentryclirc

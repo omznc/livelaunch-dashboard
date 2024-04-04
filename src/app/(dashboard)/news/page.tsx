@@ -1,13 +1,13 @@
 import prisma from '@lib/prisma';
-import { unstable_cache as cache } from 'next/cache';
+import {unstable_cache as cache} from 'next/cache';
 import Client from '@app/(dashboard)/news/client';
-import { getGuildChannels } from '@lib/discord-api';
-import { isAuthorized } from '@lib/server-utils';
+import {getGuildChannels} from '@lib/discord-api';
+import {isAuthorizedForGuild} from '@lib/server-utils';
 import NotEnabled from '@app/(dashboard)/components/not-enabled';
 
 export default async function NewsSites({
-	searchParams,
-}: {
+	                                        searchParams,
+                                        }: {
 	searchParams: {
 		g: string | undefined;
 	};
@@ -15,7 +15,7 @@ export default async function NewsSites({
 	const guildId = searchParams?.g;
 	if (!guildId) return null;
 
-	const authorized = await isAuthorized(guildId);
+	const authorized = await isAuthorizedForGuild(guildId);
 	if (!authorized) {
 		return null;
 	}
@@ -26,7 +26,7 @@ export default async function NewsSites({
 		},
 	});
 
-	if (!guild) return <NotEnabled />;
+	if (!guild) return <NotEnabled/>;
 
 	const newsSites = await cache(
 		async () => prisma.news_sites.findMany(),

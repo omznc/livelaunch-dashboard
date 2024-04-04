@@ -1,12 +1,12 @@
 import prisma from '@lib/prisma';
-import { unstable_cache as cache } from 'next/dist/server/web/spec-extension/unstable-cache';
+import {unstable_cache as cache} from 'next/dist/server/web/spec-extension/unstable-cache';
 import Client from '@app/(dashboard)/agencies/client';
-import { isAuthorized } from '@lib/server-utils';
+import {isAuthorizedForGuild} from '@lib/server-utils';
 import NotEnabled from '@app/(dashboard)/components/not-enabled';
 
 export default async function Agencies({
-	searchParams,
-}: {
+	                                       searchParams,
+                                       }: {
 	searchParams: {
 		g: string | undefined;
 	};
@@ -14,7 +14,7 @@ export default async function Agencies({
 	const guildId = searchParams?.g;
 	if (!guildId) return null;
 
-	const authorized = await isAuthorized(guildId);
+	const authorized = await isAuthorizedForGuild(guildId);
 	if (!authorized) {
 		return null;
 	}
@@ -34,7 +34,7 @@ export default async function Agencies({
 		},
 	});
 
-	if (!guild) return <NotEnabled />;
+	if (!guild) return <NotEnabled/>;
 
 	const enabledAgencies = await prisma.ll2_agencies_filter.findMany({
 		where: {
