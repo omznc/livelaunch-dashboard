@@ -2,6 +2,7 @@ import {discord, lucia} from "@lib/auth";
 import {cookies} from "next/headers";
 import {OAuth2RequestError} from "arctic";
 import prisma from "@lib/prisma";
+import {User} from "@prisma/client";
 
 function toCamelCase(obj: Record<string, any>) {
 	const newObj: Record<string, any> = {};
@@ -55,16 +56,34 @@ export async function GET(request: Request): Promise<Response> {
 			});
 		}
 
-		const {avatar_decoration_data, ...rest} = discordUser;
-
 		const data = {
 			id: discordUser.id,
-			...toCamelCase(rest),
+			...toCamelCase(discordUser),
 			...toCamelCase(tokens)
-		}
+		} as User;
+
 
 		await prisma.user.create({
-			data
+			data: {
+				id: data.id,
+				username: data.username,
+				avatar: data.avatar,
+				discriminator: data.discriminator,
+				publicFlags: data.publicFlags,
+				flags: data.flags,
+				banner: data.banner,
+				accentColor: data.accentColor,
+				globalName: data.globalName,
+				bannerColor: data.bannerColor,
+				mfaEnabled: data.mfaEnabled,
+				locale: data.locale,
+				premiumType: data.premiumType,
+				email: data.email,
+				verified: data.verified,
+				accessToken: data.accessToken,
+				refreshToken: data.refreshToken,
+				accessTokenExpiresAt: data.accessTokenExpiresAt,
+			}
 		});
 
 

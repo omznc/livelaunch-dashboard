@@ -52,46 +52,47 @@ export const validateRequest = cache(
 		} catch {
 		}
 
-		const user = await client.$transaction(
-			async (prisma) => {
-				const user = await prisma.user.findUnique({
+		const user = await client.user.findUnique({
+			where: {
+				id: result.user?.id
+			}
+		});
+
+		if (!user) {
+			return {
+				user: null,
+				session: null
+			};
+		}
+
+		if (user.accessTokenExpiresAt! < new Date()) {
+			const tokens = await discord.refreshAccessToken(user.refreshToken!).catch(async () => {
+				await client.user.delete({
 					where: {
-						id: result.user?.id
+						id: user.id
 					}
 				});
 
-				if (!user) {
-					return null;
-				}
+				redirect("/login");
+			});
 
-				if (user.accessTokenExpiresAt! < new Date()) {
-					const tokens = await discord.refreshAccessToken(user.refreshToken!).catch(async () => {
-						await prisma.user.delete({
-							where: {
-								id: user.id
-							},
-						})
-						redirect("/login")
-					})
-
-					if (!tokens) {
-						return null;
-					}
-					return prisma.user.update({
-						where: {
-							id: user.id
-						},
-						data: {
-							accessToken: tokens.accessToken,
-							accessTokenExpiresAt: tokens.accessTokenExpiresAt,
-							refreshToken: tokens.refreshToken
-						}
-					});
-				}
-
-				return user;
+			if (!tokens) {
+				return {
+					user: null,
+					session: null
+				};
 			}
-		);
+			await client.user.update({
+				where: {
+					id: user.id
+				},
+				data: {
+					accessToken: tokens.accessToken,
+					accessTokenExpiresAt: tokens.accessTokenExpiresAt,
+					refreshToken: tokens.refreshToken
+				}
+			});
+		}
 
 		return {
 			user,
