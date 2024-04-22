@@ -95,7 +95,7 @@ export function Nav({className, guilds, ...props}: NavProps) {
 					<Button
 						variant='outline'
 						onClick={() => setShowHelpDialog(true)}
-						className={'-ml-4'}
+						className={'-ml-4 mr-2'}
 					>
 						Enable LiveLaunch
 					</Button>

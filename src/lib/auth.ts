@@ -52,6 +52,13 @@ export const validateRequest = cache(
 		} catch {
 		}
 
+		if (!result.user) {
+			return {
+				user: null,
+				session: null
+			};
+		}
+
 		const user = await client.user.findUnique({
 			where: {
 				id: result.user?.id
