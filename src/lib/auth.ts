@@ -52,7 +52,7 @@ export const validateRequest = cache(
 		} catch {
 		}
 
-		if (!result.user) {
+		if (!result.user?.id) {
 			return {
 				user: null,
 				session: null
