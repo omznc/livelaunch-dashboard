@@ -91,17 +91,16 @@ export function Nav({className, guilds, ...props}: NavProps) {
 				)}
 				{...props}
 			>
-				{!guild && guildId && (
-					<Button
-						variant='outline'
-						onClick={() => setShowHelpDialog(true)}
-						className={'-ml-4 mr-2'}
-					>
-						Enable LiveLaunch
-					</Button>
-				)}
 				<div
 					className='flex gap-4 transition-all w-full border-b-2 md:border-b-0 items-center justify-center overflow-x-auto'>
+					{!guild && guildId && (
+						<Button
+							variant='outline'
+							onClick={() => setShowHelpDialog(true)}
+						>
+							Enable LiveLaunch
+						</Button>
+					)}
 					{links
 						.filter(
 							({requiresGuildEnabled}) =>
