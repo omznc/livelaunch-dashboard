@@ -39,6 +39,7 @@ import env from '@env';
 import Link from 'next/link';
 import {FaPlus} from 'react-icons/fa';
 import toast from 'react-hot-toast';
+import Image from 'next/image'
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<
 	typeof PopoverTrigger
@@ -99,17 +100,20 @@ export default function GuildSwitcher({
 								{selectedGuild ? (
 									<>
 										<Avatar className='mr-2 h-5 w-5'>
-											<AvatarImage
-												src={
-													selectedGuild.icon
-														? `https://cdn.discordapp.com/icons/${selectedGuild.id}/${selectedGuild.icon}.png`
-														: undefined
-												}
+											{
+												selectedGuild.icon ?
+
+											<Image
+												width={50}
+												height={50}
+												src={`https://cdn.discordapp.com/icons/${selectedGuild.id}/${selectedGuild.icon}.png`}
 												alt={selectedGuild.name}
 											/>
+													:
 											<AvatarFallback>
 												{selectedGuild.name[0] || 'LL'}
 											</AvatarFallback>
+											}
 										</Avatar>
 										<span className='truncate'>
 											{selectedGuild.name}
@@ -147,17 +151,20 @@ export default function GuildSwitcher({
 												className='text-sm'
 											>
 												<Avatar className='mr-2 h-5 w-5'>
-													<AvatarImage
-														src={
-															guild.icon
-																? `https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`
-																: undefined
-														}
-														alt={guild.name}
-													/>
-													<AvatarFallback>
-														{guild.name[0] || 'LL'}
-													</AvatarFallback>
+													{
+														guild.icon ?
+
+															<Image
+																width={50}
+																height={50}
+																src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
+																alt={guild.name}
+															/>
+															:
+															<AvatarFallback>
+																{guild.name[0] || 'LL'}
+															</AvatarFallback>
+													}
 												</Avatar>
 												{guild.name}
 												<CheckIcon

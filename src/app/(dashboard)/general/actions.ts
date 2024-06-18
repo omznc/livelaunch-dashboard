@@ -36,7 +36,7 @@ export const updateSettings = async (
 export const updateChannel = async (
 	guildId: string,
 	channelId: string
-): Promise<void> => {
+): Promise<string | void> => {
 	const authorized = await isAuthorizedForGuild(guildId);
 	if (!authorized) {
 		throw new Error('Unauthorized');
@@ -50,6 +50,10 @@ export const updateChannel = async (
 			},
 		}),
 	]);
+
+	if (!newWebhookURL) {
+		return "Missing permissions"
+	}
 
 	await prisma.enabled_guilds.update({
 		where: {

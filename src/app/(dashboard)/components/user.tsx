@@ -12,6 +12,7 @@ import {lucia, validateRequest} from "@lib/auth";
 import prisma from "@lib/prisma";
 import {cookies} from "next/headers";
 import {redirect} from "next/navigation";
+import Image from 'next/image'
 
 export default async function User() {
 	const {session} = await validateRequest();
@@ -33,12 +34,20 @@ export default async function User() {
 					className='relative md:h-8 md:w-8 h-9 w-9'
 				>
 					<Avatar className='md:h-8 md:w-8 h-9 w-9 md:rounded-full rounded-sm'>
-						<AvatarImage
-							src={user?.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : undefined}
-						/>
-						<AvatarFallback>
+						{
+							user?.avatar ?
+
+								<Image
+									width={50}
+									height={50}
+									src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`}
+									alt={'Profile photo'}
+								/>
+								:
+								<AvatarFallback>
 							<p>{user?.username?.[0]}</p>
 						</AvatarFallback>
+						}
 					</Avatar>
 				</Button>
 			</DropdownMenuTrigger>
@@ -57,10 +66,10 @@ export default async function User() {
 					</div>
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator/>
-				<DropdownMenuItem
+				<DropdownMenuItem asChild
 				>
 					<form action={logout}>
-						<button type='submit' className='w-full'>
+						<button type='submit' className='w-full text-left'>
 							Log out
 						</button>
 					</form>

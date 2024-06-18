@@ -117,10 +117,13 @@ export default function Client({ guild, channels }: ClientProps) {
 							updateChannel(String(guild.guild_id), value),
 							{
 								loading: 'Saving...',
-								success: 'Saved.',
-								error: () => {
+								success: r => {
+									if (r) throw Error(r);
+									return "Saved"
+								},
+								error: (e?: Error) => {
 									setSelectedChannelID(undefined);
-									return 'Failed to save.';
+									return e ? e.message : 'Failed to save.';
 								},
 							}
 						);

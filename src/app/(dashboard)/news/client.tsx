@@ -149,11 +149,14 @@ export default function Client({
 							updateChannel(String(guild.guild_id), value),
 							{
 								loading: 'Saving...',
-								success: 'Saved.',
-								error: () => {
+								success: r => {
+									if (r) throw new Error(r)
+									return 'Saved';
+								},
+								error: (e?: Error) => {
 									router.refresh();
 									setSelectedChannelID(undefined);
-									return 'Failed to save.';
+									return e ? e.message : 'Failed to save.';
 								},
 							}
 						);

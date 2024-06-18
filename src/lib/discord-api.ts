@@ -94,14 +94,18 @@ export const getUserGuilds = async () => {
  */
 export const createWebhook = async (channelId: string, category: string) => {
 	const resp = await fetch(`${env.PUBLIC_URL}${avatar.src}`);
-	const webhook = (await rest.post(Routes.channelWebhooks(channelId), {
+	const webhook = await rest.post(Routes.channelWebhooks(channelId), {
 		body: {
 			name: `LiveLaunch ${category}`,
 			avatar: `data:image/png;base64,${Buffer.from(
 				await resp.arrayBuffer()
 			).toString('base64')}`,
 		},
-	})) as RESTPostAPIChannelWebhookResult;
-
-	return webhook.url as string;
+	}).then(r => r as RESTPostAPIChannelWebhookResult)
+		.catch((e) => {
+			console.log(e)
+			return null;
+		})
+	
+	return webhook ? webhook.url as string : null;
 };
