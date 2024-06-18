@@ -143,9 +143,8 @@ export const updateChannel = async (
 	]);
 
 	if (!newWebhookURL) {
-		return "Missing permissions"
+		return "Missing permission: Manage Webhooks"
 	}
-
 
 	await prisma.enabled_guilds.update({
 		where: {

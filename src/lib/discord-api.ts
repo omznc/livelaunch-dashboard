@@ -102,10 +102,9 @@ export const createWebhook = async (channelId: string, category: string) => {
 			).toString('base64')}`,
 		},
 	}).then(r => r as RESTPostAPIChannelWebhookResult)
-		.catch((e) => {
-			console.log(e)
+		.catch(() => {
 			return null;
 		})
-	
+
 	return webhook ? webhook.url as string : null;
 };

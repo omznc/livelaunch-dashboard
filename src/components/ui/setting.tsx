@@ -91,9 +91,7 @@ interface SettingGroupProps {
 export function SettingGroup({ title, children }: SettingGroupProps) {
 	const id = title.toLowerCase().replaceAll(' ', '-');
 	const hash = useHash();
-	const router = useRouter();
 
-	console.log(hash);
 	return (
 		<div className='flex flex-col gap-2' key={hash}>
 			<TooltipProvider>

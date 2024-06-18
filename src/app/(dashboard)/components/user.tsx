@@ -83,7 +83,6 @@ async function logout() {
 	"use server";
 
 	const {session} = await validateRequest();
-	console.log(session);
 	if (!session) {
 		return {
 			error: "Unauthorized"
@@ -94,8 +93,6 @@ async function logout() {
 
 	const sessionCookie = lucia.createBlankSessionCookie();
 	cookies().set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
-
-	console.log("Logged out")
 
 	return redirect("/login");
 }
