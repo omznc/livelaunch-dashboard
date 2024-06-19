@@ -41,7 +41,7 @@
     "@radix-ui/react-toggle": "latest",
     "@radix-ui/react-toggle-group": "latest",
     "@radix-ui/react-tooltip": "latest",
-    "@sentry/nextjs": "8.0.0",
+    "@sentry/nextjs": "8.2.1",
     "@t3-oss/env-nextjs": "^0.10.1",
     "@types/node": "20.12.11",
     "@types/react": "18.3.2",
