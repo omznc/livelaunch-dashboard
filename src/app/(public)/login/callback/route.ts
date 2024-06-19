@@ -1,16 +1,14 @@
-import {discord, lucia} from "@lib/auth";
-import {cookies} from "next/headers";
-import {OAuth2RequestError} from "arctic";
-import prisma from "@lib/prisma";
-import {User} from "@prisma/client";
+import { discord, lucia } from '@lib/auth';
+import { cookies } from 'next/headers';
+import { OAuth2RequestError } from 'arctic';
+import prisma from '@lib/prisma';
+import { User } from '@prisma/client';
 
 function toCamelCase(obj: Record<string, any>) {
 	const newObj: Record<string, any> = {};
 	for (const key in obj) {
-		const newKey = key.replace(/([-_][a-z])/ig, ($1) => {
-			return $1.toUpperCase()
-				.replace("-", "")
-				.replace("_", "");
+		const newKey = key.replace(/([-_][a-z])/gi, $1 => {
+			return $1.toUpperCase().replace('-', '').replace('_', '');
 		});
 		newObj[newKey] = obj[key];
 	}
@@ -19,49 +17,52 @@ function toCamelCase(obj: Record<string, any>) {
 
 export async function GET(request: Request): Promise<Response> {
 	const url = new URL(request.url);
-	const code = url.searchParams.get("code");
-	const state = url.searchParams.get("state");
-	const storedState = cookies().get("discord_oauth_state")?.value ?? null;
+	const code = url.searchParams.get('code');
+	const state = url.searchParams.get('state');
+	const storedState = cookies().get('discord_oauth_state')?.value ?? null;
 
 	if (!code || !state || !storedState || state !== storedState) {
-		return new Response("whoops", {
-			status: 400
+		return new Response('whoops', {
+			status: 400,
 		});
 	}
 
 	try {
 		const tokens = await discord.validateAuthorizationCode(code);
-		const response = await fetch("https://discord.com/api/users/@me", {
+		const response = await fetch('https://discord.com/api/users/@me', {
 			headers: {
-				Authorization: `Bearer ${tokens.accessToken}`
-			}
+				Authorization: `Bearer ${tokens.accessToken}`,
+			},
 		});
 		const discordUser = await response.json();
 
 		const existingUser = await prisma.user.findUnique({
 			where: {
-				id: discordUser.id
-			}
+				id: discordUser.id,
+			},
 		});
 
 		if (existingUser) {
 			const session = await lucia.createSession(existingUser.id, {});
 			const sessionCookie = lucia.createSessionCookie(session.id);
-			cookies().set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
+			cookies().set(
+				sessionCookie.name,
+				sessionCookie.value,
+				sessionCookie.attributes
+			);
 			return new Response(null, {
 				status: 302,
 				headers: {
-					Location: "/"
-				}
+					Location: '/',
+				},
 			});
 		}
 
 		const data = {
 			id: discordUser.id,
 			...toCamelCase(discordUser),
-			...toCamelCase(tokens)
+			...toCamelCase(tokens),
 		} as User;
-
 
 		await prisma.user.create({
 			data: {
@@ -83,30 +84,33 @@ export async function GET(request: Request): Promise<Response> {
 				accessToken: data.accessToken,
 				refreshToken: data.refreshToken,
 				accessTokenExpiresAt: data.accessTokenExpiresAt,
-			}
+			},
 		});
-
 
 		const session = await lucia.createSession(discordUser.id, {});
 		const sessionCookie = lucia.createSessionCookie(session.id);
-		cookies().set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
+		cookies().set(
+			sessionCookie.name,
+			sessionCookie.value,
+			sessionCookie.attributes
+		);
 
 		return new Response(null, {
 			status: 302,
 			headers: {
-				Location: "/"
-			}
+				Location: '/',
+			},
 		});
 	} catch (e) {
-		console.log(e)
+		console.log(e);
 
 		if (e instanceof OAuth2RequestError) {
 			return new Response(null, {
-				status: 400
+				status: 400,
 			});
 		}
 		return new Response(null, {
-			status: 500
+			status: 500,
 		});
 	}
 }

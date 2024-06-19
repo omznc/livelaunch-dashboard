@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { Children, ReactNode } from 'react';
 import { Label } from '@components/ui/label';
 import { cn } from '@lib/utils';
 import Image from 'next/image';
@@ -85,12 +85,19 @@ export function Setting({
 
 interface SettingGroupProps {
 	title: string;
+	description?: string | ReactNode;
 	children?: ReactNode;
 }
 
-export function SettingGroup({ title, children }: SettingGroupProps) {
+export function SettingGroup({
+	title,
+	description,
+	children,
+}: SettingGroupProps) {
 	const id = title.toLowerCase().replaceAll(' ', '-');
 	const hash = useHash();
+
+	if (Children.count(children) === 0) return null;
 
 	return (
 		<div className='flex flex-col gap-2' key={hash}>
@@ -135,11 +142,12 @@ export function SettingGroup({ title, children }: SettingGroupProps) {
 					<TooltipContent>Copy link to this section</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>
-			{children && (
+			{description && (
 				<p className='text-sm inline-flex items-center gap-1 select-none opacity-50'>
-					{children}
+					{description}
 				</p>
 			)}
+			<div className='flex flex-col gap-4'>{children}</div>
 		</div>
 	);
 }

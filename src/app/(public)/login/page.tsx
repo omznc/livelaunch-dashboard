@@ -1,6 +1,6 @@
-import {Button} from "@components/ui/button";
-import {FaDiscord} from "react-icons/fa";
-import Link from "next/link";
+import { Button } from '@components/ui/button';
+import { FaDiscord } from 'react-icons/fa';
+import Link from 'next/link';
 
 // a simple sign in with discord button, some text, a title.
 export default async function AuthenticationPage() {
@@ -17,10 +17,8 @@ export default async function AuthenticationPage() {
 				</p>
 			</div>
 			<Link href={'/login/discord'} passHref>
-				<Button
-					className='mt-6'
-				>
-					<FaDiscord className='inline-block mr-2'/>
+				<Button className='mt-6'>
+					<FaDiscord className='inline-block mr-2' />
 					Sign in with Discord
 				</Button>
 			</Link>

@@ -1,28 +1,32 @@
-import {Lucia, Session} from "lucia";
-import {cache} from "react";
-import {User as PrismaUser} from "@prisma/client";
+import { Lucia, Session } from 'lucia';
+import { cache } from 'react';
+import { User as PrismaUser } from '@prisma/client';
 
-import {PrismaAdapter} from "@lucia-auth/adapter-prisma";
-import {Discord} from "arctic";
+import { PrismaAdapter } from '@lucia-auth/adapter-prisma';
+import { Discord } from 'arctic';
 
 import client from '@lib/prisma';
-import env from "@env";
-import {cookies} from "next/headers";
-import {redirect} from "next/navigation";
+import env from '@env';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 const adapter = new PrismaAdapter(client.session, client.user);
-export const discord = new Discord(env.NEXT_PUBLIC_DISCORD_CLIENT_ID, env.DISCORD_CLIENT_SECRET, env.PUBLIC_URL + "/login/callback");
+export const discord = new Discord(
+	env.NEXT_PUBLIC_DISCORD_CLIENT_ID,
+	env.DISCORD_CLIENT_SECRET,
+	env.PUBLIC_URL + '/login/callback'
+);
 
 export const lucia = new Lucia(adapter, {
 	sessionCookie: {
 		expires: false,
 		attributes: {
-			secure: process.env.NODE_ENV === "production"
-		}
-	}
+			secure: process.env.NODE_ENV === 'production',
+		},
+	},
 });
 
-declare module "lucia" {
+declare module 'lucia' {
 	interface Register {
 		Lucia: typeof lucia;
 		DatabaseUserAttributes: PrismaUser;
@@ -35,75 +39,86 @@ export const validateRequest = cache(
 		if (!sessionId) {
 			return {
 				user: null,
-				session: null
+				session: null,
 			};
 		}
 
 		const result = await lucia.validateSession(sessionId);
 		try {
 			if (result.session && result.session.fresh) {
-				const sessionCookie = lucia.createSessionCookie(result.session.id);
-				cookies().set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
+				const sessionCookie = lucia.createSessionCookie(
+					result.session.id
+				);
+				cookies().set(
+					sessionCookie.name,
+					sessionCookie.value,
+					sessionCookie.attributes
+				);
 			}
 			if (!result.session) {
 				const sessionCookie = lucia.createBlankSessionCookie();
-				cookies().set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
+				cookies().set(
+					sessionCookie.name,
+					sessionCookie.value,
+					sessionCookie.attributes
+				);
 			}
-		} catch {
-		}
+		} catch {}
 
 		if (!result.user?.id) {
 			return {
 				user: null,
-				session: null
+				session: null,
 			};
 		}
 
 		const user = await client.user.findUnique({
 			where: {
-				id: result.user?.id
-			}
+				id: result.user?.id,
+			},
 		});
 
 		if (!user) {
 			return {
 				user: null,
-				session: null
+				session: null,
 			};
 		}
 
 		if (user.accessTokenExpiresAt! < new Date()) {
-			const tokens = await discord.refreshAccessToken(user.refreshToken!).catch(async () => {
-				await client.user.delete({
-					where: {
-						id: user.id
-					}
-				});
+			const tokens = await discord
+				.refreshAccessToken(user.refreshToken!)
+				.catch(async () => {
+					await client.user.delete({
+						where: {
+							id: user.id,
+						},
+					});
 
-				redirect("/login");
-			});
+					redirect('/login');
+				});
 
 			if (!tokens) {
 				return {
 					user: null,
-					session: null
+					session: null,
 				};
 			}
 			await client.user.update({
 				where: {
-					id: user.id
+					id: user.id,
 				},
 				data: {
 					accessToken: tokens.accessToken,
 					accessTokenExpiresAt: tokens.accessTokenExpiresAt,
-					refreshToken: tokens.refreshToken
-				}
+					refreshToken: tokens.refreshToken,
+				},
 			});
 		}
 
 		return {
 			user,
-			session: result.session
+			session: result.session,
 		};
 	}
 );

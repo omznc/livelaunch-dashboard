@@ -6,12 +6,12 @@ import {
 	RESTPostAPIChannelWebhookResult,
 } from 'discord.js';
 import env from '@env';
-import {REST} from '@discordjs/rest';
-import {Routes} from 'discord-api-types/v10';
+import { REST } from '@discordjs/rest';
+import { Routes } from 'discord-api-types/v10';
 import avatar from '@public/LiveLaunch_Webhook_Avatar.png';
-import {isAuthorized} from "@lib/server-utils";
+import { isAuthorized } from '@lib/server-utils';
 
-const rest = new REST({version: '10'}).setToken(env.DISCORD_BOT_TOKEN);
+const rest = new REST({ version: '10' }).setToken(env.DISCORD_BOT_TOKEN);
 
 /**
  * Gets the channels the bot can send messages in
@@ -49,7 +49,7 @@ export const getGuildChannels = async (guildId: string) => {
  */
 export const getBotGuilds = async () => {
 	const resp = await fetch('https://discord.com/api/users/@me/guilds', {
-		headers: {authorization: `Bot ${env.DISCORD_BOT_TOKEN}`},
+		headers: { authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
 		next: {
 			revalidate: 60,
 			tags: ['get-bot-guilds'],
@@ -70,10 +70,10 @@ export const getBotGuilds = async () => {
  * Gets the guilds the user is in
  */
 export const getUserGuilds = async () => {
-	const {session, user} = await isAuthorized();
+	const { session, user } = await isAuthorized();
 
 	const resp = await fetch('https://discord.com/api/users/@me/guilds', {
-		headers: {authorization: `Bearer ${user.accessToken}`},
+		headers: { authorization: `Bearer ${user.accessToken}` },
 		next: {
 			revalidate: 60 * 5,
 			tags: [`get-user-guilds-${session.userId}`],
@@ -94,17 +94,19 @@ export const getUserGuilds = async () => {
  */
 export const createWebhook = async (channelId: string, category: string) => {
 	const resp = await fetch(`${env.PUBLIC_URL}${avatar.src}`);
-	const webhook = await rest.post(Routes.channelWebhooks(channelId), {
-		body: {
-			name: `LiveLaunch ${category}`,
-			avatar: `data:image/png;base64,${Buffer.from(
-				await resp.arrayBuffer()
-			).toString('base64')}`,
-		},
-	}).then(r => r as RESTPostAPIChannelWebhookResult)
+	const webhook = await rest
+		.post(Routes.channelWebhooks(channelId), {
+			body: {
+				name: `LiveLaunch ${category}`,
+				avatar: `data:image/png;base64,${Buffer.from(
+					await resp.arrayBuffer()
+				).toString('base64')}`,
+			},
+		})
+		.then(r => r as RESTPostAPIChannelWebhookResult)
 		.catch(() => {
 			return null;
-		})
+		});
 
-	return webhook ? webhook.url as string : null;
+	return webhook ? (webhook.url as string) : null;
 };

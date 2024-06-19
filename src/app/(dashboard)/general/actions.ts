@@ -1,15 +1,15 @@
 'use server';
 
 import prisma from '@lib/prisma';
-import {GeneralSettings} from '@app/(dashboard)/general/client';
-import {REST} from '@discordjs/rest';
-import {Routes} from 'discord-api-types/v10';
+import { GeneralSettings } from '@app/(dashboard)/general/client';
+import { REST } from '@discordjs/rest';
+import { Routes } from 'discord-api-types/v10';
 import env from '@env';
-import {createWebhook} from '@lib/discord-api';
-import {revalidatePath} from 'next/cache';
-import {isAuthorizedForGuild} from '@lib/server-utils';
+import { createWebhook } from '@lib/discord-api';
+import { revalidatePath } from 'next/cache';
+import { isAuthorizedForGuild } from '@lib/server-utils';
 
-const rest = new REST({version: '9'}).setToken(env.DISCORD_BOT_TOKEN);
+const rest = new REST({ version: '9' }).setToken(env.DISCORD_BOT_TOKEN);
 
 export const updateSettings = async (
 	guildId: string,
@@ -52,7 +52,7 @@ export const updateChannel = async (
 	]);
 
 	if (!newWebhookURL) {
-		return "Missing permission: Manage Webhooks"
+		return 'Missing permission: Manage Webhooks';
 	}
 
 	await prisma.enabled_guilds.update({

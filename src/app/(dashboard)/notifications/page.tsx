@@ -1,13 +1,13 @@
 import prisma from '@lib/prisma';
 import Client from './client';
-import {getGuildChannels} from '@lib/discord-api';
-import {isAuthorizedForGuild} from '@lib/server-utils';
-import {redirect} from 'next/navigation';
+import { getGuildChannels } from '@lib/discord-api';
+import { isAuthorizedForGuild } from '@lib/server-utils';
+import { redirect } from 'next/navigation';
 import NotEnabled from '@app/(dashboard)/components/not-enabled';
 
 export default async function Agencies({
-	                                       searchParams,
-                                       }: {
+	searchParams,
+}: {
 	searchParams: {
 		g: string | undefined;
 	};
@@ -26,7 +26,7 @@ export default async function Agencies({
 		},
 	});
 
-	if (!guild) return <NotEnabled/>;
+	if (!guild) return <NotEnabled />;
 
 	const [countdowns, channels] = await Promise.all([
 		prisma.notification_countdown.findMany({

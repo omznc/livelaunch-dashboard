@@ -1,8 +1,8 @@
 'use server';
 
-import {AgenciesSettings, Agency} from '@app/(dashboard)/agencies/client';
+import { AgenciesSettings, Agency } from '@app/(dashboard)/agencies/client';
 import prisma from '@lib/prisma';
-import {isAuthorizedForGuild} from '@lib/server-utils';
+import { isAuthorizedForGuild } from '@lib/server-utils';
 
 export const SetAgencies = async (agencies: Agency[], guildId: string) => {
 	const authorized = await isAuthorizedForGuild(guildId);

@@ -94,11 +94,8 @@ export default function Client({
 
 	// sort by name, alphabetically
 	const filtered = selectedNewsSites
-		.filter(
-			a =>
-				a.news_site_name
-					?.toLowerCase()
-					.includes(searchQuery.toLowerCase())
+		.filter(a =>
+			a.news_site_name?.toLowerCase().includes(searchQuery.toLowerCase())
 		)
 		.sort((a, b) => {
 			if (!a.news_site_name || !b.news_site_name) return 0;
@@ -107,101 +104,109 @@ export default function Client({
 
 	return (
 		<div className='flex flex-col gap-4'>
-			<SettingGroup title={'Feature'}></SettingGroup>
-			<Setting
-				label={'Disable Feature'}
-				description={'Disable this feature for your server.'}
-				active={false}
-				className='flex flex-col gap-4'
-				disabled={guild.news_channel_id === null}
-				disabledMessage={
-					"You can't disable this feature if it's not enabled"
-				}
-			>
-				<Button
-					onClick={() => {
-						toast.promise(disableFeature(String(guild.guild_id)), {
-							loading: 'Disabling...',
-							success: () => {
-								setSelectedChannelID(undefined);
-								return 'Disabled.';
-							},
-							error: 'Failed to disable.',
-						});
-					}}
-					className='w-fit whitespace-nowrap'
-					variant='outline'
-				>
-					Disable
-				</Button>
-			</Setting>
-			<Setting
-				label={'News Channel'}
-				description={
-					'Choose which channel the bot should send news to.'
-				}
-				active={false}
-			>
-				<Select
-					onValueChange={value => {
-						setSelectedChannelID(value);
-						toast.promise(
-							updateChannel(String(guild.guild_id), value),
-							{
-								loading: 'Saving...',
-								success: r => {
-									if (r) throw new Error(r)
-									return 'Saved';
-								},
-								error: (e?: Error) => {
-									router.refresh();
-									setSelectedChannelID(undefined);
-									return e ? e.message : 'Failed to save.';
-								},
-							}
-						);
-					}}
-					key={selectedChannelID}
-				>
-					<SelectTrigger className='w-full md:w-fit-content md:max-w-[350px]'>
-						{(() => {
-							const chan = channels.find(
-								channel => channel.id === selectedChannelID
-							);
-							if (chan) {
-								return (
-									<span>
-										{chan.type === 0 ? (
-											<FaHashtag className='inline-block mr-2' />
-										) : (
-											<BiSolidMegaphone className='inline-block mr-2' />
-										)}
-										{chan.name}
-									</span>
-								);
-							}
-							return 'No channel selected';
-						})()}
-					</SelectTrigger>
-					<SelectContent
-						onCloseAutoFocus={e => {
-							e.preventDefault();
-							e.stopPropagation();
-						}}
+			<SettingGroup title={'Feature'}>
+				{guild.news_channel_id !== null && (
+					<Setting
+						label={'Disable Feature'}
+						description={'Disable this feature for your server.'}
+						active={false}
+						className='flex flex-col gap-4'
+						disabledMessage={
+							"You can't disable this feature if it's not enabled"
+						}
 					>
-						{channels.map(channel => (
-							<SelectItem key={channel.id} value={channel.id}>
-								{channel.type === 0 ? (
-									<FaHashtag className='inline-block mr-2' />
-								) : (
-									<BiSolidMegaphone className='inline-block mr-2' />
-								)}
-								{channel.name}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-			</Setting>
+						<Button
+							onClick={() => {
+								toast.promise(
+									disableFeature(String(guild.guild_id)),
+									{
+										loading: 'Disabling...',
+										success: () => {
+											setSelectedChannelID(undefined);
+											return 'Disabled.';
+										},
+										error: 'Failed to disable.',
+									}
+								);
+							}}
+							className='w-fit whitespace-nowrap'
+							variant='outline'
+						>
+							Disable
+						</Button>
+					</Setting>
+				)}
+				<Setting
+					label={'News Channel'}
+					description={
+						'Choose which channel the bot should send news to.'
+					}
+					active={false}
+				>
+					<Select
+						onValueChange={value => {
+							setSelectedChannelID(value);
+							toast.promise(
+								updateChannel(String(guild.guild_id), value),
+								{
+									loading: 'Saving...',
+									success: r => {
+										if (r) throw new Error(r);
+										return 'Saved';
+									},
+									error: (e?: Error) => {
+										router.refresh();
+										setSelectedChannelID(undefined);
+										return e
+											? e.message
+											: 'Failed to save.';
+									},
+								}
+							);
+						}}
+						key={selectedChannelID}
+					>
+						<SelectTrigger className='w-full md:w-fit-content md:max-w-[350px]'>
+							{(() => {
+								const chan = channels.find(
+									channel => channel.id === selectedChannelID
+								);
+								if (chan) {
+									return (
+										<span>
+											{chan.type === 0 ? (
+												<FaHashtag className='inline-block mr-2' />
+											) : (
+												<BiSolidMegaphone className='inline-block mr-2' />
+											)}
+											{chan.name}
+										</span>
+									);
+								}
+								return 'No channel selected';
+							})()}
+						</SelectTrigger>
+						<SelectContent
+							onCloseAutoFocus={e => {
+								e.preventDefault();
+								e.stopPropagation();
+							}}
+						>
+							{channels.map(channel => (
+								<SelectItem key={channel.id} value={channel.id}>
+									{channel.type === 0 ? (
+										<FaHashtag className='inline-block mr-2' />
+									) : (
+										<BiSolidMegaphone className='inline-block mr-2' />
+									)}
+									{channel.name}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+				</Setting>
+			</SettingGroup>
+
 			<SettingGroup title={'Exclusions'}>
 				{'Whether to show or hide news sites'}
 			</SettingGroup>
@@ -304,7 +309,7 @@ export default function Client({
 																...p,
 																selected:
 																	!p.selected,
-														  }
+															}
 														: p
 												)
 											);
@@ -321,7 +326,7 @@ export default function Client({
 																...p,
 																selected:
 																	!p.selected,
-														  }
+															}
 														: p
 												)
 											);
@@ -369,7 +374,7 @@ export default function Client({
 																	selected:
 																		(checked as boolean) ??
 																		false,
-															  }
+																}
 															: p
 													)
 												);

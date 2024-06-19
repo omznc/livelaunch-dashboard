@@ -5,15 +5,15 @@ import {
 	CountdownSetting,
 	NotificationsFilterSettings,
 } from '@app/(dashboard)/notifications/client';
-import {Routes} from 'discord-api-types/v10';
+import { Routes } from 'discord-api-types/v10';
 import env from '@env';
-import {REST} from '@discordjs/rest';
-import {createWebhook} from '@lib/discord-api';
-import {revalidatePath} from 'next/cache';
+import { REST } from '@discordjs/rest';
+import { createWebhook } from '@lib/discord-api';
+import { revalidatePath } from 'next/cache';
 
-import {isAuthorizedForGuild} from '@lib/server-utils';
+import { isAuthorizedForGuild } from '@lib/server-utils';
 
-const rest = new REST({version: '9'}).setToken(env.DISCORD_BOT_TOKEN);
+const rest = new REST({ version: '9' }).setToken(env.DISCORD_BOT_TOKEN);
 
 export const updateFilters = async (
 	guildId: string,
@@ -143,7 +143,7 @@ export const updateChannel = async (
 	]);
 
 	if (!newWebhookURL) {
-		return "Missing permission: Manage Webhooks"
+		return 'Missing permission: Manage Webhooks';
 	}
 
 	await prisma.enabled_guilds.update({

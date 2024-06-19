@@ -1,14 +1,14 @@
 import GuildSwitcher from '@app/(dashboard)/components/guild-switcher';
-import {Nav} from '@app/(dashboard)/components/nav';
-import {ThemeToggle} from '@components/theme-toggle';
+import { Nav } from '@app/(dashboard)/components/nav';
+import { ThemeToggle } from '@components/theme-toggle';
 import User from '@app/(dashboard)/components/user';
-import {RESTAPIPartialCurrentUserGuild} from 'discord.js';
-import {ReactNode} from 'react';
-import {getBotGuilds, getUserGuilds} from '@lib/discord-api';
+import { RESTAPIPartialCurrentUserGuild } from 'discord.js';
+import { ReactNode } from 'react';
+import { getBotGuilds, getUserGuilds } from '@lib/discord-api';
 import prisma from '@lib/prisma';
-import {isAuthorized} from "@lib/server-utils";
+import { isAuthorized } from '@lib/server-utils';
 
-export default async function Layout({children}: { children: ReactNode }) {
+export default async function Layout({ children }: { children: ReactNode }) {
 	await isAuthorized();
 
 	const guilds = await filterGuilds();
@@ -25,25 +25,25 @@ export default async function Layout({children}: { children: ReactNode }) {
 			<div className='sticky top-0 w-full bg-background z-50'>
 				<div className='hidden flex-row w-full justify-between border-b md:flex'>
 					<div className='flex h-16 items-center px-4'>
-						<GuildSwitcher guilds={guilds}/>
-						<Nav className='md:mx-6' guilds={enabledGuilds}/>
+						<GuildSwitcher guilds={guilds} />
+						<Nav className='md:mx-6' guilds={enabledGuilds} />
 					</div>
 					<div className='flex h-16 items-center gap-4 px-4'>
-						<ThemeToggle/>
-						<User/>
+						<ThemeToggle />
+						<User />
 					</div>
 				</div>
 				<div className='flex w-full flex-col md:hidden md:gap-4'>
 					<div className='flex h-16 items-center gap-2 justify-between px-4'>
 						<div className='flex items-center'>
-							<GuildSwitcher guilds={guilds}/>
+							<GuildSwitcher guilds={guilds} />
 						</div>
 						<div className='flex items-center gap-2'>
-							<ThemeToggle/>
-							<User/>
+							<ThemeToggle />
+							<User />
 						</div>
 					</div>
-					<Nav className='md:mx-6' guilds={enabledGuilds}/>
+					<Nav className='md:mx-6' guilds={enabledGuilds} />
 				</div>
 			</div>
 			<div className='w-full flex p-8 justify-center'>
@@ -74,7 +74,7 @@ const filterGuilds = async () => {
 		.filter(guild =>
 			userGuilds.some(userGuild => userGuild.id === guild.id)
 		)
-		.map(guild => ({...guild, botAccess: true}));
+		.map(guild => ({ ...guild, botAccess: true }));
 
 	return guilds;
 };

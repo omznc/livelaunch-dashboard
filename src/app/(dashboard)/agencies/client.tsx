@@ -79,151 +79,103 @@ export default function Client({
 
 	return (
 		<div className='flex flex-col gap-4'>
-			<SettingGroup title={'Exclusions'}>
-				Whether to show or hide agencies
-			</SettingGroup>
-			<Setting
-				label={'Exclusion Mode'}
-				description={
-					"When on 'Exclude' mode, all agencies will be shown except for the ones you select. When on 'Include' mode, only the agencies you select will be shown."
-				}
-				active={settings.whitelist}
+			<SettingGroup
+				title={'Exclusions'}
+				description='Whether to show or hide agencies'
 			>
-				<Tabs
-					defaultValue={
-						guild.agencies_include_exclude ? 'include' : 'exclude'
+				<Setting
+					label={'Exclusion Mode'}
+					description={
+						"When on 'Exclude' mode, all agencies will be shown except for the ones you select. When on 'Include' mode, only the agencies you select will be shown."
 					}
-					onValueChange={value => {
-						updateSettings(String(guild.guild_id), {
-							...settings,
-							whitelist: value === 'include',
-						});
-						setSettings(prev => ({
-							...prev,
-							whitelist: value === 'include',
-						}));
-					}}
+					active={settings.whitelist}
 				>
-					<TabsList>
-						<TabsTrigger value='exclude'>Exclude</TabsTrigger>
-						<TabsTrigger value='include'>Include</TabsTrigger>
-					</TabsList>
-				</Tabs>
-			</Setting>
-			<SettingGroup title={'Modify Agencies'}>
-				Select the agencies you want to{' '}
-				{settings.whitelist ? 'show' : 'hide'}.
+					<Tabs
+						defaultValue={
+							guild.agencies_include_exclude
+								? 'include'
+								: 'exclude'
+						}
+						onValueChange={value => {
+							updateSettings(String(guild.guild_id), {
+								...settings,
+								whitelist: value === 'include',
+							});
+							setSettings(prev => ({
+								...prev,
+								whitelist: value === 'include',
+							}));
+						}}
+					>
+						<TabsList>
+							<TabsTrigger value='exclude'>Exclude</TabsTrigger>
+							<TabsTrigger value='include'>Include</TabsTrigger>
+						</TabsList>
+					</Tabs>
+				</Setting>
 			</SettingGroup>
-			<Input
-				placeholder={'Search...'}
-				onChange={e => {
-					setSearchQuery(e.target.value.trim());
-				}}
-			/>
-			<div className='flex border rounded-md flex-col overflow-hidden'>
-				{filtered.length > 0 ? (
-					<Table className='overflow-scroll w-full'>
-						<TableHeader className='border-b-2 h-14 font-medium bg-background'>
-							<TableRow className='bg-muted/50 snap-start align-right'>
-								<TableHead>Name</TableHead>
-								<TableHead>
-									<Checkbox
-										className='grid place-items-center h-6 w-6 m-2 rounded-[5px]'
-										checked={
-											selectedAgencies.every(
-												a => a.selected
-											) && selectedAgencies.length > 0
-										}
-										onClick={e => {
-											e.preventDefault();
-											e.stopPropagation();
-											const checkbox =
-												e.currentTarget as HTMLInputElement;
-											checkbox.checked =
-												!checkbox.checked;
-											setSelectedAgencies(prev =>
-												prev.map(p => ({
-													...p,
-													selected: checkbox.checked,
-												}))
-											);
-										}}
-									/>
-								</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody className='w-full cursor-pointer'>
-							{filtered.map(a => (
-								<TableRow
-									key={a.agency_id}
-									className={cn(
-										'hover:bg-foreground align-middle w-full h-8 h-18 hover:bg-muted/50',
-										{
-											'bg-muted/30': a.selected,
-										}
-									)}
-									onMouseDown={e => {
-										if (e.button === 0) {
-											e.preventDefault();
-											setSelectedAgencies(prev =>
-												prev.map(p =>
-													p.agency_id === a.agency_id
-														? {
-																...p,
-																selected:
-																	!p.selected,
-														  }
-														: p
-												)
-											);
-										}
-									}}
-									onMouseEnter={e => {
-										if (e.buttons === 1) {
-											e.preventDefault();
-											setSelectedAgencies(prev =>
-												prev.map(p =>
-													p.agency_id === a.agency_id
-														? {
-																...p,
-																selected:
-																	!p.selected,
-														  }
-														: p
-												)
-											);
-										}
-									}}
-								>
-									<TableCell className='inline-flex h-full items-center gap-2'>
-										{a.logo_url ? (
-											<Image
-												src={a.logo_url}
-												alt='Agency Logo'
-												width={42}
-												height={42}
-												className='rounded-full bg-black'
-											/>
-										) : (
-											<div
-												className='flex h-[42px] w-[42px] items-center text-white justify-center rounded-full bg-[#1e1f22]'
-												title={a.name ?? 'Unknown'}
-											>
-												{a.name?.[0]}
-											</div>
-										)}
-										{a.name}
-									</TableCell>
-									<TableCell className='right-0 relative text-right align-bottom ml-auto'>
+
+			<SettingGroup
+				title={'Modify Agencies'}
+				description={
+					<>
+						Select the agencies you want to{' '}
+						{settings.whitelist ? 'show' : 'hide'}.
+					</>
+				}
+			>
+				<Input
+					placeholder={'Search...'}
+					onChange={e => {
+						setSearchQuery(e.target.value.trim());
+					}}
+				/>
+				<div className='flex border rounded-md flex-col overflow-hidden'>
+					{filtered.length > 0 ? (
+						<Table className='overflow-scroll w-full'>
+							<TableHeader className='border-b-2 h-14 font-medium bg-background'>
+								<TableRow className='bg-muted/50 snap-start align-right'>
+									<TableHead>Name</TableHead>
+									<TableHead>
 										<Checkbox
-											name={`Checked ${a.name}? ${a.selected}`}
-											checked={a.selected}
 											className='grid place-items-center h-6 w-6 m-2 rounded-[5px]'
+											checked={
+												selectedAgencies.every(
+													a => a.selected
+												) && selectedAgencies.length > 0
+											}
 											onClick={e => {
 												e.preventDefault();
 												e.stopPropagation();
+												const checkbox =
+													e.currentTarget as HTMLInputElement;
+												checkbox.checked =
+													!checkbox.checked;
+												setSelectedAgencies(prev =>
+													prev.map(p => ({
+														...p,
+														selected:
+															checkbox.checked,
+													}))
+												);
 											}}
-											onCheckedChange={checked => {
+										/>
+									</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody className='w-full cursor-pointer'>
+								{filtered.map(a => (
+									<TableRow
+										key={a.agency_id}
+										className={cn(
+											'hover:bg-foreground align-middle w-full h-8 h-18 hover:bg-muted/50',
+											{
+												'bg-muted/30': a.selected,
+											}
+										)}
+										onMouseDown={e => {
+											if (e.button === 0) {
+												e.preventDefault();
 												setSelectedAgencies(prev =>
 													prev.map(p =>
 														p.agency_id ===
@@ -231,27 +183,89 @@ export default function Client({
 															? {
 																	...p,
 																	selected:
-																		(checked as boolean) ??
-																		false,
-															  }
+																		!p.selected,
+																}
 															: p
 													)
 												);
-											}}
-										/>
-									</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-				) : (
-					<div className='flex flex-col justify-center items-center h-full'>
-						<p className='text-sm opacity-50 p-8'>
-							No agencies matched your search query
-						</p>
-					</div>
-				)}
-			</div>
+											}
+										}}
+										onMouseEnter={e => {
+											if (e.buttons === 1) {
+												e.preventDefault();
+												setSelectedAgencies(prev =>
+													prev.map(p =>
+														p.agency_id ===
+														a.agency_id
+															? {
+																	...p,
+																	selected:
+																		!p.selected,
+																}
+															: p
+													)
+												);
+											}
+										}}
+									>
+										<TableCell className='inline-flex h-full items-center gap-2'>
+											{a.logo_url ? (
+												<Image
+													src={a.logo_url}
+													alt='Agency Logo'
+													width={42}
+													height={42}
+													className='rounded-full bg-black'
+												/>
+											) : (
+												<div
+													className='flex h-[42px] w-[42px] items-center text-white justify-center rounded-full bg-[#1e1f22]'
+													title={a.name ?? 'Unknown'}
+												>
+													{a.name?.[0]}
+												</div>
+											)}
+											{a.name}
+										</TableCell>
+										<TableCell className='right-0 relative text-right align-bottom ml-auto'>
+											<Checkbox
+												name={`Checked ${a.name}? ${a.selected}`}
+												checked={a.selected}
+												className='grid place-items-center h-6 w-6 m-2 rounded-[5px]'
+												onClick={e => {
+													e.preventDefault();
+													e.stopPropagation();
+												}}
+												onCheckedChange={checked => {
+													setSelectedAgencies(prev =>
+														prev.map(p =>
+															p.agency_id ===
+															a.agency_id
+																? {
+																		...p,
+																		selected:
+																			(checked as boolean) ??
+																			false,
+																	}
+																: p
+														)
+													);
+												}}
+											/>
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					) : (
+						<div className='flex flex-col justify-center items-center h-full'>
+							<p className='text-sm opacity-50 p-8'>
+								No agencies matched your search query
+							</p>
+						</div>
+					)}
+				</div>
+			</SettingGroup>
 		</div>
 	);
 }

@@ -1,12 +1,12 @@
 'use server';
 
-import {revalidatePath, revalidateTag} from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import prisma from '@lib/prisma';
-import {isAuthorizedForGuild} from '@lib/server-utils';
-import {validateRequest} from "@lib/auth";
+import { isAuthorizedForGuild } from '@lib/server-utils';
+import { validateRequest } from '@lib/auth';
 
 export const revalidateGuilds = async () => {
-	const {session} = await validateRequest();
+	const { session } = await validateRequest();
 	if (!session) return;
 
 	revalidateTag('get-bot-guilds');

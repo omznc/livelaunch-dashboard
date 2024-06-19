@@ -1,16 +1,16 @@
 'use server';
 
 import prisma from '@lib/prisma';
-import {NewsSite, NewsSitesSettings} from '@app/(dashboard)/news/client';
-import {createWebhook} from '@lib/discord-api';
-import {REST} from '@discordjs/rest';
+import { NewsSite, NewsSitesSettings } from '@app/(dashboard)/news/client';
+import { createWebhook } from '@lib/discord-api';
+import { REST } from '@discordjs/rest';
 import env from '@env';
-import {Routes} from 'discord-api-types/v10';
-import {revalidatePath} from 'next/cache';
+import { Routes } from 'discord-api-types/v10';
+import { revalidatePath } from 'next/cache';
 
-import {isAuthorizedForGuild} from '@lib/server-utils';
+import { isAuthorizedForGuild } from '@lib/server-utils';
 
-const rest = new REST({version: '9'}).setToken(env.DISCORD_BOT_TOKEN);
+const rest = new REST({ version: '9' }).setToken(env.DISCORD_BOT_TOKEN);
 
 export async function updateSettings(
 	guildId: string,
@@ -34,7 +34,7 @@ export async function updateSettings(
 export const updateChannel = async (
 	guildId: string,
 	channelId: string
-): Promise<void|string> => {
+): Promise<void | string> => {
 	const authorized = await isAuthorizedForGuild(guildId);
 	if (!authorized) {
 		throw new Error('Unauthorized');
@@ -50,7 +50,7 @@ export const updateChannel = async (
 	]);
 
 	if (!newWebhookURL) {
-		return "Missing permission: Manage Webhooks"
+		return 'Missing permission: Manage Webhooks';
 	}
 
 	await prisma.enabled_guilds.update({

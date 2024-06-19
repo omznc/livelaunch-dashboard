@@ -1,11 +1,11 @@
 'use client';
 
-import {cn} from '@lib/utils';
+import { cn } from '@lib/utils';
 import RetainQueryLink from '@components/retain-query-link';
-import {usePathname, useRouter, useSearchParams} from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import * as React from 'react';
-import {useEffect, useMemo, useState} from 'react';
-import {enableGuild} from '@app/(dashboard)/actions';
+import { useEffect, useMemo, useState } from 'react';
+import { enableGuild } from '@app/(dashboard)/actions';
 import {
 	Dialog,
 	DialogContent,
@@ -14,18 +14,17 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from '@components/ui/dialog';
-import {DialogBody} from 'next/dist/client/components/react-dev-overlay/internal/components/Dialog';
+import { DialogBody } from 'next/dist/client/components/react-dev-overlay/internal/components/Dialog';
 import {
 	Accordion,
 	AccordionContent,
 	AccordionItem,
 	AccordionTrigger,
 } from '@components/ui/accordion';
-import {Button, buttonVariants} from '@components/ui/button';
+import { Button, buttonVariants } from '@components/ui/button';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
-import {enabled_guilds} from '@prisma/client';
-
+import { enabled_guilds } from '@prisma/client';
 
 const links = [
 	{
@@ -58,7 +57,7 @@ interface NavProps extends React.HTMLAttributes<HTMLElement> {
 	guilds?: enabled_guilds[];
 }
 
-export function Nav({className, guilds, ...props}: NavProps) {
+export function Nav({ className, guilds, ...props }: NavProps) {
 	const path = usePathname();
 	const params = useSearchParams();
 	const guildId = params.get('g') ?? '';
@@ -91,8 +90,7 @@ export function Nav({className, guilds, ...props}: NavProps) {
 				)}
 				{...props}
 			>
-				<div
-					className='flex gap-4 transition-all w-full border-b-2 md:border-b-0 items-center justify-center overflow-x-auto'>
+				<div className='flex gap-4 transition-all w-full border-b-2 md:border-b-0 items-center justify-center overflow-x-auto'>
 					{!guild && guildId && (
 						<Button
 							variant='outline'
@@ -103,11 +101,11 @@ export function Nav({className, guilds, ...props}: NavProps) {
 					)}
 					{links
 						.filter(
-							({requiresGuildEnabled}) =>
+							({ requiresGuildEnabled }) =>
 								!requiresGuildEnabled ||
 								(requiresGuildEnabled && guild)
 						)
-						.map(({href, label}) => (
+						.map(({ href, label }) => (
 							<RetainQueryLink
 								key={`${href}${label}`}
 								href={href}

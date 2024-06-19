@@ -2,10 +2,9 @@
 import { Button } from '@components/ui/button';
 import { cn } from '@lib/utils';
 import { Inter } from 'next/font/google';
-import * as Sentry from "@sentry/nextjs";
-import Error from "next/error";
-import { useEffect } from "react";
-
+import * as Sentry from '@sentry/nextjs';
+import Error from 'next/error';
+import { useEffect } from 'react';
 
 const inter = Inter({ subsets: ['latin'] });
 

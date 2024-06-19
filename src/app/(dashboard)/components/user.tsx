@@ -1,5 +1,5 @@
-import {Button} from '@components/ui/button';
-import {Avatar, AvatarFallback, AvatarImage} from '@components/ui/avatar';
+import { Button } from '@components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -8,14 +8,14 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from '@components/ui/dropdown-menu';
-import {lucia, validateRequest} from "@lib/auth";
-import prisma from "@lib/prisma";
-import {cookies} from "next/headers";
-import {redirect} from "next/navigation";
-import Image from 'next/image'
+import { lucia, validateRequest } from '@lib/auth';
+import prisma from '@lib/prisma';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import Image from 'next/image';
 
 export default async function User() {
-	const {session} = await validateRequest();
+	const { session } = await validateRequest();
 	const user = await prisma.user.findUnique({
 		where: {
 			id: session?.userId,
@@ -34,20 +34,18 @@ export default async function User() {
 					className='relative md:h-8 md:w-8 h-9 w-9'
 				>
 					<Avatar className='md:h-8 md:w-8 h-9 w-9 md:rounded-full rounded-sm'>
-						{
-							user?.avatar ?
-
-								<Image
-									width={50}
-									height={50}
-									src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`}
-									alt={'Profile photo'}
-								/>
-								:
-								<AvatarFallback>
-							<p>{user?.username?.[0]}</p>
-						</AvatarFallback>
-						}
+						{user?.avatar ? (
+							<Image
+								width={50}
+								height={50}
+								src={`https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`}
+								alt={'Profile photo'}
+							/>
+						) : (
+							<AvatarFallback>
+								<p>{user?.username?.[0]}</p>
+							</AvatarFallback>
+						)}
 					</Avatar>
 				</Button>
 			</DropdownMenuTrigger>
@@ -65,9 +63,8 @@ export default async function User() {
 						</p>
 					</div>
 				</DropdownMenuLabel>
-				<DropdownMenuSeparator/>
-				<DropdownMenuItem asChild
-				>
+				<DropdownMenuSeparator />
+				<DropdownMenuItem asChild>
 					<form action={logout}>
 						<button type='submit' className='w-full text-left'>
 							Log out
@@ -80,19 +77,23 @@ export default async function User() {
 }
 
 async function logout() {
-	"use server";
+	'use server';
 
-	const {session} = await validateRequest();
+	const { session } = await validateRequest();
 	if (!session) {
 		return {
-			error: "Unauthorized"
+			error: 'Unauthorized',
 		};
 	}
 
 	await lucia.invalidateSession(session.id);
 
 	const sessionCookie = lucia.createBlankSessionCookie();
-	cookies().set(sessionCookie.name, sessionCookie.value, sessionCookie.attributes);
+	cookies().set(
+		sessionCookie.name,
+		sessionCookie.value,
+		sessionCookie.attributes
+	);
 
-	return redirect("/login");
+	return redirect('/login');
 }

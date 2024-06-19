@@ -1,5 +1,5 @@
-import {createEnv} from '@t3-oss/env-nextjs';
-import {z} from 'zod';
+import { createEnv } from '@t3-oss/env-nextjs';
+import { z } from 'zod';
 
 const env = createEnv({
 	// These are only visible to server-side code
@@ -37,7 +37,7 @@ const env = createEnv({
 	runtimeEnv: {
 		DATABASE_URL: process.env.DATABASE_URL,
 		NEXT_PUBLIC_DISCORD_CLIENT_ID:
-		process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID,
+			process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID,
 		DISCORD_CLIENT_SECRET: process.env.DISCORD_CLIENT_SECRET,
 		DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN,
 		PUBLIC_URL: process.env.PUBLIC_URL,
