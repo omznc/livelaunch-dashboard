@@ -71,7 +71,9 @@ export default function Client({ guild, channels }: ClientProps) {
 
 	return (
 		<div className='flex flex-col gap-4'>
-			<SettingGroup title={'Feature'}>
+			<SettingGroup
+				title={'General'}
+			>
 				{guild.channel_id !== null ? (
 					<Setting
 						label={'Disable Feature'}
@@ -104,12 +106,6 @@ export default function Client({ guild, channels }: ClientProps) {
 						</Button>
 					</Setting>
 				) : undefined}
-			</SettingGroup>
-
-			<SettingGroup
-				title={'General'}
-				description={'Uncategorized, general settings.'}
-			>
 				<Setting
 					label={'Video Channel'}
 					description={

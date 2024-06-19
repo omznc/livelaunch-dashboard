@@ -104,7 +104,7 @@ export default function Client({
 
 	return (
 		<div className='flex flex-col gap-4'>
-			<SettingGroup title={'Feature'}>
+			<SettingGroup title={'News'}>
 				{guild.news_channel_id !== null && (
 					<Setting
 						label={'Disable Feature'}

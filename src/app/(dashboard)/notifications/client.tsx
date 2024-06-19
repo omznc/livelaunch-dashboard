@@ -99,7 +99,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 	return (
 		<div className='flex flex-col gap-4'>
 			<SettingGroup
-				title={'Feature'}
+				title={'Notifications'}
 				description={'Settings for the notification feature.'}
 			>
 				{guild.notification_channel_id !== null && (
