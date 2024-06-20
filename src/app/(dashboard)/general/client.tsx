@@ -72,7 +72,7 @@ export default function Client({ guild, channels }: ClientProps) {
 	return (
 		<div className='flex flex-col gap-4'>
 			<SettingGroup
-				title={'General'}
+				title={'Videos'}
 			>
 				{guild.channel_id !== null ? (
 					<Setting
