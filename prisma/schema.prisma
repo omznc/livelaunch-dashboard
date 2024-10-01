@@ -59,6 +59,7 @@ model enabled_guilds {
   notification_go              Int?                     @default(0) @db.UnsignedTinyInt
   notification_liftoff         Int?                     @default(0) @db.UnsignedTinyInt
   notification_hold            Int?                     @default(0) @db.UnsignedTinyInt
+  notification_deploy          Int?                     @default(0) @db.UnsignedTinyInt
   notification_end_status      Int?                     @default(0) @db.UnsignedTinyInt
   notification_scheduled_event Int?                     @default(0) @db.UnsignedTinyInt
   notification_button_fc       Int?                     @default(1) @db.UnsignedTinyInt
