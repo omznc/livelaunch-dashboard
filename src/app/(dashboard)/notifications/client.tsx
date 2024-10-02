@@ -522,7 +522,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 				<Setting
 					label={'Payload Deployed'}
 					description={
-						'Will the bot send a notification when the launch deploys its payload?'
+						'Will the bot send a notification when the payload deploys?'
 					}
 					active={settings.notification_deploy}
 					disabled={guild.notification_channel_id === null}
