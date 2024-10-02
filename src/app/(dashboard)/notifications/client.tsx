@@ -51,6 +51,7 @@ export interface CountdownSetting {
 
 export interface NotificationsFilterSettings {
 	notification_end_status: boolean;
+	notification_deploy: boolean;
 	notification_hold: boolean;
 	notification_go: boolean;
 	notification_liftoff: boolean;
@@ -66,6 +67,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 
 	const [settings, setSettings] = useState<NotificationsFilterSettings>({
 		notification_end_status: Boolean(guild.notification_end_status),
+		notification_deploy: Boolean(guild.notification_deploy),
 		notification_hold: Boolean(guild.notification_hold),
 		notification_liftoff: Boolean(guild.notification_liftoff),
 		notification_go: Boolean(guild.notification_go),
@@ -514,6 +516,32 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 							}));
 						}}
 						defaultChecked={settings.notification_end_status}
+					/>
+				</Setting>
+
+				<Setting
+					label={'Payload Deployed'}
+					description={
+						'Will the bot send a notification when the payload deploys?'
+					}
+					active={settings.notification_deploy}
+					disabled={guild.notification_channel_id === null}
+					disabledMessage={
+						'Requires a notification channel to be set'
+					}
+				>
+					<Switch
+						onCheckedChange={checked => {
+							updateFilters(String(guild.guild_id), {
+								...settings,
+								notification_deploy: checked,
+							});
+							setSettings(prev => ({
+								...prev,
+								notification_deploy: checked,
+							}));
+						}}
+						defaultChecked={settings.notification_deploy}
 					/>
 				</Setting>
 
