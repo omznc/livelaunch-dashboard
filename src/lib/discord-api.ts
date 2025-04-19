@@ -42,9 +42,6 @@ export const getGuildChannels = async (guildId: string) => {
 /**
  * Gets the guilds the bot is in
  */
-/**
- * Gets the guilds the bot is in
- */
 export const getBotGuilds = async () => {
 	let allGuilds: any[] = [];
 	let lastId: string | undefined = undefined;
