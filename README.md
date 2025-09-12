@@ -1,5 +1,3 @@
-![Group 16](https://github.com/omznc/livelaunch-dashboard/assets/38432561/0c56a512-3487-475d-b790-25877c23a578)
-
 # Web Dashboard for [LiveLaunch](https://github.com/juststephen/LiveLaunch)
 
 <img width="2560" height="1333" alt="image" src="https://github.com/user-attachments/assets/0707085b-7821-4479-bd0e-61ef82b0e524" />
