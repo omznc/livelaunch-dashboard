@@ -1,0 +1,109 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.2.4/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "ignoreUnknown": true
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "lineWidth": 120
+  },
+  "linter": {
+    "rules": {
+      "suspicious": {
+        "noConsole": "warn",
+        "noImplicitAnyLet": "error",
+        "noVar": "error",
+        "noConstEnum": "error",
+        "noDebugger": "error",
+        "noArrayIndexKey": "warn"
+      },
+      "correctness": {
+        "useUniqueElementIds": "off",
+        "noUndeclaredVariables": "error",
+        "noUnusedImports": "error",
+        "noUnusedVariables": "error",
+        "useExhaustiveDependencies": "warn"
+      },
+      "performance": {
+        "noAwaitInLoops": "error",
+        "noDelete": "error"
+      },
+      "style": {
+        "noNegationElse": "off",
+        "noParameterAssign": "error",
+        "useConst": "error",
+        "useDefaultParameterLast": "error",
+        "useExponentiationOperator": "error",
+        "useTemplate": "error",
+        "useShorthandFunctionType": "error",
+        "noUselessElse": "error",
+        "useConsistentArrayType": "error",
+        "noNestedTernary": "error",
+        "useBlockStatements": "error",
+        "useCollapsedElseIf": "error",
+        "useSelfClosingElements": "error",
+        "useShorthandAssign": "error",
+        "useSingleVarDeclarator": "error"
+      },
+      "complexity": {
+        "noForEach": "warn",
+        "noUselessRename": "error",
+        "useArrowFunction": "error",
+        "useLiteralKeys": "error",
+        "useOptionalChain": "error",
+        "noUselessCatch": "error",
+        "noUselessConstructor": "error",
+        "noUselessFragments": "error",
+        "noUselessLabel": "error",
+        "noUselessTernary": "error",
+        "useFlatMap": "error",
+        "useSimplifiedLogicExpression": "off"
+      },
+      "nursery": {
+        "useSortedClasses": "warn"
+      },
+      "a11y": {
+        "noAccessKey": "error",
+        "noAriaHiddenOnFocusable": "error",
+        "noAutofocus": "error",
+        "noPositiveTabindex": "error",
+        "useAltText": "error",
+        "useAriaPropsForRole": "error",
+        "useValidAriaProps": "error",
+        "useValidAriaRole": "error",
+        "useValidAriaValues": "error"
+      }
+    }
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "trailingCommas": "es5",
+      "arrowParentheses": "asNeeded"
+    }
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": {
+          "options": {
+            "groups": [
+              ":NODE:",
+              ":NPM:",
+              ":ALIAS:",
+              ":RELATIVE:",
+              {
+                "source": ["**/*.css", "**/*.scss", "**/*.sass", "**/*.less"]
+              }
+            ]
+          }
+        }
+      }
+    }
+  }
+}
