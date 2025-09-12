@@ -1,13 +1,13 @@
 'use client';
 
-import { enabled_guilds, notification_countdown } from '@prisma/client';
+import type { enabled_guilds, notification_countdown } from '@prisma/client';
 import { Hash, X, Megaphone } from 'lucide-react';
 import React, { useState } from 'react';
 import { addCountdown, disableFeature, removeCountdown, updateChannel, updateFilters } from './actions';
 import { Switch } from '@components/ui/switch';
 import { Setting, SettingGroup } from '@components/ui/setting';
 import toast from 'react-hot-toast';
-import { RESTGetAPIGuildChannelsResult } from 'discord.js';
+import type { RESTGetAPIGuildChannelsResult } from 'discord.js';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@components/ui/select';
 
 import {
@@ -97,7 +97,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
           >
             <Button
               onClick={() => {
-                toast.promise(disableFeature(String(guild.guild_id)), {
+                toast.promise(disableFeature({ guildId: String(guild.guild_id) }), {
                   loading: 'Disabling...',
                   success: () => {
                     setSelectedChannelID(undefined);
@@ -121,10 +121,10 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
           <Select
             onValueChange={value => {
               setSelectedChannelID(value);
-              toast.promise(updateChannel(String(guild.guild_id), value), {
+              toast.promise(updateChannel({ guildId: String(guild.guild_id), channelId: value }), {
                 loading: 'Saving...',
                 success: r => {
-                  if (r) throw new Error(r);
+                  if (!r.data?.success) throw new Error(r.serverError);
                   return 'Saved';
                 },
                 error: (e?: Error) => {
@@ -135,7 +135,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
             }}
             key={selectedChannelID}
           >
-            <SelectTrigger className="w-full md:w-fit-content md:max-w-[350px]">
+            <SelectTrigger className="w-full md:w-fit md:max-w-[350px]">
               {(() => {
                 const chan = channels.find(channel => channel.id === selectedChannelID);
                 if (chan) {
@@ -260,7 +260,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
                 </Button>
                 <Button
                   onClick={() => {
-                    addCountdown(String(guild.guild_id), newCountdown).catch(() => {
+                    addCountdown({ guildId: String(guild.guild_id), settings: newCountdown }).catch(() => {
                       toast.error('Failed to add countdown.');
                     });
                     setAddCountdownDialogOpen(false);
@@ -308,7 +308,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
               })()}
               <X
                 onClick={() => {
-                  removeCountdown(String(guild.guild_id), countdown.minutes).catch(() => {
+                  removeCountdown({ guildId: String(guild.guild_id), minutes: countdown.minutes }).catch(() => {
                     toast.error('Failed to remove countdown.');
                   });
                 }}
@@ -329,9 +329,12 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
         >
           <Switch
             onCheckedChange={checked => {
-              updateFilters(String(guild.guild_id), {
-                ...settings,
-                notification_t0_change: checked,
+              updateFilters({
+                guildId: String(guild.guild_id),
+                settings: {
+                  ...settings,
+                  notification_t0_change: checked,
+                },
               });
               setSettings(prev => ({
                 ...prev,
@@ -351,9 +354,12 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
         >
           <Switch
             onCheckedChange={checked => {
-              updateFilters(String(guild.guild_id), {
-                ...settings,
-                notification_launch: checked,
+              updateFilters({
+                guildId: String(guild.guild_id),
+                settings: {
+                  ...settings,
+                  notification_launch: checked,
+                },
               });
               setSettings(prev => ({
                 ...prev,
@@ -373,9 +379,12 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
         >
           <Switch
             onCheckedChange={checked => {
-              updateFilters(String(guild.guild_id), {
-                ...settings,
-                notification_event: checked,
+              updateFilters({
+                guildId: String(guild.guild_id),
+                settings: {
+                  ...settings,
+                  notification_event: checked,
+                },
               });
               setSettings(prev => ({
                 ...prev,
@@ -400,9 +409,12 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
         >
           <Switch
             onCheckedChange={checked => {
-              updateFilters(String(guild.guild_id), {
-                ...settings,
-                notification_end_status: checked,
+              updateFilters({
+                guildId: String(guild.guild_id),
+                settings: {
+                  ...settings,
+                  notification_end_status: checked,
+                },
               });
               setSettings(prev => ({
                 ...prev,
@@ -422,9 +434,12 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
         >
           <Switch
             onCheckedChange={checked => {
-              updateFilters(String(guild.guild_id), {
-                ...settings,
-                notification_deploy: checked,
+              updateFilters({
+                guildId: String(guild.guild_id),
+                settings: {
+                  ...settings,
+                  notification_deploy: checked,
+                },
               });
               setSettings(prev => ({
                 ...prev,
@@ -444,9 +459,12 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
         >
           <Switch
             onCheckedChange={checked => {
-              updateFilters(String(guild.guild_id), {
-                ...settings,
-                notification_hold: checked,
+              updateFilters({
+                guildId: String(guild.guild_id),
+                settings: {
+                  ...settings,
+                  notification_hold: checked,
+                },
               });
               setSettings(prev => ({
                 ...prev,
@@ -466,9 +484,12 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
         >
           <Switch
             onCheckedChange={checked => {
-              updateFilters(String(guild.guild_id), {
-                ...settings,
-                notification_liftoff: checked,
+              updateFilters({
+                guildId: String(guild.guild_id),
+                settings: {
+                  ...settings,
+                  notification_liftoff: checked,
+                },
               });
               setSettings(prev => ({
                 ...prev,
@@ -488,9 +509,12 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
         >
           <Switch
             onCheckedChange={checked => {
-              updateFilters(String(guild.guild_id), {
-                ...settings,
-                notification_go: checked,
+              updateFilters({
+                guildId: String(guild.guild_id),
+                settings: {
+                  ...settings,
+                  notification_go: checked,
+                },
               });
               setSettings(prev => ({
                 ...prev,
@@ -510,9 +534,12 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
         >
           <Switch
             onCheckedChange={checked => {
-              updateFilters(String(guild.guild_id), {
-                ...settings,
-                notification_tbc: checked,
+              updateFilters({
+                guildId: String(guild.guild_id),
+                settings: {
+                  ...settings,
+                  notification_tbc: checked,
+                },
               });
               setSettings(prev => ({
                 ...prev,
@@ -532,9 +559,12 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
         >
           <Switch
             onCheckedChange={checked => {
-              updateFilters(String(guild.guild_id), {
-                ...settings,
-                notification_tbd: checked,
+              updateFilters({
+                guildId: String(guild.guild_id),
+                settings: {
+                  ...settings,
+                  notification_tbd: checked,
+                },
               });
               setSettings(prev => ({
                 ...prev,

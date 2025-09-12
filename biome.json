@@ -44,7 +44,7 @@
         "noUselessElse": "error",
         "useConsistentArrayType": "error",
         "noNestedTernary": "error",
-        "useBlockStatements": "error",
+        "useBlockStatements": "off",
         "useCollapsedElseIf": "error",
         "useSelfClosingElements": "error",
         "useShorthandAssign": "error",

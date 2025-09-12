@@ -1,6 +1,6 @@
 import 'server-only';
 
-import {
+import type {
   RESTAPIPartialCurrentUserGuild,
   RESTGetAPIGuildChannelsResult,
   RESTPostAPIChannelWebhookResult,
@@ -46,7 +46,7 @@ export const getGuildChannels = async (guildId: string) => {
  */
 export const getBotGuilds = async () => {
   let allGuilds: any[] = [];
-  let lastId: string | undefined = undefined;
+  let lastId: string | undefined;
 
   // Keep fetching until we have all guilds
   while (true) {

@@ -1,6 +1,6 @@
 'use client';
 
-import { enabled_guilds, ll2_agencies, ll2_agencies_filter } from '@prisma/client';
+import type { enabled_guilds, ll2_agencies, ll2_agencies_filter } from '@prisma/client';
 import React, { useEffect, useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@components/ui/table';
 import { Checkbox } from '@components/ui/checkbox';
@@ -47,7 +47,7 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
       setMounted(true);
       return;
     }
-    toast.promise(SetAgencies(selectedAgencies, String(guild.guild_id)), {
+    toast.promise(SetAgencies({ guildId: String(guild.guild_id), agencies: selectedAgencies }), {
       loading: 'Saving...',
       success: 'Saved!',
       error: 'Failed to save!',
@@ -75,9 +75,12 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
           <Tabs
             defaultValue={guild.agencies_include_exclude ? 'include' : 'exclude'}
             onValueChange={value => {
-              updateSettings(String(guild.guild_id), {
-                ...settings,
-                whitelist: value === 'include',
+              updateSettings({
+                guildId: String(guild.guild_id),
+                settings: {
+                  ...settings,
+                  whitelist: value === 'include',
+                },
               });
               setSettings(prev => ({
                 ...prev,

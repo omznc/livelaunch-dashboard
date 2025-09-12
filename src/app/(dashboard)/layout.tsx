@@ -1,8 +1,8 @@
 import GuildSwitcher from '@app/(dashboard)/components/guild-switcher';
 import { Nav } from '@app/(dashboard)/components/nav';
 import User from '@app/(dashboard)/components/user';
-import { RESTAPIPartialCurrentUserGuild } from 'discord.js';
-import { ReactNode } from 'react';
+import type { RESTAPIPartialCurrentUserGuild } from 'discord.js';
+import type { ReactNode } from 'react';
 import { getBotGuilds, getUserGuilds } from '@lib/discord-api';
 import prisma from '@lib/prisma';
 import { isAuthorized } from '@lib/server-utils';
@@ -20,7 +20,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
   });
 
   return (
-    <div className="flex flex-col items-center min-h-screen h-full max-h-screen w-full">
+    <div className="flex flex-col items-center min-h-screen w-full">
       <div className="sticky top-0 w-full bg-primary z-50">
         <div className="hidden flex-row w-full justify-between border-b md:flex">
           <div className="flex h-16 items-center px-4">

@@ -1,6 +1,6 @@
 'use client';
 
-import { enabled_guilds, news_filter, news_sites } from '@prisma/client';
+import type { enabled_guilds, news_filter, news_sites } from '@prisma/client';
 import React, { useEffect, useState } from 'react';
 import { useDebounce } from '@lib/hooks';
 import { cn } from '@lib/utils';
@@ -11,7 +11,7 @@ import Image from 'next/image';
 import { disableFeature, setNewsSites, updateChannel, updateSettings } from './actions';
 import { Tabs, TabsList, TabsTrigger } from '@components/ui/tabs';
 import { Setting, SettingGroup } from '@components/ui/setting';
-import { RESTGetAPIGuildChannelsResult } from 'discord.js';
+import type { RESTGetAPIGuildChannelsResult } from 'discord.js';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@components/ui/select';
 import toast from 'react-hot-toast';
 import { Hash, Megaphone } from 'lucide-react';
@@ -57,7 +57,7 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
       setMounted(true);
       return;
     }
-    toast.promise(setNewsSites(selectedNewsSites, String(guild.guild_id)), {
+    toast.promise(setNewsSites({ guildId: String(guild.guild_id), newsSites: selectedNewsSites }), {
       loading: 'Saving...',
       success: 'Saved!',
       error: 'Failed to save!',
@@ -86,7 +86,7 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
           >
             <Button
               onClick={() => {
-                toast.promise(disableFeature(String(guild.guild_id)), {
+                toast.promise(disableFeature({ guildId: String(guild.guild_id) }), {
                   loading: 'Disabling...',
                   success: () => {
                     setSelectedChannelID(undefined);
@@ -110,10 +110,10 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
           <Select
             onValueChange={value => {
               setSelectedChannelID(value);
-              toast.promise(updateChannel(String(guild.guild_id), value), {
+              toast.promise(updateChannel({ guildId: String(guild.guild_id), channelId: value }), {
                 loading: 'Saving...',
                 success: r => {
-                  if (r) throw new Error(r);
+                  if (!r.data?.success) throw new Error(r.serverError);
                   return 'Saved';
                 },
                 error: (e?: Error) => {
@@ -125,7 +125,7 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
             }}
             key={selectedChannelID}
           >
-            <SelectTrigger className="w-full md:w-fit-content md:max-w-[350px]">
+            <SelectTrigger className="w-full md:w-fit md:max-w-[350px]">
               {(() => {
                 const chan = channels.find(channel => channel.id === selectedChannelID);
                 if (chan) {
@@ -175,11 +175,15 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
         disabledMessage={'Requires a news channel to be set'}
       >
         <Tabs
-          defaultValue={guild.agencies_include_exclude ? 'include' : 'exclude'}
+          defaultValue={guild.news_include_exclude ? 'include' : 'exclude'}
           onValueChange={value => {
-            updateSettings(String(guild.guild_id), {
-              ...settings,
-              whitelist: value === 'include',
+            console.log(value);
+            updateSettings({
+              guildId: String(guild.guild_id),
+              settings: {
+                ...settings,
+                whitelist: value === 'include',
+              },
             });
             setSettings(prev => ({
               ...prev,

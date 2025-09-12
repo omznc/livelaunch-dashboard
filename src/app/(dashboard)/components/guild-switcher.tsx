@@ -25,7 +25,7 @@ import {
 } from '@components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@components/ui/popover';
 import { CheckIcon, PlusCircle, ChevronsUpDown, RefreshCw, Plus } from 'lucide-react';
-import { GuildsResponse } from '@app/(dashboard)/layout';
+import type { GuildsResponse } from '@app/(dashboard)/layout';
 import { revalidateGuilds } from '@app/(dashboard)/actions';
 import { useRouter, useSearchParams } from 'next/navigation';
 import env from '@env';
@@ -188,7 +188,7 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
                 className="font-medium cursor-pointer text-primary underline underline-offset-4 transition-all hover:brightness-125"
                 onClick={async e => {
                   setRevalidating(true);
-                  await revalidateGuilds().then(() => {
+                  await revalidateGuilds({}).then(() => {
                     setRevalidating(false);
                     setRevalidationCooldown(true);
                     setTimeout(() => {

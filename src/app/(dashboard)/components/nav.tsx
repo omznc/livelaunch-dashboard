@@ -3,7 +3,7 @@
 import { cn } from '@lib/utils';
 import RetainQueryLink from '@components/retain-query-link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import * as React from 'react';
+import type * as React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { enableGuild } from '@app/(dashboard)/actions';
 import {
@@ -18,7 +18,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@c
 import { Button, buttonVariants } from '@components/ui/button';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
-import { enabled_guilds } from '@prisma/client';
+import type { enabled_guilds } from '@prisma/client';
 
 const links = [
   {
@@ -153,7 +153,7 @@ export function Nav({ className, guilds, ...props }: NavProps) {
             <Button
               variant="secondary"
               onClick={() => {
-                toast.promise(enableGuild(String(guildId)), {
+                toast.promise(enableGuild({ guildId: String(guildId) }), {
                   loading: 'Enabling...',
                   success: () => {
                     router.refresh();

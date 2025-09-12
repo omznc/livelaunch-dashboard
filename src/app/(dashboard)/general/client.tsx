@@ -1,13 +1,13 @@
 'use client';
 
-import { enabled_guilds } from '@prisma/client';
+import type { enabled_guilds } from '@prisma/client';
 import { ArrowUp, Hash, Megaphone } from 'lucide-react';
 import { Switch } from '@components/ui/switch';
 import React, { useEffect, useState } from 'react';
 import { disableFeature, updateChannel, updateNumberOfEvents, updateSettings } from './actions';
 import Link from 'next/link';
 import { Setting, SettingGroup } from '@components/ui/setting';
-import { RESTGetAPIGuildChannelsResult } from 'discord.js';
+import type { RESTGetAPIGuildChannelsResult } from 'discord.js';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@components/ui/select';
 import toast from 'react-hot-toast';
 import { Label } from '@components/ui/label';
@@ -48,7 +48,7 @@ export default function Client({ guild, channels }: ClientProps) {
       setMounted(true);
       return;
     }
-    updateNumberOfEvents(String(guild.guild_id), debounced).catch(() => {
+    updateNumberOfEvents({ guildId: String(guild.guild_id), num: debounced }).catch(() => {
       toast.error('Failed to save.');
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -68,7 +68,7 @@ export default function Client({ guild, channels }: ClientProps) {
           >
             <Button
               onClick={() => {
-                toast.promise(disableFeature(String(guild.guild_id)), {
+                toast.promise(disableFeature({ guildId: String(guild.guild_id) }), {
                   loading: 'Disabling...',
                   success: () => {
                     setSelectedChannelID(undefined);
@@ -92,10 +92,10 @@ export default function Client({ guild, channels }: ClientProps) {
           <Select
             onValueChange={value => {
               setSelectedChannelID(value);
-              toast.promise(updateChannel(String(guild.guild_id), value), {
+              toast.promise(updateChannel({ guildId: String(guild.guild_id), channelId: value }), {
                 loading: 'Saving...',
                 success: r => {
-                  if (r) throw Error(r);
+                  if (!r.data?.success) throw new Error(r.serverError);
                   return 'Saved';
                 },
                 error: (e?: Error) => {
@@ -106,7 +106,7 @@ export default function Client({ guild, channels }: ClientProps) {
             }}
             key={selectedChannelID}
           >
-            <SelectTrigger className="w-full md:w-fit-content md:max-w-[350px]">
+            <SelectTrigger className="w-full md:w-fit md:max-w-[350px]">
               {(() => {
                 const chan = channels.find(channel => channel.id === selectedChannelID);
                 if (chan) {
@@ -164,9 +164,12 @@ export default function Client({ guild, channels }: ClientProps) {
           <Switch
             id={'toggle-fc'}
             onCheckedChange={checked => {
-              updateSettings(String(guild.guild_id), {
-                ...settings,
-                notification_button_fc: checked,
+              updateSettings({
+                guildId: String(guild.guild_id),
+                settings: {
+                  ...settings,
+                  notification_button_fc: checked,
+                },
               });
               setSettings(prev => ({
                 ...prev,
@@ -185,9 +188,12 @@ export default function Client({ guild, channels }: ClientProps) {
           <Switch
             id={'toggle-g4l'}
             onCheckedChange={checked => {
-              updateSettings(String(guild.guild_id), {
-                ...settings,
-                notification_button_g4l: checked,
+              updateSettings({
+                guildId: String(guild.guild_id),
+                settings: {
+                  ...settings,
+                  notification_button_g4l: checked,
+                },
               });
               setSettings(prev => ({
                 ...prev,
@@ -206,9 +212,12 @@ export default function Client({ guild, channels }: ClientProps) {
           <Switch
             id={'toggle-sln'}
             onCheckedChange={checked => {
-              updateSettings(String(guild.guild_id), {
-                ...settings,
-                notification_button_sln: checked,
+              updateSettings({
+                guildId: String(guild.guild_id),
+                settings: {
+                  ...settings,
+                  notification_button_sln: checked,
+                },
               });
               setSettings(prev => ({
                 ...prev,
@@ -270,9 +279,12 @@ export default function Client({ guild, channels }: ClientProps) {
           <Switch
             id={'toggle-se-launch'}
             onCheckedChange={checked => {
-              updateSettings(String(guild.guild_id), {
-                ...settings,
-                se_launch: checked,
+              updateSettings({
+                guildId: String(guild.guild_id),
+                settings: {
+                  ...settings,
+                  se_launch: checked,
+                },
               });
               setSettings(prev => ({
                 ...prev,
@@ -292,9 +304,12 @@ export default function Client({ guild, channels }: ClientProps) {
           <Switch
             id={'toggle-se-event'}
             onCheckedChange={checked => {
-              updateSettings(String(guild.guild_id), {
-                ...settings,
-                se_event: checked,
+              updateSettings({
+                guildId: String(guild.guild_id),
+                settings: {
+                  ...settings,
+                  se_event: checked,
+                },
               });
               setSettings(prev => ({
                 ...prev,
@@ -314,9 +329,12 @@ export default function Client({ guild, channels }: ClientProps) {
           <Switch
             id={'toggle-se-no-url'}
             onCheckedChange={checked => {
-              updateSettings(String(guild.guild_id), {
-                ...settings,
-                se_no_url: checked,
+              updateSettings({
+                guildId: String(guild.guild_id),
+                settings: {
+                  ...settings,
+                  se_no_url: checked,
+                },
               });
               setSettings(prev => ({
                 ...prev,

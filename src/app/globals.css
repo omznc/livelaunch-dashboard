@@ -112,6 +112,7 @@
     font-family: var(--font-sans);
     background: radial-gradient(ellipse at center, rgba(121, 39, 245, 0.15) 15%, transparent 70%);
     background-attachment: fixed;
+    min-height: 100vh;
   }
 
   button,

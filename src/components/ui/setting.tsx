@@ -1,4 +1,4 @@
-import { Children, ReactNode } from 'react';
+import { Children, type ReactNode, useRef } from 'react';
 import { Label } from '@components/ui/label';
 import { cn } from '@lib/utils';
 import Image from 'next/image';
@@ -29,17 +29,43 @@ export function Setting({
   disabled,
   disabledMessage,
 }: SettingProps) {
+  const childRef = useRef<HTMLDivElement>(null);
+
+  const handleSettingClick = (e: React.MouseEvent) => {
+    if (disabled) return;
+
+    const target = e.target as HTMLElement;
+
+    // Don't trigger if clicking on dialog, popover, overlay, or their children
+    if (
+      target.closest(
+        '[role="dialog"], [data-radix-popper-content-wrapper], [data-radix-dialog-overlay], [data-state], .radix-dialog-overlay, .radix-popover-content'
+      ) ||
+      target.hasAttribute('data-radix-dialog-overlay') ||
+      target.classList.contains('radix-dialog-overlay')
+    ) {
+      return;
+    }
+
+    const childElement = childRef.current?.querySelector('button, input, [role="switch"]');
+    if (childElement && !childElement.contains(target)) {
+      (childElement as HTMLElement).click();
+    }
+  };
+
   return (
     <div
       className={cn(
-        `relative w-full flex justify-center items-center border rounded-md justify-center transition-all p-4`,
+        `relative w-full bg-black/50 flex justify-center items-center border rounded-md justify-center transition-all p-4`,
         {
-          'bg-muted/30': active,
+          'bg-primary/10': active,
           'space-x-2 overflow-auto': !disabled,
           'cursor-not-allowed overflow-hidden': disabled,
+          'cursor-pointer': !disabled,
         },
         className
       )}
+      onClick={handleSettingClick}
     >
       {disabled && (
         <p className="text-sm absolute font-semibold text-center select-none">
@@ -54,7 +80,7 @@ export function Setting({
           }
         )}
       >
-        <div className={cn('flex h-full transition-all w-full gap-4')}>
+        <div className={cn('flex h-full transition-all flex-1 gap-4')}>
           {image && (
             <Image
               src={image}
@@ -69,7 +95,7 @@ export function Setting({
             <p className="text-sm select-none opacity-50">{description}</p>
           </div>
         </div>
-        {children}
+        <div ref={childRef}>{children}</div>
       </div>
     </div>
   );

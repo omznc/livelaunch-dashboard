@@ -1,9 +1,9 @@
 'use client';
 
 // components/RetainQueryLink.tsx
-import Link, { LinkProps } from 'next/link';
+import Link, { type LinkProps } from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { PropsWithChildren } from 'react';
+import type { PropsWithChildren } from 'react';
 
 interface RetainQueryLinkProps extends LinkProps, PropsWithChildren {
   className?: string;
