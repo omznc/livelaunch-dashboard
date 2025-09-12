@@ -18,22 +18,6 @@ model User {
   updatedAt            DateTime  @updatedAt
   sessions             Session[]
   accounts             Account[]
-  username             String?
-  avatar               String?
-  discriminator        String?
-  publicFlags          Int?
-  flags                Int?
-  banner               String?
-  accentColor          Int?
-  globalName           String?
-  bannerColor          String?
-  mfaEnabled           Boolean?
-  locale               String?
-  premiumType          Int?
-  verified             Boolean?
-  accessToken          String?
-  refreshToken         String?
-  accessTokenExpiresAt DateTime?
 }
 
 model Session {
