@@ -3,8 +3,8 @@ import { buttonVariants } from '@components/ui/button';
 import Link from 'next/link';
 import env from '@env';
 import { cn } from '@lib/utils';
-import { FaArrowUp, FaDiscord, FaGithub, FaHashtag } from 'react-icons/fa';
-import { BiSolidUpvote } from 'react-icons/bi';
+import { ArrowUp, Hash, ThumbsUp } from 'lucide-react';
+import { siDiscord, siGithub } from 'simple-icons';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@components/ui/tooltip';
 import PartnerTheSpaceDevs from '@public/Partner_TheSpaceDevs.png';
 import PartnerOmznc from '@public/Partner_omznc.jpg';
@@ -27,7 +27,7 @@ export default async function Home() {
             href={'https://juststephen.com/projects/LiveLaunch'}
             className="inline-flex items-center gap-1 brightness-125 hover:underline"
           >
-            Learn More <FaArrowUp className="rotate-45" />
+            Learn More <ArrowUp className="rotate-45" />
           </Link>
         </p>
       </div>
@@ -52,9 +52,11 @@ export default async function Home() {
               href={'https://github.com/omznc/livelaunch-dashboard'}
               target={'_blank'}
             >
-              <FaGithub />
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d={siGithub.path} />
+              </svg>
               Dashboard
-              <FaArrowUp className="rotate-45" />
+              <ArrowUp className="rotate-45" />
             </Link>
             <Link
               className={cn(
@@ -66,9 +68,11 @@ export default async function Home() {
               href={'https://github.com/juststephen/livelaunch'}
               target={'_blank'}
             >
-              <FaGithub />
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d={siGithub.path} />
+              </svg>
               LiveLaunch
-              <FaArrowUp className="rotate-45" />
+              <ArrowUp className="rotate-45" />
             </Link>
           </CardFooter>
         </Card>
@@ -93,9 +97,9 @@ export default async function Home() {
               href={`https://top.gg/bot/${env.NEXT_PUBLIC_DISCORD_CLIENT_ID}/vote`}
               target={'_blank'}
             >
-              <BiSolidUpvote />
+              <ThumbsUp />
               Vote
-              <FaArrowUp className="rotate-45" />
+              <ArrowUp className="rotate-45" />
             </Link>
           </CardFooter>
         </Card>
@@ -118,7 +122,7 @@ export default async function Home() {
                       )}
                       href={'discord://-/channels/151026584164237312/967838544766836777'}
                     >
-                      <FaHashtag />
+                      <Hash />
                       support
                     </Link>
                   </TooltipTrigger>
@@ -138,9 +142,11 @@ export default async function Home() {
               href={`https://discord.gg/nztN2FXe7A`}
               target={'_blank'}
             >
-              <FaDiscord />
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                <path d={siDiscord.path} />
+              </svg>
               Discord
-              <FaArrowUp className="rotate-45" />
+              <ArrowUp className="rotate-45" />
             </Link>
           </CardFooter>
         </Card>
@@ -155,7 +161,9 @@ export default async function Home() {
                 <Link
                   href={'https://thespacedevs.com/'}
                   target={'_blank'}
-                  className={'w-full border rounded-lg overflow-hidden transition-all hover:brightness-125'}
+                  className={
+                    'w-full border border-standard rounded-lg overflow-hidden transition-all hover:brightness-125'
+                  }
                 >
                   <Image src={PartnerTheSpaceDevs} alt={'TheSpaceDevs'} placeholder={'blur'} />
                 </Link>
@@ -182,7 +190,9 @@ export default async function Home() {
                 <Link
                   href={'https://omarzunic.com'}
                   target={'_blank'}
-                  className={'w-full border rounded-lg overflow-hidden transition-all hover:brightness-125'}
+                  className={
+                    'w-full border border-standard rounded-lg overflow-hidden transition-all hover:brightness-125'
+                  }
                 >
                   <Image src={PartnerOmznc} alt={'Omar Zunic'} placeholder={'blur'} />
                 </Link>

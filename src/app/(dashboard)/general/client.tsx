@@ -1,7 +1,7 @@
 'use client';
 
 import { enabled_guilds } from '@prisma/client';
-import { FaArrowUp, FaHashtag } from 'react-icons/fa';
+import { ArrowUp, Hash, Megaphone } from 'lucide-react';
 import { Switch } from '@components/ui/switch';
 import React, { useEffect, useState } from 'react';
 import { disableFeature, updateChannel, updateNumberOfEvents, updateSettings } from './actions';
@@ -14,7 +14,6 @@ import { Label } from '@components/ui/label';
 import { Input } from '@components/ui/input';
 import { useDebounce } from '@lib/hooks';
 import { Button } from '@components/ui/button';
-import { BiSolidMegaphone } from 'react-icons/bi';
 
 interface ClientProps {
   guild: enabled_guilds;
@@ -114,9 +113,9 @@ export default function Client({ guild, channels }: ClientProps) {
                   return (
                     <span>
                       {chan.type === 0 ? (
-                        <FaHashtag className="inline-block mr-2" />
+                        <Hash className="inline-block mr-2" />
                       ) : (
-                        <BiSolidMegaphone className="inline-block mr-2" />
+                        <Megaphone className="inline-block mr-2" />
                       )}
                       {chan.name}
                     </span>
@@ -129,9 +128,9 @@ export default function Client({ guild, channels }: ClientProps) {
               {channels.map(channel => (
                 <SelectItem key={channel.id} value={channel.id}>
                   {channel.type === 0 ? (
-                    <FaHashtag className="inline-block mr-2" />
+                    <Hash className="inline-block mr-2" />
                   ) : (
-                    <BiSolidMegaphone className="inline-block mr-2" />
+                    <Megaphone className="inline-block mr-2" />
                   )}
                   {channel.name}
                 </SelectItem>
@@ -151,7 +150,7 @@ export default function Client({ guild, channels }: ClientProps) {
               target={'_blank'}
               className="inline-flex items-center gap-1 brightness-125 hover:underline"
             >
-              Example <FaArrowUp className="rotate-45" />
+              Example <ArrowUp className="rotate-45" />
             </Link>
           </>
         }
@@ -231,7 +230,7 @@ export default function Client({ guild, channels }: ClientProps) {
               target={'_blank'}
               className="inline-flex items-center gap-1 brightness-125 hover:underline"
             >
-              Learn more <FaArrowUp className="rotate-45" />
+              Learn more <ArrowUp className="rotate-45" />
             </Link>
           </>
         }

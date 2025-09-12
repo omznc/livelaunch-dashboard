@@ -24,8 +24,6 @@ export default async function User() {
 
   const user = session.user;
 
-  console.log(user);
-
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

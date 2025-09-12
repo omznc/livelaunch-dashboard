@@ -2,11 +2,10 @@ import { Children, ReactNode } from 'react';
 import { Label } from '@components/ui/label';
 import { cn } from '@lib/utils';
 import Image from 'next/image';
-import { FaHashtag } from 'react-icons/fa';
+import { Hash, Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@components/ui/tooltip';
 import { useHash } from '@lib/hooks';
-import { FaCopy } from 'react-icons/fa6';
 import { useRouter } from 'next/navigation';
 
 interface SettingProps {
@@ -114,13 +113,13 @@ export function SettingGroup({ title, description, children }: SettingGroupProps
                 window.location.hash = id;
               }}
             >
-              <FaHashtag
+              <Hash
                 className={cn('opacity-50 transition-all group-hover:opacity-100', {
                   'opacity-100': id === hash.slice(1),
                 })}
               />
               {title}
-              <FaCopy className="opacity-0 h-4 w-4 group-hover:opacity-50 transition-all" />
+              <Copy className="opacity-0 h-4 w-4 group-hover:opacity-50 transition-all" />
             </h4>
           </TooltipTrigger>
           <TooltipContent>Copy link to this section</TooltipContent>

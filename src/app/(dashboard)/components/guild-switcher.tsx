@@ -24,15 +24,12 @@ import {
   DialogTrigger,
 } from '@components/ui/dialog';
 import { Popover, PopoverContent, PopoverTrigger } from '@components/ui/popover';
-import { RxCaretSort } from 'react-icons/rx';
-import { CheckIcon, PlusCircle } from 'lucide-react';
+import { CheckIcon, PlusCircle, ChevronsUpDown, RefreshCw, Plus } from 'lucide-react';
 import { GuildsResponse } from '@app/(dashboard)/layout';
 import { revalidateGuilds } from '@app/(dashboard)/actions';
-import { BiRefresh } from 'react-icons/bi';
 import { useRouter, useSearchParams } from 'next/navigation';
 import env from '@env';
 import Link from 'next/link';
-import { FaPlus } from 'react-icons/fa';
 import toast from 'react-hot-toast';
 import Image from 'next/image';
 
@@ -64,12 +61,12 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
         <>
           <Button
             variant={'outline'}
-            className={'p-3 mr-2 bg-black/10 border-none'}
+            className={'p-3 mr-2 bg-black/10 border-0'}
             onClick={() => {
               setShowNewGuildDialog(true);
             }}
           >
-            <FaPlus />
+            <Plus />
           </Button>
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
@@ -78,7 +75,7 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
                 role="combobox"
                 aria-expanded={open}
                 aria-label="Select a Guild"
-                className={cn('w-[200px] justify-between bg-black/10 border-none', className, {
+                className={cn('w-[200px] justify-between bg-black/10 border-0', className, {
                   'animate-pulse': pending,
                 })}
               >
@@ -101,7 +98,7 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
                 ) : (
                   <span className="truncate animate-pulse">Just a moment...</span>
                 )}
-                <RxCaretSort className="ml-auto h-4 w-4 shrink-0 opacity-50" />
+                <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-[200px] p-0">
@@ -200,7 +197,7 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
                   });
                 }}
               >
-                {revalidating ? <BiRefresh className="animate-spin-reverse h-5 w-5" /> : 'Refresh'}
+                {revalidating ? <RefreshCw className="animate-spin-reverse h-5 w-5" /> : 'Refresh'}
               </span>
             </>
           )}

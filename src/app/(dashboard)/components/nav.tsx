@@ -81,7 +81,7 @@ export function Nav({ className, guilds, ...props }: NavProps) {
         className={cn('flex animate-fade-in transition-all items-center justify-evenly md:justify-start ', className)}
         {...props}
       >
-        <div className="flex gap-4 transition-all w-full border-b-2 md:border-b-0 items-center justify-center overflow-x-auto">
+        <div className="flex gap-4 transition-all w-full border-b md:border-b-0 items-center justify-center overflow-x-auto">
           {!guild && guildId && (
             <Button variant="outline" onClick={() => setShowHelpDialog(true)}>
               Enable LiveLaunch

@@ -1,8 +1,8 @@
 'use client';
 
 import { Button } from '@components/ui/button';
-import { FaDiscord } from 'react-icons/fa';
 import { signIn } from '@lib/auth-client';
+import { siDiscord } from 'simple-icons';
 
 export default function AuthenticationPage() {
   const handleDiscordSignIn = async () => {
@@ -20,7 +20,9 @@ export default function AuthenticationPage() {
         </p>
       </div>
       <Button className="mt-6" onClick={handleDiscordSignIn}>
-        <FaDiscord className="inline-block mr-2" />
+        <svg className="inline-block mr-2 w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+          <path d={siDiscord.path} />
+        </svg>
         Sign in with Discord
       </Button>
     </div>

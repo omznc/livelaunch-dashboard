@@ -1,8 +1,7 @@
 'use client';
 
 import { enabled_guilds, notification_countdown } from '@prisma/client';
-import { FaHashtag, FaTimes } from 'react-icons/fa';
-import { BiSolidMegaphone } from 'react-icons/bi';
+import { Hash, X, Megaphone } from 'lucide-react';
 import React, { useState } from 'react';
 import { addCountdown, disableFeature, removeCountdown, updateChannel, updateFilters } from './actions';
 import { Switch } from '@components/ui/switch';
@@ -143,9 +142,9 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
                   return (
                     <span>
                       {chan.type === 0 ? (
-                        <FaHashtag className="inline-block mr-2" />
+                        <Hash className="inline-block mr-2" />
                       ) : (
-                        <BiSolidMegaphone className="inline-block mr-2" />
+                        <Megaphone className="inline-block mr-2" />
                       )}
                       {chan.name}
                     </span>
@@ -158,9 +157,9 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
               {channels.map(channel => (
                 <SelectItem key={channel.id} value={channel.id}>
                   {channel.type === 0 ? (
-                    <FaHashtag className="inline-block mr-2" />
+                    <Hash className="inline-block mr-2" />
                   ) : (
-                    <BiSolidMegaphone className="inline-block mr-2" />
+                    <Megaphone className="inline-block mr-2" />
                   )}
                   {channel.name}
                 </SelectItem>
@@ -307,7 +306,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
                   </div>
                 );
               })()}
-              <FaTimes
+              <X
                 onClick={() => {
                   removeCountdown(String(guild.guild_id), countdown.minutes).catch(() => {
                     toast.error('Failed to remove countdown.');

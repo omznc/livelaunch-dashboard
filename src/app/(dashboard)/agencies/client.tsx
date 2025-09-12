@@ -106,7 +106,7 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
         <div className="flex border rounded-md flex-col overflow-hidden">
           {filtered.length > 0 ? (
             <Table className="overflow-scroll w-full">
-              <TableHeader className="border-b-2 h-14 font-medium bg-background">
+              <TableHeader className="border-b h-14 font-medium bg-background">
                 <TableRow className="bg-muted/50 snap-start align-right">
                   <TableHead>Name</TableHead>
                   <TableHead>

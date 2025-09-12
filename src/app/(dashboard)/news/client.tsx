@@ -14,10 +14,9 @@ import { Setting, SettingGroup } from '@components/ui/setting';
 import { RESTGetAPIGuildChannelsResult } from 'discord.js';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@components/ui/select';
 import toast from 'react-hot-toast';
-import { FaHashtag } from 'react-icons/fa';
+import { Hash, Megaphone } from 'lucide-react';
 import { Button } from '@components/ui/button';
 import { useRouter } from 'next/navigation';
-import { BiSolidMegaphone } from 'react-icons/bi';
 
 interface ClientProps {
   newsSites: news_sites[];
@@ -133,9 +132,9 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
                   return (
                     <span>
                       {chan.type === 0 ? (
-                        <FaHashtag className="inline-block mr-2" />
+                        <Hash className="inline-block mr-2" />
                       ) : (
-                        <BiSolidMegaphone className="inline-block mr-2" />
+                        <Megaphone className="inline-block mr-2" />
                       )}
                       {chan.name}
                     </span>
@@ -153,9 +152,9 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
               {channels.map(channel => (
                 <SelectItem key={channel.id} value={channel.id}>
                   {channel.type === 0 ? (
-                    <FaHashtag className="inline-block mr-2" />
+                    <Hash className="inline-block mr-2" />
                   ) : (
-                    <BiSolidMegaphone className="inline-block mr-2" />
+                    <Megaphone className="inline-block mr-2" />
                   )}
                   {channel.name}
                 </SelectItem>
@@ -209,7 +208,7 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
       <div className="flex border rounded-md flex-col overflow-hidden">
         {filtered.length > 0 && guild.news_channel_id !== null ? (
           <Table className="overflow-scroll w-full">
-            <TableHeader className="border-b-2 h-14 font-medium bg-background">
+            <TableHeader className="border-b h-14 font-medium bg-background">
               <TableRow className="bg-muted/50 snap-start align-right">
                 <TableHead>Name</TableHead>
                 <TableHead>
