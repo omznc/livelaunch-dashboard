@@ -161,9 +161,7 @@ export default async function Home() {
                 <Link
                   href={'https://thespacedevs.com/'}
                   target={'_blank'}
-                  className={
-                    'w-full border border-standard rounded-lg overflow-hidden transition-all hover:brightness-125'
-                  }
+                  className={'w-full border rounded-lg overflow-hidden transition-all hover:brightness-125'}
                 >
                   <Image src={PartnerTheSpaceDevs} alt={'TheSpaceDevs'} placeholder={'blur'} />
                 </Link>
@@ -190,9 +188,7 @@ export default async function Home() {
                 <Link
                   href={'https://omarzunic.com'}
                   target={'_blank'}
-                  className={
-                    'w-full border border-standard rounded-lg overflow-hidden transition-all hover:brightness-125'
-                  }
+                  className={'w-full border rounded-lg overflow-hidden transition-all hover:brightness-125'}
                 >
                   <Image src={PartnerOmznc} alt={'Omar Zunic'} placeholder={'blur'} />
                 </Link>

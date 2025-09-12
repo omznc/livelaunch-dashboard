@@ -103,12 +103,15 @@
   }
 
   html {
-    background-color: var(--color-background);
+    background: var(--color-background);
+    min-height: 100vh;
   }
 
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-sans);
+    background: radial-gradient(ellipse at center, rgba(121, 39, 245, 0.15) 15%, transparent 70%);
+    background-attachment: fixed;
   }
 
   button,

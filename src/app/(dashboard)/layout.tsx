@@ -44,7 +44,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
         </div>
       </div>
       <div className="w-full flex p-8 justify-center">
-        <div className="w-full max-w-[1200px] flex flex-col gap-8">{children}</div>
+        <div className="w-full max-w-[1200px] flex flex-col gap-8 pt-12">{children}</div>
       </div>
     </div>
   );
