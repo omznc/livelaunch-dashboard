@@ -7,7 +7,7 @@ import { REST } from '@discordjs/rest';
 import env from '@env';
 import { Routes } from 'discord-api-types/v10';
 import { revalidatePath } from 'next/cache';
-import { actionClient, guildActionClient, guildIdSchema } from '@lib/safe-actions';
+import { guildActionClient, guildIdSchema } from '@lib/safe-actions';
 import { z } from 'zod';
 
 const rest = new REST({ version: '9' }).setToken(env.DISCORD_BOT_TOKEN);
