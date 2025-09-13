@@ -14,7 +14,7 @@ import { Setting, SettingGroup } from '@components/ui/setting';
 import type { RESTGetAPIGuildChannelsResult } from 'discord.js';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@components/ui/select';
 import toast from 'react-hot-toast';
-import { Hash, Megaphone } from 'lucide-react';
+import { FrownIcon, Hash, Megaphone } from 'lucide-react';
 import { Button } from '@components/ui/button';
 import { useRouter } from 'next/navigation';
 
@@ -320,8 +320,9 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
             </TableBody>
           </Table>
         ) : (
-          <div className="flex flex-col justify-center items-center h-full">
-            <p className="text-sm opacity-50 p-8">There is nothing here</p>
+          <div className="flex flex-col justify-center bg-background items-center h-full p-8 gap-4">
+            <FrownIcon className="w-10 h-10" />
+            <p className="text-sm opacity-50 ">No news sites matched your search query</p>
           </div>
         )}
       </div>

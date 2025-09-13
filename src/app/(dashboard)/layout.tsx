@@ -21,7 +21,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex flex-col items-center min-h-screen w-full">
-      <div className="sticky top-0 w-full bg-primary z-50">
+      <div className="sticky top-0 w-full bg-primary/20 z-50 backdrop-blur-sm">
         <div className="hidden flex-row w-full justify-between border-b md:flex">
           <div className="flex h-16 items-center px-4">
             <GuildSwitcher guilds={guilds} />

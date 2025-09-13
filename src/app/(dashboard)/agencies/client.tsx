@@ -12,6 +12,7 @@ import toast from 'react-hot-toast';
 import { Input } from '@components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@components/ui/tabs';
 import { Setting, SettingGroup } from '@components/ui/setting';
+import { FrownIcon } from 'lucide-react';
 
 interface ClientProps {
   agencies: ll2_agencies[];
@@ -217,8 +218,9 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
               </TableBody>
             </Table>
           ) : (
-            <div className="flex flex-col justify-center items-center h-full">
-              <p className="text-sm opacity-50 p-8">No agencies matched your search query</p>
+            <div className="flex flex-col justify-center items-center bg-background h-full p-8 gap-4">
+              <FrownIcon className="w-10 h-10" />
+              <p className="text-sm opacity-50">No agencies matched your search query</p>
             </div>
           )}
         </div>

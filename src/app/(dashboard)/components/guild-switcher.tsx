@@ -61,7 +61,7 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
         <>
           <Button
             variant={'outline'}
-            className={'p-3 mr-2 bg-black/10 border-0'}
+            className={'p-3 mr-2 bg-black/50 border-0'}
             onClick={() => {
               setShowNewGuildDialog(true);
             }}
@@ -75,7 +75,7 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
                 role="combobox"
                 aria-expanded={open}
                 aria-label="Select a Guild"
-                className={cn('w-[200px] justify-between bg-black/10 border-0', className, {
+                className={cn('w-[200px] justify-between bg-black/50 border-0', className, {
                   'animate-pulse': pending,
                 })}
               >
