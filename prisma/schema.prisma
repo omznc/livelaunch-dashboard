@@ -1,6 +1,6 @@
 generator client {
-  provider = "prisma-client-js"
- binaryTargets = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-1.1.x", "debian-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
@@ -10,33 +10,56 @@ datasource db {
 
 model User {
   id                   String    @id
-  sessions             Session[]
-  username             String?
-  avatar               String?
-  discriminator        String?
-  publicFlags          Int?
-  flags                Int?
-  banner               String?
-  accentColor          Int?
-  globalName           String?
-  bannerColor          String?
-  mfaEnabled           Boolean?
-  locale               String?
-  premiumType          Int?
-  email                String?
-  verified             Boolean?
-  accessToken          String?
-  refreshToken         String?
-  accessTokenExpiresAt DateTime?
+  name                 String?
+  email                String?   @unique
+  emailVerified        Boolean   @default(false)
+  image                String?
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
+  sessions             Session[]
+  accounts             Account[]
 }
 
 model Session {
   id        String   @id
-  userId    String
   expiresAt DateTime
+  token     String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
   user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  accountId             String
+  providerId            String
+  userId                String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  user                  User      @relation(references: [id], fields: [userId], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String   @db.VarChar(255)
+  value      String   @db.VarChar(255)
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([identifier, value])
 }
 
 model enabled_guilds {

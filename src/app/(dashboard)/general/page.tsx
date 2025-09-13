@@ -4,30 +4,29 @@ import { getGuildChannels } from '@lib/discord-api';
 import { isAuthorizedForGuild } from '@lib/server-utils';
 import NotEnabled from '@app/(dashboard)/components/not-enabled';
 
-export default async function Agencies({
-	searchParams,
-}: {
-	searchParams: {
-		g: string | undefined;
-	};
+export default async function Agencies(props: {
+  searchParams: Promise<{
+    g: string | undefined;
+  }>;
 }) {
-	const guildId = searchParams?.g;
-	if (!guildId) return null;
+  const searchParams = await props.searchParams;
+  const guildId = searchParams?.g;
+  if (!guildId) return null;
 
-	const authorized = await isAuthorizedForGuild(guildId);
-	if (!authorized) {
-		return null;
-	}
+  const authorized = await isAuthorizedForGuild(guildId);
+  if (!authorized) {
+    return null;
+  }
 
-	const guild = await prisma.enabled_guilds.findFirst({
-		where: {
-			guild_id: BigInt(guildId),
-		},
-	});
+  const guild = await prisma.enabled_guilds.findFirst({
+    where: {
+      guild_id: BigInt(guildId),
+    },
+  });
 
-	if (!guild) return <NotEnabled />;
+  if (!guild) return <NotEnabled />;
 
-	const channels = await getGuildChannels(guildId);
+  const channels = await getGuildChannels(guildId);
 
-	return <Client guild={guild} channels={channels} key={guildId} />;
+  return <Client guild={guild} channels={channels} key={guildId} />;
 }

@@ -1,52 +1,59 @@
 'use server';
 
-import { AgenciesSettings, Agency } from '@app/(dashboard)/agencies/client';
 import prisma from '@lib/prisma';
-import { isAuthorizedForGuild } from '@lib/server-utils';
+import { guildActionClient } from '@lib/safe-actions';
+import { z } from 'zod';
 
-export const SetAgencies = async (agencies: Agency[], guildId: string) => {
-	const authorized = await isAuthorizedForGuild(guildId);
-	if (!authorized) {
-		throw new Error('Unauthorized');
-	}
+const setAgenciesSchema = z.object({
+  guildId: z.string(),
+  agencies: z.array(
+    z.object({
+      agency_id: z.number(),
+      selected: z.boolean(),
+    })
+  ),
+});
 
-	return Promise.all([
-		prisma.ll2_agencies_filter.deleteMany({
-			where: {
-				guild_id: BigInt(guildId),
-				agency_id: {
-					// @ts-ignore
-					in: agencies.filter(a => !a.selected).map(a => a.agency_id),
-				},
-			},
-		}),
-		prisma.ll2_agencies_filter.createMany({
-			data: agencies
-				.filter(a => a.selected)
-				.map(a => ({
-					guild_id: BigInt(guildId),
-					agency_id: a.agency_id,
-				})),
-			skipDuplicates: true,
-		}),
-	]);
-};
+export const SetAgencies = guildActionClient
+  .inputSchema(setAgenciesSchema)
+  .action(async ({ parsedInput: { guildId, agencies } }) => {
+    return Promise.all([
+      prisma.ll2_agencies_filter.deleteMany({
+        where: {
+          guild_id: BigInt(guildId),
+          agency_id: {
+            in: agencies.filter(a => !a.selected).map(a => a.agency_id),
+          },
+        },
+      }),
+      prisma.ll2_agencies_filter.createMany({
+        data: agencies
+          .filter(a => a.selected)
+          .map(a => ({
+            guild_id: BigInt(guildId),
+            agency_id: a.agency_id,
+          })),
+        skipDuplicates: true,
+      }),
+    ]);
+  });
 
-export const updateSettings = async (
-	guildId: string,
-	settings: AgenciesSettings
-): Promise<void> => {
-	const authorized = await isAuthorizedForGuild(guildId);
-	if (!authorized) {
-		throw new Error('Unauthorized');
-	}
+const agenciesSettingsSchema = z.object({
+  guildId: z.string(),
+  settings: z.object({
+    whitelist: z.union([z.string(), z.number(), z.boolean()]),
+  }),
+});
 
-	await prisma.enabled_guilds.update({
-		where: {
-			guild_id: BigInt(guildId),
-		},
-		data: {
-			agencies_include_exclude: Number(settings.whitelist),
-		},
-	});
-};
+export const updateSettings = guildActionClient
+  .inputSchema(agenciesSettingsSchema)
+  .action(async ({ parsedInput: { guildId, settings } }) => {
+    await prisma.enabled_guilds.update({
+      where: {
+        guild_id: BigInt(guildId),
+      },
+      data: {
+        agencies_include_exclude: Number(settings.whitelist),
+      },
+    });
+  });

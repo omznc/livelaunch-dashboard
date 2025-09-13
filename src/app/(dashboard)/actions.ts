@@ -2,48 +2,46 @@
 
 import { revalidatePath, revalidateTag } from 'next/cache';
 import prisma from '@lib/prisma';
-import { isAuthorizedForGuild } from '@lib/server-utils';
-import { validateRequest } from '@lib/auth';
+import { auth } from '@lib/auth';
+import { headers } from 'next/headers';
+import { actionClient, guildActionClient } from '@lib/safe-actions';
+import { z } from 'zod';
 
-export const revalidateGuilds = async () => {
-	const { session } = await validateRequest();
-	if (!session) return;
+export const revalidateGuilds = actionClient.inputSchema(z.object({})).action(async () => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session?.session || !session?.user) return;
 
-	revalidateTag('get-bot-guilds');
-	revalidateTag(`get-user-guilds-${session?.userId}`);
-};
+  revalidateTag('get-bot-guilds');
+  revalidateTag(`get-user-guilds-${session.user.id}`);
+});
 
-export const revalidateAll = async () => {
-	revalidatePath('/agencies', 'page');
-	revalidatePath('/news-sites');
-};
+export const revalidateAll = actionClient.inputSchema(z.object({})).action(async () => {
+  revalidatePath('/agencies', 'page');
+  revalidatePath('/news-sites');
+});
 
-export const getGuild = async (id: string) => {
-	const authorized = await isAuthorizedForGuild(id);
-	if (!authorized) {
-		throw new Error('Unauthorized');
-	}
+export const getGuild = guildActionClient
+  .inputSchema(z.object({ guildId: z.string() }))
+  .action(async ({ parsedInput: { guildId } }) => {
+    return prisma.enabled_guilds.findFirst({
+      where: {
+        guild_id: BigInt(guildId),
+      },
+    });
+  });
 
-	return prisma.enabled_guilds.findFirst({
-		where: {
-			guild_id: BigInt(id),
-		},
-	});
-};
-
-export const enableGuild = async (id: string) => {
-	const authorized = await isAuthorizedForGuild(id);
-	if (!authorized) {
-		throw new Error('Unauthorized');
-	}
-
-	await prisma.enabled_guilds.upsert({
-		where: {
-			guild_id: BigInt(id),
-		},
-		create: {
-			guild_id: BigInt(id),
-		},
-		update: {},
-	});
-};
+export const enableGuild = guildActionClient
+  .inputSchema(z.object({ guildId: z.string() }))
+  .action(async ({ parsedInput: { guildId } }) => {
+    await prisma.enabled_guilds.upsert({
+      where: {
+        guild_id: BigInt(guildId),
+      },
+      create: {
+        guild_id: BigInt(guildId),
+      },
+      update: {},
+    });
+  });
