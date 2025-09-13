@@ -1,6 +1,6 @@
 # Web Dashboard for [LiveLaunch](https://github.com/juststephen/LiveLaunch)
 
-<img width="2560" height="1333" alt="image" src="https://github.com/user-attachments/assets/0707085b-7821-4479-bd0e-61ef82b0e524" />
+<img width="2560" height="1333" alt="image" src="https://github.com/user-attachments/assets/35950a31-dff7-49a1-993e-1fa3ed4116ff" />
 
 Made with Next.js, made pretty with Biome, made fast with Bun.
 
