@@ -15,14 +15,14 @@ import {
   CommandSeparator,
 } from '@components/ui/command';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@components/ui/dialog';
+  Credenza,
+  CredenzaContent,
+  CredenzaDescription,
+  CredenzaFooter,
+  CredenzaHeader,
+  CredenzaTitle,
+  CredenzaTrigger,
+} from '@components/ui/credenza';
 import { Popover, PopoverContent, PopoverTrigger } from '@components/ui/popover';
 import { CheckIcon, PlusCircle, ChevronsUpDown, RefreshCw, Plus } from 'lucide-react';
 import type { GuildsResponse } from '@app/(dashboard)/layout';
@@ -56,7 +56,7 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
   }, [guilds, router, selectedGuild]);
 
   return (
-    <Dialog open={showNewGuildDialog} onOpenChange={setShowNewGuildDialog}>
+    <Credenza open={showNewGuildDialog} onOpenChange={setShowNewGuildDialog}>
       {guilds.length !== 0 && (
         <>
           <Button
@@ -146,7 +146,7 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
                 <CommandSeparator />
                 <CommandList>
                   <CommandGroup>
-                    <DialogTrigger asChild>
+                    <CredenzaTrigger asChild>
                       <CommandItem
                         onSelect={() => {
                           setOpen(false);
@@ -156,7 +156,7 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
                         <PlusCircle className="mr-2 h-5 w-5" />
                         Add a Server
                       </CommandItem>
-                    </DialogTrigger>
+                    </CredenzaTrigger>
                   </CommandGroup>
                 </CommandList>
               </Command>
@@ -173,11 +173,11 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
           Add a Guild
         </Button>
       )}
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add a Guild</DialogTitle>
-          <DialogDescription>To add a server, you must be an administrator.</DialogDescription>
-        </DialogHeader>
+      <CredenzaContent>
+        <CredenzaHeader>
+          <CredenzaTitle>Add a Guild</CredenzaTitle>
+          <CredenzaDescription>To add a server, you must be an administrator.</CredenzaDescription>
+        </CredenzaHeader>
         <div className="inline-flex justify-center sm:justify-start gap-1">
           {revalidationCooldown ? (
             `You've refreshed the servers recently, please wait a few seconds.`
@@ -202,7 +202,7 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
             </>
           )}
         </div>
-        <DialogFooter className="gap-2 md:gap-1">
+        <CredenzaFooter className="gap-2 md:gap-1">
           <Button variant="outline" onClick={() => setShowNewGuildDialog(false)}>
             Cancel
           </Button>
@@ -224,8 +224,8 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
           >
             Open in Discord
           </Link>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </CredenzaFooter>
+      </CredenzaContent>
+    </Credenza>
   );
 }

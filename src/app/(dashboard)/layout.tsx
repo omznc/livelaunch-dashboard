@@ -8,8 +8,6 @@ import prisma from '@lib/prisma';
 import { isAuthorized } from '@lib/server-utils';
 
 export default async function Layout({ children }: { children: ReactNode }) {
-  await isAuthorized();
-
   const guilds = await filterGuilds();
   const enabledGuilds = await prisma.enabled_guilds.findMany({
     where: {
@@ -43,8 +41,8 @@ export default async function Layout({ children }: { children: ReactNode }) {
           <Nav className="md:mx-6" guilds={enabledGuilds} />
         </div>
       </div>
-      <div className="w-full flex p-8 justify-center">
-        <div className="w-full max-w-[1200px] flex flex-col gap-8 pt-12">{children}</div>
+      <div className="w-full flex p-4 md:p-8 justify-center">
+        <div className="w-full max-w-[1200px] flex flex-col gap-8 py-12">{children}</div>
       </div>
     </div>
   );

@@ -7,13 +7,13 @@ import type * as React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { enableGuild } from '@app/(dashboard)/actions';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@components/ui/dialog';
+  Credenza,
+  CredenzaContent,
+  CredenzaDescription,
+  CredenzaFooter,
+  CredenzaHeader,
+  CredenzaTitle,
+} from '@components/ui/credenza';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@components/ui/accordion';
 import { Button, buttonVariants } from '@components/ui/button';
 import Link from 'next/link';
@@ -77,11 +77,8 @@ export function Nav({ className, guilds, ...props }: NavProps) {
 
   return (
     <>
-      <nav
-        className={cn('flex animate-fade-in transition-all items-center justify-evenly md:justify-start ', className)}
-        {...props}
-      >
-        <div className="flex gap-4 transition-all w-full border-b md:border-b-0 items-center justify-center overflow-x-auto">
+      <nav className={cn('flex animate-fade-in transition-all items-center justify-start ', className)} {...props}>
+        <div className="flex gap-4 transition-all w-full border-b md:border-b-0 items-center justify-start overflow-x-auto px-4">
           {!guild && guildId && (
             <Button variant="outline" onClick={() => setShowHelpDialog(true)}>
               Enable LiveLaunch
@@ -105,16 +102,16 @@ export function Nav({ className, guilds, ...props }: NavProps) {
             ))}
         </div>
       </nav>
-      <Dialog open={showHelpDialog} onOpenChange={setShowHelpDialog}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Enable LiveLaunch</DialogTitle>
-            <DialogDescription>
+      <Credenza open={showHelpDialog} onOpenChange={setShowHelpDialog}>
+        <CredenzaContent>
+          <CredenzaHeader>
+            <CredenzaTitle>Enable LiveLaunch</CredenzaTitle>
+            <CredenzaDescription>
               You have to enable LiveLaunch in your server to be able to access settings on this dashboard. It is pretty
               straightforward, I promise.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-2">
+            </CredenzaDescription>
+          </CredenzaHeader>
+          <div className="flex flex-col gap-2 overflow-y-auto px-4">
             To enable the bot you need to run the following command in your server
             <code className="relative p-4 block w-full rounded bg-muted font-mono text-sm font-semibold">
               {`/enable <feature>`}
@@ -140,13 +137,13 @@ export function Nav({ className, guilds, ...props }: NavProps) {
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
-            <DialogDescription>
+            <CredenzaDescription>
               {`Note: if you use 'Enable Automatically' you will
-								still need to enable at least one feature, otherwise
-								the bot will disable itself after a while.`}
-            </DialogDescription>
+							still need to enable at least one feature, otherwise
+							the bot will disable itself after a while.`}
+            </CredenzaDescription>
           </div>
-          <DialogFooter className="gap-2 md:gap-1">
+          <CredenzaFooter className="gap-2 md:gap-1">
             <Button variant="outline" onClick={() => setShowHelpDialog(false)}>
               Close
             </Button>
@@ -174,9 +171,9 @@ export function Nav({ className, guilds, ...props }: NavProps) {
             >
               Open Discord
             </Link>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </CredenzaFooter>
+        </CredenzaContent>
+      </Credenza>
     </>
   );
 }

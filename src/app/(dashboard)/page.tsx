@@ -15,12 +15,9 @@ import React from 'react';
 
 export default async function Home() {
   return (
-    <div className="flex flex-col gap-24">
+    <div className="flex flex-col gap-24 pb-8">
       <div className="flex flex-col gap-2 p-2 w-full h-full justify-center items-center">
-        <h1 className="text-6xl inline-flex text-center items-center gap-2 font-bold">
-          {/*<LuRocket />*/}
-          LiveLaunch Dashboard
-        </h1>
+        <h1 className="text-6xl inline-flex text-center items-center gap-2 font-bold">LiveLaunch Dashboard</h1>
         <p className="inline text-lg text-center w-full font-medium">
           {'Creates space related events and sends news, notifications and live streams! '}
           <Link

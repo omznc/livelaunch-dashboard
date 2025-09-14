@@ -177,7 +177,6 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
         <Tabs
           defaultValue={guild.news_include_exclude ? 'include' : 'exclude'}
           onValueChange={value => {
-            console.log(value);
             updateSettings({
               guildId: String(guild.guild_id),
               settings: {

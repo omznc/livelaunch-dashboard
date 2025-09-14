@@ -1,7 +1,7 @@
 import prisma from '@lib/prisma';
 import Client from './client';
 import { getGuildChannels } from '@lib/discord-api';
-import { isAuthorizedForGuild } from '@lib/server-utils';
+import { checkGuildPermissions } from '@lib/server-utils';
 import { redirect } from 'next/navigation';
 import NotEnabled from '@app/(dashboard)/components/not-enabled';
 
@@ -14,7 +14,7 @@ export default async function Agencies(props: {
   const guildId = searchParams?.g;
   if (!guildId) return null;
 
-  const authorized = await isAuthorizedForGuild(guildId);
+  const authorized = await checkGuildPermissions(guildId);
   if (!authorized) {
     return null;
   }

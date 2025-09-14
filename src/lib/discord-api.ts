@@ -56,19 +56,34 @@ export const getBotGuilds = async () => {
       url.searchParams.append('after', lastId);
     }
 
-    const resp = await fetch(url.toString(), {
+    const response = await fetch(url.toString(), {
       headers: { authorization: `Bot ${env.DISCORD_BOT_TOKEN}` },
       next: {
         revalidate: 60,
         tags: ['get-bot-guilds'],
       },
-    }).then(resp => resp.json());
+    });
+
+    const resp = await response.json();
+
+    if (!response.ok) {
+      if (response.status === 429 && resp.retry_after) {
+        console.log(`Rate limited, waiting ${resp.retry_after * 1000}ms`);
+        await new Promise(resolve => setTimeout(resolve, resp.retry_after * 1000));
+        continue;
+      }
+      console.debug('getBotGuilds API error', {
+        status: response.status,
+        resp,
+      });
+      return allGuilds;
+    }
 
     if (!resp || !Array.isArray(resp)) {
       console.debug('getBotGuilds received non-array', {
         resp,
       });
-      return allGuilds; // Return what we have so far
+      return allGuilds;
     }
 
     if (resp.length === 0) {
@@ -93,7 +108,9 @@ export const getBotGuilds = async () => {
  * Gets the guilds the user is in
  */
 export const getUserGuilds = async () => {
-  const { session, user } = await isAuthorized();
+  const data = await isAuthorized();
+  if (!data) return [];
+  const { user } = data;
 
   const { accessToken } = await auth.api.getAccessToken({
     headers: await headers(),
@@ -135,4 +152,168 @@ export const createWebhook = async (channelId: string, category: string) => {
     });
 
   return webhook ? (webhook.url as string) : null;
+};
+
+/**
+ * Gets the bot's permissions in a guild
+ */
+export const getBotPermissions = async (guildId: string): Promise<string | null> => {
+  // First, let's try to get the guild and find the bot's member info
+  const guildResponse = await fetch(`https://discord.com/api/v10/guilds/${guildId}`, {
+    headers: {
+      Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`,
+      'User-Agent': 'LiveLaunch (https://github.com/omznc/livelaunch, 1.0.0)',
+    },
+    next: {
+      revalidate: 15,
+      tags: [`get-guild-${guildId}`],
+    },
+  });
+
+  if (!guildResponse.ok) {
+    console.log('Error getting guild:', guildResponse.status, guildResponse.statusText);
+    try {
+      const errorBody = await guildResponse.text();
+      console.log('Guild error body:', errorBody);
+    } catch (e) {
+      console.log('Could not read guild error body');
+    }
+    return null;
+  }
+
+  const guild = await guildResponse.json();
+  console.log('Guild data:', guild.name);
+
+  // Get bot's application info to find its user ID
+  const appResponse = await fetch(`https://discord.com/api/v10/oauth2/applications/@me`, {
+    headers: {
+      Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`,
+      'User-Agent': 'LiveLaunch (https://github.com/omznc/livelaunch, 1.0.0)',
+    },
+  });
+
+  if (!appResponse.ok) {
+    console.log('Error getting app info:', appResponse.status);
+    return null;
+  }
+
+  const app = await appResponse.json();
+  const botUserId = app.bot.id;
+  console.log('Bot user ID:', botUserId);
+
+  // Now get the bot's member info using its user ID
+  const memberResponse = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${botUserId}`, {
+    headers: {
+      Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`,
+      'User-Agent': 'LiveLaunch (https://github.com/omznc/livelaunch, 1.0.0)',
+    },
+    next: {
+      revalidate: 15,
+      tags: [`get-bot-member-${guildId}`],
+    },
+  });
+
+  if (!memberResponse.ok) {
+    console.log('Error getting bot member:', memberResponse.status, memberResponse.statusText);
+    try {
+      const errorBody = await memberResponse.text();
+      console.log('Member error body:', errorBody);
+    } catch (e) {
+      console.log('Could not read member error body');
+    }
+
+    if (memberResponse.status === 429) {
+      const resp = await memberResponse.json();
+      if (resp.retry_after) {
+        console.log(`Rate limited, waiting ${resp.retry_after * 1000}ms`);
+        await new Promise(resolve => setTimeout(resolve, resp.retry_after * 1000));
+        return getBotPermissions(guildId);
+      }
+    }
+    return null;
+  }
+
+  const member = await memberResponse.json();
+
+  let permissions = BigInt(guild.roles.find((r: any) => r.id === guildId)?.permissions || '0');
+
+  for (const roleId of member.roles) {
+    const role = guild.roles.find((r: any) => r.id === roleId);
+    if (role) {
+      console.log(`Role ${role.name} (${role.id}): ${role.permissions}`);
+      permissions |= BigInt(role.permissions);
+    }
+  }
+
+  return permissions.toString();
+};
+
+export interface PermissionStatus {
+  name: string;
+  description: string;
+  hasPermission: boolean;
+}
+
+export interface BotPermissionCheck {
+  hasAll: boolean;
+  permissions: PermissionStatus[];
+}
+
+/**
+ * Checks if the bot has required permissions in a guild
+ */
+export const checkBotPermissions = async (guildId: string): Promise<BotPermissionCheck> => {
+  const permissions = await getBotPermissions(guildId);
+  if (!permissions) {
+    return {
+      hasAll: false,
+      permissions: [
+        { name: 'Manage Webhooks', description: 'Required to create webhooks for messages', hasPermission: false },
+        { name: 'Manage Events', description: 'Required to create Discord scheduled events', hasPermission: false },
+        { name: 'Send Messages', description: 'Required to send messages to channels', hasPermission: false },
+        { name: 'Embed Links', description: 'Required to send rich embeds with links', hasPermission: false },
+      ],
+    };
+  }
+
+  const permissionBits = BigInt(permissions);
+
+  // Administrator permission grants all permissions
+  const ADMINISTRATOR = BigInt(0x8);
+  const hasAdministrator = (permissionBits & ADMINISTRATOR) === ADMINISTRATOR;
+
+  const MANAGE_WEBHOOKS = BigInt(0x20000000);
+  const MANAGE_EVENTS = BigInt(0x8000000000);
+  const SEND_MESSAGES = BigInt(0x800);
+  const EMBED_LINKS = BigInt(0x4000);
+
+  const permissionChecks: PermissionStatus[] = [
+    {
+      name: 'Manage Webhooks',
+      description: 'Required to create webhooks for messages',
+      hasPermission: hasAdministrator || (permissionBits & MANAGE_WEBHOOKS) === MANAGE_WEBHOOKS,
+    },
+    {
+      name: 'Manage Events',
+      description: 'Required to create Discord scheduled events',
+      hasPermission: hasAdministrator || (permissionBits & MANAGE_EVENTS) === MANAGE_EVENTS,
+    },
+    {
+      name: 'Send Messages',
+      description: 'Required to send messages to channels',
+      hasPermission: hasAdministrator || (permissionBits & SEND_MESSAGES) === SEND_MESSAGES,
+    },
+    {
+      name: 'Embed Links',
+      description: 'Required to send rich embeds with links',
+      hasPermission: hasAdministrator || (permissionBits & EMBED_LINKS) === EMBED_LINKS,
+    },
+  ];
+
+  const hasAll = permissionChecks.every(p => p.hasPermission);
+
+  return {
+    hasAll,
+    permissions: permissionChecks,
+  };
 };

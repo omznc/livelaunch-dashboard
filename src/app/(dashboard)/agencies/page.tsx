@@ -1,7 +1,7 @@
 import prisma from '@lib/prisma';
 import { unstable_cache as cache } from 'next/dist/server/web/spec-extension/unstable-cache';
 import Client from '@app/(dashboard)/agencies/client';
-import { isAuthorizedForGuild } from '@lib/server-utils';
+import { checkGuildPermissions } from '@lib/server-utils';
 import NotEnabled from '@app/(dashboard)/components/not-enabled';
 
 export default async function Agencies(props: {
@@ -13,7 +13,7 @@ export default async function Agencies(props: {
   const guildId = searchParams?.g;
   if (!guildId) return null;
 
-  const authorized = await isAuthorizedForGuild(guildId);
+  const authorized = await checkGuildPermissions(guildId);
   if (!authorized) {
     return null;
   }

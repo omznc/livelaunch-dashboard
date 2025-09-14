@@ -11,13 +11,13 @@ import type { RESTGetAPIGuildChannelsResult } from 'discord.js';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '@components/ui/select';
 
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@components/ui/dialog';
+  Credenza,
+  CredenzaContent,
+  CredenzaDescription,
+  CredenzaFooter,
+  CredenzaHeader,
+  CredenzaTitle,
+} from '@components/ui/credenza';
 import { Button } from '@components/ui/button';
 import { Input } from '@components/ui/input';
 import { Label } from '@components/ui/label';
@@ -175,7 +175,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
           disabled={guild.notification_channel_id === null}
           disabledMessage={'Requires a notification channel to be set'}
         >
-          <Dialog open={addCountdownDialogOpen} onOpenChange={setAddCountdownDialogOpen}>
+          <Credenza open={addCountdownDialogOpen} onOpenChange={setAddCountdownDialogOpen}>
             <Button
               onClick={() => {
                 resetNewCountdown();
@@ -186,13 +186,13 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
             >
               Add a Countdown
             </Button>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add a Countdown</DialogTitle>
-                <DialogDescription>
+            <CredenzaContent>
+              <CredenzaHeader>
+                <CredenzaTitle>Add a Countdown</CredenzaTitle>
+                <CredenzaDescription>
                   {`Let's create a new countdown. You can add ${64 - countdowns.length} more.`}
-                </DialogDescription>
-              </DialogHeader>
+                </CredenzaDescription>
+              </CredenzaHeader>
               <div className="justify-center flex flex-col sm:justify-start gap-4">
                 <div className="flex gap-2 items-center">
                   <div className="grid max-w-sm items-center gap-1.5">
@@ -254,7 +254,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
                   newCountdown.days * 24 * 60 + newCountdown.hours * 60 + newCountdown.minutes
                 } minutes beforehand.`}
               </div>
-              <DialogFooter>
+              <CredenzaFooter>
                 <Button variant="outline" onClick={() => setAddCountdownDialogOpen(false)}>
                   Cancel
                 </Button>
@@ -268,9 +268,9 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
                 >
                   Add
                 </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+              </CredenzaFooter>
+            </CredenzaContent>
+          </Credenza>
         </Setting>
         <h2 className="text-sm">
           {countdowns.length > 0 ? 'Current Countdowns' : "This is where you'd see your countdowns, if you had any."}
