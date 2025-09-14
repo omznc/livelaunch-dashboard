@@ -162,7 +162,7 @@ export const getBotPermissions = async (guildId: string): Promise<string | null>
   const guildResponse = await fetch(`https://discord.com/api/v10/guilds/${guildId}`, {
     headers: {
       Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`,
-      'User-Agent': 'LiveLaunch (https://github.com/omznc/livelaunch, 1.0.0)',
+      'User-Agent': 'LiveLaunch (https://github.com/omznc/livelaunch-dashboard, 1.0.0)',
     },
     next: {
       revalidate: 15,
@@ -188,7 +188,7 @@ export const getBotPermissions = async (guildId: string): Promise<string | null>
   const appResponse = await fetch(`https://discord.com/api/v10/oauth2/applications/@me`, {
     headers: {
       Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`,
-      'User-Agent': 'LiveLaunch (https://github.com/omznc/livelaunch, 1.0.0)',
+      'User-Agent': 'LiveLaunch (https://github.com/omznc/livelaunch-dashboard, 1.0.0)',
     },
   });
 
@@ -205,7 +205,7 @@ export const getBotPermissions = async (guildId: string): Promise<string | null>
   const memberResponse = await fetch(`https://discord.com/api/v10/guilds/${guildId}/members/${botUserId}`, {
     headers: {
       Authorization: `Bot ${env.DISCORD_BOT_TOKEN}`,
-      'User-Agent': 'LiveLaunch (https://github.com/omznc/livelaunch, 1.0.0)',
+      'User-Agent': 'LiveLaunch (https://github.com/omznc/livelaunch-dashboard, 1.0.0)',
     },
     next: {
       revalidate: 15,
