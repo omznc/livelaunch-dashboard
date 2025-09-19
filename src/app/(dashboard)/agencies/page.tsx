@@ -2,7 +2,9 @@ import prisma from '@lib/prisma';
 import { unstable_cache as cache } from 'next/dist/server/web/spec-extension/unstable-cache';
 import Client from '@app/(dashboard)/agencies/client';
 import { checkGuildPermissions } from '@lib/server-utils';
-import NotEnabled from '@app/(dashboard)/components/not-enabled';
+import NotEnabled from '@/src/app/(dashboard)/_components/not-enabled';
+
+export const dynamic = 'force-dynamic';
 
 export default async function Agencies(props: {
   searchParams: Promise<{

@@ -3,7 +3,9 @@ import { unstable_cache as cache } from 'next/cache';
 import Client from '@app/(dashboard)/news/client';
 import { getGuildChannels } from '@lib/discord-api';
 import { checkGuildPermissions } from '@lib/server-utils';
-import NotEnabled from '@app/(dashboard)/components/not-enabled';
+import NotEnabled from '@/src/app/(dashboard)/_components/not-enabled';
+
+export const dynamic = 'force-dynamic';
 
 export default async function NewsSites(props: {
   searchParams: Promise<{

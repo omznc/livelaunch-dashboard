@@ -12,6 +12,8 @@ import Image from 'next/image';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@components/ui/hover-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar';
 
+export const dynamic = 'force-static'
+
 export default async function Home() {
   return (
     <div className="flex flex-col gap-24 pb-8">

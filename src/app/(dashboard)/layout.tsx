@@ -1,6 +1,6 @@
-import GuildSwitcher from '@app/(dashboard)/components/guild-switcher';
-import { Nav } from '@app/(dashboard)/components/nav';
-import User from '@app/(dashboard)/components/user';
+import GuildSwitcher from '@/src/app/(dashboard)/_components/guild-switcher';
+import { Nav } from '@/src/app/(dashboard)/_components/nav';
+import User from '@/src/app/(dashboard)/_components/user';
 import type { RESTAPIPartialCurrentUserGuild } from 'discord.js';
 import type { ReactNode } from 'react';
 import { getBotGuilds, getUserGuilds } from '@lib/discord-api';
