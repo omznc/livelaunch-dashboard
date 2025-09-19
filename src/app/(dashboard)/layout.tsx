@@ -54,14 +54,19 @@ export interface GuildsResponse extends RESTAPIPartialCurrentUserGuild {
 const filterGuilds = async () => {
   const [userGuilds, botGuilds] = await Promise.all([getUserGuilds(), getBotGuilds()]);
 
-  if (!Array.isArray(userGuilds) || !Array.isArray(botGuilds)) {
+  if (!Array.isArray(userGuilds)) {
     return [];
   }
 
-  // Filter and map the guilds
-  const guilds: GuildsResponse[] = botGuilds
-    .filter(guild => userGuilds.some(userGuild => userGuild.id === guild.id))
-    .map(guild => ({ ...guild, botAccess: true }));
+  if (!Array.isArray(botGuilds)) {
+    return userGuilds.map(guild => ({ ...guild, botAccess: false }));
+  }
+
+  // Map all user guilds and mark bot access
+  const guilds: GuildsResponse[] = userGuilds.map(guild => ({
+    ...guild,
+    botAccess: botGuilds.some(botGuild => botGuild.id === guild.id),
+  }));
 
   return guilds;
 };

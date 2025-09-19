@@ -12,7 +12,7 @@ import Image from 'next/image';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@components/ui/hover-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar';
 
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   return (

@@ -5,15 +5,7 @@ import { useEffect, useTransition } from 'react';
 import { cn } from '@lib/utils';
 import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button, buttonVariants } from '@components/ui/button';
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-  CommandSeparator,
-} from '@components/ui/command';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@components/ui/command';
 import {
   Credenza,
   CredenzaContent,
@@ -21,10 +13,9 @@ import {
   CredenzaFooter,
   CredenzaHeader,
   CredenzaTitle,
-  CredenzaTrigger,
 } from '@components/ui/credenza';
 import { Popover, PopoverContent, PopoverTrigger } from '@components/ui/popover';
-import { CheckIcon, PlusCircle, ChevronsUpDown, RefreshCw, Plus } from 'lucide-react';
+import { CheckIcon, ChevronsUpDown, RefreshCw } from 'lucide-react';
 import type { GuildsResponse } from '@app/(dashboard)/layout';
 import { revalidateGuilds } from '@app/(dashboard)/actions';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -51,68 +42,69 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
 
   useEffect(() => {
     if (!selectedGuild && guilds.length !== 0) {
-      router.push(`?g=${guilds[0].id}`);
+      const firstGuildWithBot = guilds.find(guild => guild.botAccess);
+      if (firstGuildWithBot) {
+        router.push(`?g=${firstGuildWithBot.id}`);
+      } else {
+        router.push(`?g=${guilds[0].id}`);
+      }
     }
   }, [guilds, router, selectedGuild]);
 
   return (
     <Credenza open={showNewGuildDialog} onOpenChange={setShowNewGuildDialog}>
       {guilds.length !== 0 && (
-        <>
-          <Button
-            variant={'outline'}
-            className={'mr-2 border-0 bg-black/50 p-3'}
-            onClick={() => {
-              setShowNewGuildDialog(true);
-            }}
-          >
-            <Plus />
-          </Button>
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={open}
-                aria-label="Select a Guild"
-                className={cn('w-[200px] justify-between border-0 bg-black/50', className, {
-                  'animate-pulse': pending,
-                })}
-              >
-                {selectedGuild ? (
-                  <>
-                    <Avatar className="mr-2 h-5 w-5">
-                      {selectedGuild.icon ? (
-                        <Image
-                          width={50}
-                          height={50}
-                          src={`https://cdn.discordapp.com/icons/${selectedGuild.id}/${selectedGuild.icon}.png`}
-                          alt={selectedGuild.name}
-                        />
-                      ) : (
-                        <AvatarFallback>{selectedGuild.name[0] || 'LL'}</AvatarFallback>
-                      )}
-                    </Avatar>
-                    <span className="truncate">{selectedGuild.name}</span>
-                  </>
-                ) : (
-                  <span className="animate-pulse truncate">Just a moment...</span>
-                )}
-                <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0">
-              <Command>
-                <CommandList>
-                  <CommandInput placeholder="Search for a server..." />
-                  <CommandEmpty>No guild found.</CommandEmpty>
-                  <CommandGroup heading={'Your Guilds'}>
-                    {guilds.map(guild => (
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant="outline"
+              role="combobox"
+              aria-expanded={open}
+              aria-label="Select a Guild"
+              className={cn('w-[200px] justify-between border-0 bg-black/50', className, {
+                'animate-pulse': pending,
+              })}
+            >
+              {selectedGuild ? (
+                <>
+                  <Avatar className="mr-2 h-5 w-5">
+                    {selectedGuild.icon ? (
+                      <Image
+                        width={50}
+                        height={50}
+                        src={`https://cdn.discordapp.com/icons/${selectedGuild.id}/${selectedGuild.icon}.png`}
+                        alt={selectedGuild.name}
+                      />
+                    ) : (
+                      <AvatarFallback>{selectedGuild.name[0] || 'LL'}</AvatarFallback>
+                    )}
+                  </Avatar>
+                  <span className="truncate">{selectedGuild.name}</span>
+                </>
+              ) : (
+                <span className="animate-pulse truncate">Just a moment...</span>
+              )}
+              <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-[200px] p-0">
+            <Command>
+              <CommandList>
+                <CommandInput placeholder="Search for a server..." />
+                <CommandEmpty>No guild found.</CommandEmpty>
+                <CommandGroup heading={'Your Guilds'}>
+                  {guilds
+                    .sort((a, b) => {
+                      if (a.botAccess && !b.botAccess) return -1;
+                      if (!a.botAccess && b.botAccess) return 1;
+                      return a.name.localeCompare(b.name);
+                    })
+                    .map(guild => (
                       <CommandItem
                         key={guild.id}
                         onSelect={async () => {
+                          setOpen(false);
                           if (guild.botAccess) {
-                            setOpen(false);
                             router.push(`?g=${guild.id}`);
                           } else {
                             setShowNewGuildDialog(true);
@@ -132,7 +124,10 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
                             <AvatarFallback>{guild.name[0] || 'LL'}</AvatarFallback>
                           )}
                         </Avatar>
-                        {guild.name}
+                        <div className="flex flex-col">
+                          <span>{guild.name}</span>
+                          {!guild.botAccess && <span className="text-muted-foreground text-xs">Bot not added</span>}
+                        </div>
                         <CheckIcon
                           className={cn(
                             'ml-auto h-4 w-4',
@@ -141,28 +136,11 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
                         />
                       </CommandItem>
                     ))}
-                  </CommandGroup>
-                </CommandList>
-                <CommandSeparator />
-                <CommandList>
-                  <CommandGroup>
-                    <CredenzaTrigger asChild>
-                      <CommandItem
-                        onSelect={() => {
-                          setOpen(false);
-                          setShowNewGuildDialog(true);
-                        }}
-                      >
-                        <PlusCircle className="mr-2 h-5 w-5" />
-                        Add a Server
-                      </CommandItem>
-                    </CredenzaTrigger>
-                  </CommandGroup>
-                </CommandList>
-              </Command>
-            </PopoverContent>
-          </Popover>
-        </>
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
       )}
       {guilds.length === 0 && (
         <Button
@@ -175,8 +153,12 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
       )}
       <CredenzaContent>
         <CredenzaHeader>
-          <CredenzaTitle>Add a Guild</CredenzaTitle>
-          <CredenzaDescription>To add a server, you must be an administrator.</CredenzaDescription>
+          <CredenzaTitle>Invite LiveLaunch</CredenzaTitle>
+          <CredenzaDescription>
+            {selectedGuild && !selectedGuild.botAccess
+              ? `Invite LiveLaunch to ${selectedGuild.name} to get started.`
+              : 'To add LiveLaunch to a server, you must be an administrator.'}
+          </CredenzaDescription>
         </CredenzaHeader>
         <div className="inline-flex justify-center gap-1 sm:justify-start">
           {revalidationCooldown ? (
