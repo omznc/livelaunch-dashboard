@@ -25,5 +25,5 @@ export default async function AlmostThere(props: {
     redirect(`/?g=${guildId}`);
   }
 
-  return <Client guildId={guildId} guildName={authorized.name} permissions={permissionCheck.permissions} />;
+  return <Client guildName={authorized.name} permissions={permissionCheck.permissions} />;
 }

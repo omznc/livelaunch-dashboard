@@ -8,6 +8,7 @@ import { createWebhook } from '@lib/discord-api';
 import { revalidatePath } from 'next/cache';
 import { guildActionClient, guildIdSchema } from '@lib/safe-actions';
 import { z } from 'zod';
+import { logger } from '@lib/logger';
 
 const rest = new REST({ version: '9' }).setToken(env.DISCORD_BOT_TOKEN);
 
@@ -18,7 +19,7 @@ const notificationsFilterSchema = z.object({
 
 export const updateFilters = guildActionClient
   .inputSchema(notificationsFilterSchema)
-  .action(async ({ parsedInput: { guildId, settings }, ctx }) => {
+  .action(async ({ parsedInput: { guildId, settings } }) => {
     const data = Object.fromEntries(Object.entries(settings).map(([key, value]) => [key, Number(value)]));
     await prisma.enabled_guilds.update({
       where: {
@@ -45,7 +46,7 @@ const addCountdownSchema = z.object({
 
 export const addCountdown = guildActionClient
   .inputSchema(addCountdownSchema)
-  .action(async ({ parsedInput: { guildId, settings }, ctx }) => {
+  .action(async ({ parsedInput: { guildId, settings } }) => {
     const current = await prisma.notification_countdown.count({
       where: {
         guild_id: BigInt(guildId),
@@ -73,7 +74,7 @@ const removeCountdownSchema = z.object({
 
 export const removeCountdown = guildActionClient
   .inputSchema(removeCountdownSchema)
-  .action(async ({ parsedInput: { guildId, minutes }, ctx }) => {
+  .action(async ({ parsedInput: { guildId, minutes } }) => {
     await prisma.notification_countdown.delete({
       where: {
         guild_id_minutes: {
@@ -93,7 +94,7 @@ const updateChannelSchema = z.object({
 
 export const updateChannel = guildActionClient
   .inputSchema(updateChannelSchema)
-  .action(async ({ parsedInput: { guildId, channelId }, ctx }) => {
+  .action(async ({ parsedInput: { guildId, channelId } }) => {
     const [newWebhookURL, guild] = await Promise.all([
       createWebhook(channelId, 'Notifications'),
       prisma.enabled_guilds.findFirst({
@@ -143,7 +144,7 @@ export const updateChannel = guildActionClient
 
 export const disableFeature = guildActionClient
   .inputSchema(guildIdSchema)
-  .action(async ({ parsedInput: { guildId }, ctx }) => {
+  .action(async ({ parsedInput: { guildId } }) => {
     const resp = await prisma.enabled_guilds.findFirst({
       where: {
         guild_id: BigInt(guildId),
@@ -155,7 +156,11 @@ export const disableFeature = guildActionClient
 
     if (resp?.notification_webhook_url) {
       await rest.delete(Routes.webhook(resp.notification_webhook_url.split('/')[5])).catch(e => {
-        console.error(e);
+        logger.error('notifications:actions:disableFeature', 'Failed to delete notification webhook during disable', {
+          guildId,
+          error: e.message,
+          webhookUrl: resp.notification_webhook_url,
+        });
       });
     }
 

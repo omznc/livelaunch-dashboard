@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { useEffect, useTransition } from 'react';
 import { cn } from '@lib/utils';
-import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar';
+import { Avatar, AvatarFallback } from '@components/ui/avatar';
 import { Button, buttonVariants } from '@components/ui/button';
 import {
   Command,
@@ -47,7 +47,7 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
   const params = useSearchParams();
   const router = useRouter();
   const selectedGuild = guilds.find(guild => guild.id === params.get('g'));
-  const [pending, startTransition] = useTransition();
+  const [pending, _startTransition] = useTransition();
 
   useEffect(() => {
     if (!selectedGuild && guilds.length !== 0) {
@@ -61,7 +61,7 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
         <>
           <Button
             variant={'outline'}
-            className={'p-3 mr-2 bg-black/50 border-0'}
+            className={'mr-2 border-0 bg-black/50 p-3'}
             onClick={() => {
               setShowNewGuildDialog(true);
             }}
@@ -75,7 +75,7 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
                 role="combobox"
                 aria-expanded={open}
                 aria-label="Select a Guild"
-                className={cn('w-[200px] justify-between bg-black/50 border-0', className, {
+                className={cn('w-[200px] justify-between border-0 bg-black/50', className, {
                   'animate-pulse': pending,
                 })}
               >
@@ -96,7 +96,7 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
                     <span className="truncate">{selectedGuild.name}</span>
                   </>
                 ) : (
-                  <span className="truncate animate-pulse">Just a moment...</span>
+                  <span className="animate-pulse truncate">Just a moment...</span>
                 )}
                 <ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
               </Button>
@@ -178,15 +178,16 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
           <CredenzaTitle>Add a Guild</CredenzaTitle>
           <CredenzaDescription>To add a server, you must be an administrator.</CredenzaDescription>
         </CredenzaHeader>
-        <div className="inline-flex justify-center sm:justify-start gap-1">
+        <div className="inline-flex justify-center gap-1 sm:justify-start">
           {revalidationCooldown ? (
             `You've refreshed the servers recently, please wait a few seconds.`
           ) : (
             <>
               Is LiveLaunch already in your server?
-              <span
-                className="font-medium cursor-pointer text-primary underline underline-offset-4 transition-all hover:brightness-125"
-                onClick={async e => {
+              <button
+                type="button"
+                className="cursor-pointer font-medium text-primary underline underline-offset-4 transition-all hover:brightness-125"
+                onClick={async _e => {
                   setRevalidating(true);
                   await revalidateGuilds({}).then(() => {
                     setRevalidating(false);
@@ -197,8 +198,8 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
                   });
                 }}
               >
-                {revalidating ? <RefreshCw className="animate-spin-reverse h-5 w-5" /> : 'Refresh'}
-              </span>
+                {revalidating ? <RefreshCw className="h-5 w-5 animate-spin-reverse" /> : 'Refresh'}
+              </button>
             </>
           )}
         </div>

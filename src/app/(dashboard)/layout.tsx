@@ -5,7 +5,6 @@ import type { RESTAPIPartialCurrentUserGuild } from 'discord.js';
 import type { ReactNode } from 'react';
 import { getBotGuilds, getUserGuilds } from '@lib/discord-api';
 import prisma from '@lib/prisma';
-import { isAuthorized } from '@lib/server-utils';
 
 export default async function Layout({ children }: { children: ReactNode }) {
   const guilds = await filterGuilds();
@@ -18,9 +17,9 @@ export default async function Layout({ children }: { children: ReactNode }) {
   });
 
   return (
-    <div className="flex flex-col items-center min-h-screen w-full">
-      <div className="sticky top-0 w-full bg-primary/20 z-50 backdrop-blur-sm">
-        <div className="hidden flex-row w-full justify-between border-b md:flex">
+    <div className="flex min-h-screen w-full flex-col items-center">
+      <div className="sticky top-0 z-50 w-full bg-primary/20 backdrop-blur-sm">
+        <div className="hidden w-full flex-row justify-between border-b md:flex">
           <div className="flex h-16 items-center px-4">
             <GuildSwitcher guilds={guilds} />
             <Nav className="md:mx-6" guilds={enabledGuilds} />
@@ -30,7 +29,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
           </div>
         </div>
         <div className="flex w-full flex-col md:hidden md:gap-4">
-          <div className="flex h-16 items-center gap-2 justify-between px-4">
+          <div className="flex h-16 items-center justify-between gap-2 px-4">
             <div className="flex items-center">
               <GuildSwitcher guilds={guilds} />
             </div>
@@ -41,8 +40,8 @@ export default async function Layout({ children }: { children: ReactNode }) {
           <Nav className="md:mx-6" guilds={enabledGuilds} />
         </div>
       </div>
-      <div className="w-full flex p-4 md:p-8 justify-center">
-        <div className="w-full max-w-[1200px] flex flex-col gap-8 py-12">{children}</div>
+      <div className="flex w-full justify-center p-4 md:p-8">
+        <div className="flex w-full max-w-[1200px] flex-col gap-8 py-12">{children}</div>
       </div>
     </div>
   );

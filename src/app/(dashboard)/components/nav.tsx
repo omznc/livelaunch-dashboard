@@ -77,8 +77,8 @@ export function Nav({ className, guilds, ...props }: NavProps) {
 
   return (
     <>
-      <nav className={cn('flex animate-fade-in transition-all items-center justify-start ', className)} {...props}>
-        <div className="flex gap-4 transition-all w-full border-b md:border-b-0 items-center justify-start overflow-x-auto px-4">
+      <nav className={cn('flex animate-fade-in items-center justify-start transition-all', className)} {...props}>
+        <div className="flex w-full items-center justify-start gap-4 overflow-x-auto border-b px-4 transition-all md:border-b-0">
           {!guild && guildId && (
             <Button variant="outline" onClick={() => setShowHelpDialog(true)}>
               Enable LiveLaunch
@@ -91,7 +91,7 @@ export function Nav({ className, guilds, ...props }: NavProps) {
                 key={`${href}${label}`}
                 href={href}
                 className={cn(
-                  'text-sm font-monospace font-medium duration-200 text-center rounded-md opacity-60 transition-all py-4 px-3 hover:opacity-100',
+                  'rounded-md px-3 py-4 text-center font-medium font-monospace text-sm opacity-60 transition-all duration-200 hover:opacity-100',
                   {
                     'font-bold opacity-100': path === href,
                   }
@@ -113,7 +113,7 @@ export function Nav({ className, guilds, ...props }: NavProps) {
           </CredenzaHeader>
           <div className="flex flex-col gap-2 overflow-y-auto px-4">
             To enable the bot you need to run the following command in your server
-            <code className="relative p-4 block w-full rounded bg-muted font-mono text-sm font-semibold">
+            <code className="relative block w-full rounded bg-muted p-4 font-mono font-semibold text-sm">
               {`/enable <feature>`}
             </code>
             Where the feature is one of the following

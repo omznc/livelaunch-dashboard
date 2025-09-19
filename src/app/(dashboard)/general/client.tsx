@@ -3,7 +3,7 @@
 import type { enabled_guilds } from '@prisma/client';
 import { ArrowUp, Hash, Megaphone } from 'lucide-react';
 import { Switch } from '@components/ui/switch';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { disableFeature, updateChannel, updateNumberOfEvents, updateSettings } from './actions';
 import Link from 'next/link';
 import { Setting, SettingGroup } from '@components/ui/setting';
@@ -43,6 +43,7 @@ export default function Client({ guild, channels }: ClientProps) {
   const [mounted, setMounted] = useState(false);
   const debounced = useDebounce(numberOfEvents, 1000);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Works as expected
   useEffect(() => {
     if (!mounted) {
       setMounted(true);
@@ -51,7 +52,6 @@ export default function Client({ guild, channels }: ClientProps) {
     updateNumberOfEvents({ guildId: String(guild.guild_id), num: debounced }).catch(() => {
       toast.error('Failed to save.');
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debounced]);
 
   return (
@@ -113,9 +113,9 @@ export default function Client({ guild, channels }: ClientProps) {
                   return (
                     <span>
                       {chan.type === 0 ? (
-                        <Hash className="inline-block mr-2" />
+                        <Hash className="mr-2 inline-block" />
                       ) : (
-                        <Megaphone className="inline-block mr-2" />
+                        <Megaphone className="mr-2 inline-block" />
                       )}
                       {chan.name}
                     </span>
@@ -128,9 +128,9 @@ export default function Client({ guild, channels }: ClientProps) {
               {channels.map(channel => (
                 <SelectItem key={channel.id} value={channel.id}>
                   {channel.type === 0 ? (
-                    <Hash className="inline-block mr-2" />
+                    <Hash className="mr-2 inline-block" />
                   ) : (
-                    <Megaphone className="inline-block mr-2" />
+                    <Megaphone className="mr-2 inline-block" />
                   )}
                   {channel.name}
                 </SelectItem>

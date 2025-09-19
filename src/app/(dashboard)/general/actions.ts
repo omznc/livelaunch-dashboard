@@ -8,6 +8,7 @@ import { createWebhook } from '@lib/discord-api';
 import { revalidatePath } from 'next/cache';
 import { guildActionClient, guildIdSchema } from '@lib/safe-actions';
 import { z } from 'zod';
+import { logger } from '@lib/logger';
 
 const rest = new REST({ version: '9' }).setToken(env.DISCORD_BOT_TOKEN);
 
@@ -118,7 +119,11 @@ export const disableFeature = guildActionClient
 
     if (resp?.webhook_url) {
       await rest.delete(Routes.webhook(resp.webhook_url.split('/')[5])).catch(e => {
-        console.error(e);
+        logger.error('general:actions:disableFeature', 'Failed to delete webhook during disable', {
+          guildId,
+          error: e.message,
+          webhookUrl: resp.webhook_url,
+        });
       });
     }
 

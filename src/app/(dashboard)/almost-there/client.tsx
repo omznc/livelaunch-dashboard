@@ -10,12 +10,11 @@ import Link from 'next/link';
 import type { PermissionStatus } from '@lib/discord-api';
 
 interface AlmostThereClientProps {
-  guildId: string;
   guildName: string;
   permissions: PermissionStatus[];
 }
 
-export default function AlmostThereClient({ guildId, guildName, permissions }: AlmostThereClientProps) {
+export default function AlmostThereClient({ guildName, permissions }: AlmostThereClientProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastRefresh, setLastRefresh] = useState<number | null>(null);
   const [countdown, setCountdown] = useState<number>(0);
@@ -46,7 +45,7 @@ export default function AlmostThereClient({ guildId, guildName, permissions }: A
       const remaining = Math.max(0, 30000 - timePassed);
       setCountdown(Math.ceil(remaining / 1000));
     }
-  }, []); // Only run once on mount
+  }, [lastRefresh]); // Only run once on mount
 
   // Update countdown timer every second
   useEffect(() => {
@@ -71,12 +70,12 @@ export default function AlmostThereClient({ guildId, guildName, permissions }: A
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-col items-center gap-8 justify-center w-full">
+      <div className="flex w-full flex-col items-center justify-center gap-8">
         <div className="flex flex-col gap-2 text-center">
-          <div className="mx-auto w-16 h-16 bg-yellow-500/20 rounded-full flex items-center justify-center mb-4">
-            <AlertCircle className="w-8 h-8 text-yellow-500" />
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-yellow-500/20">
+            <AlertCircle className="h-8 w-8 text-yellow-500" />
           </div>
-          <h2 className="text-3xl font-bold">Almost There!</h2>
+          <h2 className="font-bold text-3xl">Almost There!</h2>
           <p className="mt-2 opacity-50">
             LiveLaunch needs additional permissions in <strong>{guildName}</strong> to work properly. You can also just
             re-invite the bot to your server.
@@ -107,23 +106,23 @@ export default function AlmostThereClient({ guildId, guildName, permissions }: A
             active={permission.hasPermission}
           >
             {permission.hasPermission ? (
-              <CheckCircle className="w-5 h-5 text-green-400" />
+              <CheckCircle className="h-5 w-5 text-green-400" />
             ) : (
-              <XCircle className="w-5 h-5 text-red-400" />
+              <XCircle className="h-5 w-5 text-red-400" />
             )}
           </Setting>
         ))}
       </SettingGroup>
 
       {permissions.some(p => !p.hasPermission) && (
-        <div className="flex flex-col gap-4 w-full">
+        <div className="flex w-full flex-col gap-4">
           <div>
-            <h3 className="text-xl font-bold mb-1">How to Fix</h3>
-            <p className="text-sm opacity-70 mb-4">
+            <h3 className="mb-1 font-bold text-xl">How to Fix</h3>
+            <p className="mb-4 text-sm opacity-70">
               Follow these steps to grant the required permissions to the LiveLaunch bot:
             </p>
-            <div className="bg-primary/10 border border-primary/20 rounded-md p-4 mb-4">
-              <ol className="list-decimal list-inside space-y-2 text-sm">
+            <div className="mb-4 rounded-md border border-primary/20 bg-primary/10 p-4">
+              <ol className="list-inside list-decimal space-y-2 text-sm">
                 <li>Go to your Discord server settings</li>
                 <li>Navigate to "Roles" in the left sidebar</li>
                 <li>Find the "LiveLaunch" role</li>
@@ -136,23 +135,23 @@ export default function AlmostThereClient({ guildId, guildName, permissions }: A
               <Button onClick={handleRefresh} disabled={isRefreshing || !canRefresh} className="min-w-[140px]">
                 {isRefreshing ? (
                   <>
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
                     Checking...
                   </>
                 ) : (
                   <>
-                    <RefreshCw className="w-4 h-4 mr-2" />
+                    <RefreshCw className="mr-2 h-4 w-4" />
                     Check Again
                   </>
                 )}
               </Button>
             </div>
             {lastRefresh && !canRefresh && (
-              <p className="text-center text-sm opacity-50 mt-2">
+              <p className="mt-2 text-center text-sm opacity-50">
                 You can check again in {countdown} second{countdown !== 1 ? 's' : ''}
               </p>
             )}
-            <p className="text-center text-sm opacity-50 mt-2 w-full md:w-1/2 mx-auto">
+            <p className="mx-auto mt-2 w-full text-center text-sm opacity-50 md:w-1/2">
               Discord might take a few minutes to update the permissions, so if you don't see the changes right away,
               check back in a few minutes.
             </p>

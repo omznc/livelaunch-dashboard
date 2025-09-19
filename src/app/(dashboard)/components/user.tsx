@@ -27,8 +27,8 @@ export default async function User() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative md:h-8 md:w-8 h-9 w-9">
-          <Avatar className="md:h-8 md:w-8 h-9 w-9 md:rounded-full rounded-sm">
+        <Button variant="ghost" className="relative h-9 w-9 md:h-8 md:w-8">
+          <Avatar className="h-9 w-9 rounded-sm md:h-8 md:w-8 md:rounded-full">
             {user?.image ? (
               <Image width={50} height={50} src={user.image} alt={'Profile photo'} />
             ) : (
@@ -42,8 +42,8 @@ export default async function User() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user.name}</p>
-            <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+            <p className="font-medium text-sm leading-none">{user.name}</p>
+            <p className="text-muted-foreground text-xs leading-none">{user.email}</p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

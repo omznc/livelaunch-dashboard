@@ -6,7 +6,6 @@ import { Hash, Copy } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@components/ui/tooltip';
 import { useHash } from '@lib/hooks';
-import { useRouter } from 'next/navigation';
 
 interface SettingProps {
   label: string;
@@ -54,9 +53,11 @@ export function Setting({
   };
 
   return (
+    // biome-ignore lint/a11y/noStaticElementInteractions: Works as expected
+    // biome-ignore lint/a11y/useKeyWithClickEvents: Works as expected
     <div
       className={cn(
-        `relative w-full bg-black/50 flex justify-center items-center border rounded-md justify-center transition-all p-4`,
+        `relative flex w-full items-center justify-center justify-center rounded-md border bg-black/50 p-4 transition-all`,
         {
           'bg-primary/10': active,
           'space-x-2 overflow-auto': !disabled,
@@ -68,31 +69,31 @@ export function Setting({
       onClick={handleSettingClick}
     >
       {disabled && (
-        <p className="text-sm absolute font-semibold text-center select-none">
+        <p className="absolute select-none text-center font-semibold text-sm">
           {disabledMessage ?? 'This setting is disabled'}
         </p>
       )}
       <div
         className={cn(
-          'flex w-full md:flex-row flex-col md:gap-0 gap-4 rounded-md items-center transition-all justify-between',
+          'flex w-full flex-col items-center justify-between gap-4 rounded-md transition-all md:flex-row md:gap-0',
           {
-            'blur-sm pointer-events-none select-none': disabled,
+            'pointer-events-none select-none blur-sm': disabled,
           }
         )}
       >
-        <div className={cn('flex h-full transition-all flex-1 gap-4')}>
+        <div className={cn('flex h-full flex-1 gap-4 transition-all')}>
           {image && (
             <Image
               src={image}
               alt={label}
               width={42}
               height={42}
-              className="rounded-full h-full max-h-[42px] w-auto bg-black"
+              className="h-full max-h-[42px] w-auto rounded-full bg-black"
             />
           )}
           <div className="flex flex-col gap-2">
             <Label>{label}</Label>
-            <p className="text-sm select-none opacity-50">{description}</p>
+            <p className="select-none text-sm opacity-50">{description}</p>
           </div>
         </div>
         <div ref={childRef}>{children}</div>
@@ -118,9 +119,10 @@ export function SettingGroup({ title, description, children }: SettingGroupProps
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild className={'w-fit'}>
-            <h4
+            <button
+              type="button"
               className={cn(
-                'group scroll-m-20 w-fit inline-flex cursor-pointer items-center gap-1 text-xl tracking-tight',
+                'group inline-flex w-fit cursor-pointer scroll-m-20 items-center gap-1 text-xl tracking-tight',
                 {
                   'font-bold': id === hash.slice(1),
                 }
@@ -145,13 +147,13 @@ export function SettingGroup({ title, description, children }: SettingGroupProps
                 })}
               />
               {title}
-              <Copy className="opacity-0 h-4 w-4 group-hover:opacity-50 transition-all" />
-            </h4>
+              <Copy className="h-4 w-4 opacity-0 transition-all group-hover:opacity-50" />
+            </button>
           </TooltipTrigger>
           <TooltipContent>Copy link to this section</TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      {description && <p className="text-sm inline-flex items-center gap-1 select-none opacity-50">{description}</p>}
+      {description && <p className="inline-flex select-none items-center gap-1 text-sm opacity-50">{description}</p>}
       <div className="flex flex-col gap-4">{children}</div>
     </div>
   );

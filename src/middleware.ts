@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import type { Session } from 'better-auth';
 import env from '@env';
+import { logger } from '@lib/logger';
 
 export async function middleware(request: NextRequest) {
   const resp = await fetch(`${env.PUBLIC_URL}/api/auth/get-session`, {
@@ -15,7 +16,7 @@ export async function middleware(request: NextRequest) {
     try {
       session = await resp.json();
     } catch {
-      console.error('Could not parse session');
+      logger.error('middleware', 'Could not parse session JSON', { url: request.url });
     }
   }
 

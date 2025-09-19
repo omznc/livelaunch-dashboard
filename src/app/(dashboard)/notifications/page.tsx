@@ -2,7 +2,6 @@ import prisma from '@lib/prisma';
 import Client from './client';
 import { getGuildChannels } from '@lib/discord-api';
 import { checkGuildPermissions } from '@lib/server-utils';
-import { redirect } from 'next/navigation';
 import NotEnabled from '@app/(dashboard)/components/not-enabled';
 
 export default async function Agencies(props: {

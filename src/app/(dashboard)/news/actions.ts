@@ -1,7 +1,6 @@
 'use server';
 
 import prisma from '@lib/prisma';
-import { NewsSite, NewsSitesSettings } from '@app/(dashboard)/news/client';
 import { createWebhook } from '@lib/discord-api';
 import { REST } from '@discordjs/rest';
 import env from '@env';
@@ -9,6 +8,7 @@ import { Routes } from 'discord-api-types/v10';
 import { revalidatePath } from 'next/cache';
 import { guildActionClient, guildIdSchema } from '@lib/safe-actions';
 import { z } from 'zod';
+import { logger } from '@lib/logger';
 
 const rest = new REST({ version: '9' }).setToken(env.DISCORD_BOT_TOKEN);
 
@@ -100,7 +100,11 @@ export const disableFeature = guildActionClient
 
     if (resp?.news_webhook_url) {
       await rest.delete(Routes.webhook(resp.news_webhook_url.split('/')[5])).catch(e => {
-        console.error(e);
+        logger.error('news:actions:disableFeature', 'Failed to delete news webhook during disable', {
+          guildId,
+          error: e.message,
+          webhookUrl: resp.news_webhook_url,
+        });
       });
     }
 

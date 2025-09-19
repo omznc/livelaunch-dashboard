@@ -16,9 +16,9 @@ export default function NotEnabled() {
   }, [mounted]);
 
   return (
-    <div className="flex flex-col items-center gap-4 justify-center w-full h-full">
+    <div className="flex h-full w-full flex-col items-center justify-center gap-4">
       <div className="flex flex-col gap-2">
-        <h2 className="text-3xl font-bold text-center">{"This guild isn't enabled"}</h2>
+        <h2 className="text-center font-bold text-3xl">{"This guild isn't enabled"}</h2>
         <p className="mt-2 text-center">{"You can't use LiveLaunch until you enable it for this guild."}</p>
       </div>
       <div className="flex flex-row gap-2">

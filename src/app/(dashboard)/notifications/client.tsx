@@ -2,7 +2,7 @@
 
 import type { enabled_guilds, notification_countdown } from '@prisma/client';
 import { Hash, X, Megaphone } from 'lucide-react';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { addCountdown, disableFeature, removeCountdown, updateChannel, updateFilters } from './actions';
 import { Switch } from '@components/ui/switch';
 import { Setting, SettingGroup } from '@components/ui/setting';
@@ -50,7 +50,7 @@ export interface NotificationsFilterSettings {
 }
 
 export default function Client({ guild, countdowns, channels }: ClientProps) {
-  const router = useRouter();
+  const _router = useRouter();
 
   const [settings, setSettings] = useState<NotificationsFilterSettings>({
     notification_end_status: Boolean(guild.notification_end_status),
@@ -142,9 +142,9 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
                   return (
                     <span>
                       {chan.type === 0 ? (
-                        <Hash className="inline-block mr-2" />
+                        <Hash className="mr-2 inline-block" />
                       ) : (
-                        <Megaphone className="inline-block mr-2" />
+                        <Megaphone className="mr-2 inline-block" />
                       )}
                       {chan.name}
                     </span>
@@ -157,9 +157,9 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
               {channels.map(channel => (
                 <SelectItem key={channel.id} value={channel.id}>
                   {channel.type === 0 ? (
-                    <Hash className="inline-block mr-2" />
+                    <Hash className="mr-2 inline-block" />
                   ) : (
-                    <Megaphone className="inline-block mr-2" />
+                    <Megaphone className="mr-2 inline-block" />
                   )}
                   {channel.name}
                 </SelectItem>
@@ -193,8 +193,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
                   {`Let's create a new countdown. You can add ${64 - countdowns.length} more.`}
                 </CredenzaDescription>
               </CredenzaHeader>
-              <div className="justify-center flex flex-col sm:justify-start gap-4">
-                <div className="flex gap-2 items-center">
+              <div className="flex flex-col justify-center gap-4 sm:justify-start">
+                <div className="flex items-center gap-2">
                   <div className="grid max-w-sm items-center gap-1.5">
                     <Label htmlFor="days">Days (0-31)</Label>
                     <Input
@@ -284,7 +284,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
                 const minutes = countdown.minutes % 60;
 
                 return (
-                  <div className="flex gap-1 items-center">
+                  <div className="flex items-center gap-1">
                     {days > 0 && (
                       <span className="text-sm">
                         {days} day
@@ -312,7 +312,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
                     toast.error('Failed to remove countdown.');
                   });
                 }}
-                className="w-0 invisible cursor-pointer group-hover:visible group-hover:w-2 transition-all"
+                className="invisible w-0 cursor-pointer transition-all group-hover:visible group-hover:w-2"
               />
             </Badge>
           ))}

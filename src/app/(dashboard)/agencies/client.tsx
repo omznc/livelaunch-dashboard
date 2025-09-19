@@ -1,10 +1,10 @@
 'use client';
 
 import type { enabled_guilds, ll2_agencies, ll2_agencies_filter } from '@prisma/client';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@components/ui/table';
 import { Checkbox } from '@components/ui/checkbox';
-import { useDebounce, useHash } from '@lib/hooks';
+import { useDebounce } from '@lib/hooks';
 import { cn } from '@lib/utils';
 import Image from 'next/image';
 import { SetAgencies, updateSettings } from '@app/(dashboard)/agencies/actions';
@@ -41,7 +41,7 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
   const [mounted, setMounted] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  const debounced = useDebounce(selectedAgencies, 1000 * 1.5);
+  const _debounced = useDebounce(selectedAgencies, 1000 * 1.5);
 
   useEffect(() => {
     if (!mounted) {
@@ -54,7 +54,7 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
       error: 'Failed to save!',
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debounced]);
+  }, [guild.guild_id, mounted, selectedAgencies]);
 
   const filtered = selectedAgencies
     .filter(a => a.name?.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -107,15 +107,15 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
             setSearchQuery(e.target.value.trim());
           }}
         />
-        <div className="flex border rounded-md flex-col overflow-hidden">
+        <div className="flex flex-col overflow-hidden rounded-md border">
           {filtered.length > 0 ? (
-            <Table className="overflow-scroll w-full">
-              <TableHeader className="border-b h-14 font-medium bg-background">
-                <TableRow className="bg-muted/50 snap-start align-right">
+            <Table className="w-full overflow-scroll">
+              <TableHeader className="h-14 border-b bg-background font-medium">
+                <TableRow className="snap-start bg-muted/50 align-right">
                   <TableHead>Name</TableHead>
                   <TableHead>
                     <Checkbox
-                      className="grid place-items-center h-6 w-6 m-2 rounded-[5px]"
+                      className="m-2 grid h-6 w-6 place-items-center rounded-[5px]"
                       checked={selectedAgencies.every(a => a.selected) && selectedAgencies.length > 0}
                       onClick={e => {
                         e.preventDefault();
@@ -137,7 +137,7 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
                 {filtered.map(a => (
                   <TableRow
                     key={a.agency_id}
-                    className={cn('hover:bg-foreground align-middle w-full h-8 h-18 hover:bg-muted/50', {
+                    className={cn('h-18 h-8 w-full align-middle hover:bg-foreground hover:bg-muted/50', {
                       'bg-muted/30': a.selected,
                     })}
                     onMouseDown={e => {
@@ -182,7 +182,7 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
                         />
                       ) : (
                         <div
-                          className="flex h-[42px] w-[42px] items-center text-white justify-center rounded-full bg-[#1e1f22]"
+                          className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-[#1e1f22] text-white"
                           title={a.name ?? 'Unknown'}
                         >
                           {a.name?.[0]}
@@ -190,11 +190,11 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
                       )}
                       {a.name}
                     </TableCell>
-                    <TableCell className="right-0 relative text-right align-bottom ml-auto">
+                    <TableCell className="relative right-0 ml-auto text-right align-bottom">
                       <Checkbox
                         name={`Checked ${a.name}? ${a.selected}`}
                         checked={a.selected}
-                        className="grid place-items-center h-6 w-6 m-2 rounded-[5px]"
+                        className="m-2 grid h-6 w-6 place-items-center rounded-[5px]"
                         onClick={e => {
                           e.preventDefault();
                           e.stopPropagation();
@@ -218,8 +218,8 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
               </TableBody>
             </Table>
           ) : (
-            <div className="flex flex-col justify-center items-center bg-background h-full p-8 gap-4">
-              <FrownIcon className="w-10 h-10" />
+            <div className="flex h-full flex-col items-center justify-center gap-4 bg-background p-8">
+              <FrownIcon className="h-10 w-10" />
               <p className="text-sm opacity-50">No agencies matched your search query</p>
             </div>
           )}

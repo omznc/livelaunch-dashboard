@@ -11,14 +11,13 @@ import PartnerOmznc from '@public/Partner_omznc.jpg';
 import Image from 'next/image';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@components/ui/hover-card';
 import { Avatar, AvatarFallback, AvatarImage } from '@components/ui/avatar';
-import React from 'react';
 
 export default async function Home() {
   return (
     <div className="flex flex-col gap-24 pb-8">
-      <div className="flex flex-col gap-2 p-2 w-full h-full justify-center items-center">
-        <h1 className="text-6xl inline-flex text-center items-center gap-2 font-bold">LiveLaunch Dashboard</h1>
-        <p className="inline text-lg text-center w-full font-medium">
+      <div className="flex h-full w-full flex-col items-center justify-center gap-2 p-2">
+        <h1 className="inline-flex items-center gap-2 text-center font-bold text-6xl">LiveLaunch Dashboard</h1>
+        <p className="inline w-full text-center font-medium text-lg">
           {'Creates space related events and sends news, notifications and live streams! '}
           <Link
             href={'https://juststephen.com/projects/LiveLaunch'}
@@ -28,8 +27,8 @@ export default async function Home() {
           </Link>
         </p>
       </div>
-      <div className="flex w-full flex-wrap h-full gap-4 justify-center items-stretch max-h-[300px]">
-        <Card className="w-full md:w-[400px] flex-grow justify-between flex-col flex">
+      <div className="flex h-full max-h-[300px] w-full flex-wrap items-stretch justify-center gap-4">
+        <Card className="flex w-full flex-grow flex-col justify-between md:w-[400px]">
           <CardHeader>
             <CardTitle>LiveLaunch is open source</CardTitle>
             <CardDescription>
@@ -38,18 +37,19 @@ export default async function Home() {
               }
             </CardDescription>
           </CardHeader>
-          <CardFooter className="flex flex-wrap gap-2 justify-between">
+          <CardFooter className="flex flex-wrap justify-between gap-2">
             <Link
               className={cn(
                 buttonVariants({
                   variant: 'secondary',
                 }),
-                'inline-flex gap-2 w-full md:w-fit'
+                'inline-flex w-full gap-2 md:w-fit'
               )}
               href={'https://github.com/omznc/livelaunch-dashboard'}
               target={'_blank'}
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                <title>GitHub</title>
                 <path d={siGithub.path} />
               </svg>
               Dashboard
@@ -60,12 +60,13 @@ export default async function Home() {
                 buttonVariants({
                   variant: 'default',
                 }),
-                'inline-flex gap-2 w-full md:w-fit'
+                'inline-flex w-full gap-2 md:w-fit'
               )}
               href={'https://github.com/juststephen/livelaunch'}
               target={'_blank'}
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                <title>GitHub</title>
                 <path d={siGithub.path} />
               </svg>
               LiveLaunch
@@ -73,7 +74,7 @@ export default async function Home() {
             </Link>
           </CardFooter>
         </Card>
-        <Card className="w-full md:w-[400px] flex-grow justify-between flex-col flex">
+        <Card className="flex w-full flex-grow flex-col justify-between md:w-[400px]">
           <CardHeader>
             <CardTitle>Vote for LiveLaunch</CardTitle>
             <CardDescription>
@@ -89,7 +90,7 @@ export default async function Home() {
                 buttonVariants({
                   variant: 'default',
                 }),
-                'inline-flex gap-2 w-full md:w-fit'
+                'inline-flex w-full gap-2 md:w-fit'
               )}
               href={`https://top.gg/bot/${env.NEXT_PUBLIC_DISCORD_CLIENT_ID}/vote`}
               target={'_blank'}
@@ -100,13 +101,13 @@ export default async function Home() {
             </Link>
           </CardFooter>
         </Card>
-        <Card className="w-full md:w-[400px] flex-grow justify-between flex-col flex">
+        <Card className="flex w-full flex-grow flex-col justify-between md:w-[400px]">
           <CardHeader>
             <CardTitle>Support</CardTitle>
             <CardDescription>Need help? Have a suggestion? Join our Discord, or message a developer.</CardDescription>
           </CardHeader>
-          <CardFooter className="flex flex-wrap gap-2 justify-between">
-            <div className="flex gap-2 w-full md:w-fit">
+          <CardFooter className="flex flex-wrap justify-between gap-2">
+            <div className="flex w-full gap-2 md:w-fit">
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger className={'w-full md:w-fit'}>
@@ -115,7 +116,7 @@ export default async function Home() {
                         buttonVariants({
                           variant: 'secondary',
                         }),
-                        'inline-flex gap-2 w-full md:w-fit'
+                        'inline-flex w-full gap-2 md:w-fit'
                       )}
                       href={'discord://-/channels/151026584164237312/967838544766836777'}
                     >
@@ -134,12 +135,13 @@ export default async function Home() {
                 buttonVariants({
                   variant: 'default',
                 }),
-                'inline-flex gap-2 w-full md:w-fit'
+                'inline-flex w-full gap-2 md:w-fit'
               )}
               href={`https://discord.gg/nztN2FXe7A`}
               target={'_blank'}
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                <title>Discord</title>
                 <path d={siDiscord.path} />
               </svg>
               Discord
@@ -147,7 +149,7 @@ export default async function Home() {
             </Link>
           </CardFooter>
         </Card>
-        <Card className="w-full md:w-[400px] flex-grow justify-between flex-col flex">
+        <Card className="flex w-full flex-grow flex-col justify-between md:w-[400px]">
           <CardHeader>
             <CardTitle>Partners</CardTitle>
             <CardDescription>{'LiveLaunch is powered by some amazing partners. Check them out!'}</CardDescription>
@@ -158,13 +160,13 @@ export default async function Home() {
                 <Link
                   href={'https://thespacedevs.com/'}
                   target={'_blank'}
-                  className={'w-full border rounded-lg overflow-hidden transition-all hover:brightness-125'}
+                  className={'w-full overflow-hidden rounded-lg border transition-all hover:brightness-125'}
                 >
                   <Image src={PartnerTheSpaceDevs} alt={'TheSpaceDevs'} placeholder={'blur'} />
                 </Link>
               </HoverCardTrigger>
               <HoverCardContent className="flex flex-col gap-4">
-                <div className="flex gap-2 items-center space-between">
+                <div className="space-between flex items-center gap-2">
                   <h3 className={'font-bold'}>The Space Devs</h3>
                 </div>
                 <div className={'flex flex-col gap-2'}>
@@ -185,13 +187,13 @@ export default async function Home() {
                 <Link
                   href={'https://omarzunic.com'}
                   target={'_blank'}
-                  className={'w-full border rounded-lg overflow-hidden transition-all hover:brightness-125'}
+                  className={'w-full overflow-hidden rounded-lg border transition-all hover:brightness-125'}
                 >
                   <Image src={PartnerOmznc} alt={'Omar Zunic'} placeholder={'blur'} />
                 </Link>
               </HoverCardTrigger>
               <HoverCardContent className="flex flex-col gap-4">
-                <div className="flex gap-2 items-center space-between">
+                <div className="space-between flex items-center gap-2">
                   <Avatar>
                     <AvatarImage src={'https://avatars.githubusercontent.com/u/38432561'} alt={'Omar Zunic'} />
                     <AvatarFallback>OZ</AvatarFallback>
