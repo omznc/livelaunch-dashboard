@@ -13,7 +13,7 @@ export const auth = betterAuth({
     discord: {
       clientId: env.NEXT_PUBLIC_DISCORD_CLIENT_ID,
       clientSecret: env.DISCORD_CLIENT_SECRET,
-      scopes: ['identify', 'guilds'],
+      scope: ['guilds'],
     },
   },
   session: {

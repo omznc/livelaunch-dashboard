@@ -8,6 +8,7 @@ export default function AuthenticationPage() {
   const handleDiscordSignIn = async () => {
     await signIn.social({
       provider: 'discord',
+      scopes: ['guilds'],
     });
   };
 
