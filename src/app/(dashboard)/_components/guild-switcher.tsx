@@ -193,7 +193,7 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
             className={buttonVariants({
               variant: 'secondary',
             })}
-            href={`https://discord.com/api/oauth2/authorize?client_id=${env.NEXT_PUBLIC_DISCORD_CLIENT_ID}&permissions=9126823936&scope=bot%20applications.commands`}
+            href={`https://discord.com/api/oauth2/authorize?client_id=${env.NEXT_PUBLIC_DISCORD_CLIENT_ID}&permissions=17601312868352&scope=bot%20applications.commands`}
             target={'_blank'}
           >
             Open in Browser

@@ -183,7 +183,8 @@ export const checkBotPermissions = async (guildId: string): Promise<BotPermissio
       hasAll: false,
       permissions: [
         { name: 'Manage Webhooks', description: 'Required to create webhooks for messages', hasPermission: false },
-        { name: 'Manage Events', description: 'Required to create Discord scheduled events', hasPermission: false },
+        { name: 'Manage Events', description: 'Required to edit and cancel Discord scheduled events', hasPermission: false },
+        { name: 'Create Events', description: 'Required to create Discord scheduled events', hasPermission: false },
         { name: 'Send Messages', description: 'Required to send messages to channels', hasPermission: false },
         { name: 'Embed Links', description: 'Required to send rich embeds with links', hasPermission: false },
       ],
@@ -204,9 +205,15 @@ export const checkBotPermissions = async (guildId: string): Promise<BotPermissio
     },
     {
       name: 'Manage Events',
-      description: 'Required to create Discord scheduled events',
+      description: 'Required to edit and cancel Discord scheduled events',
       hasPermission:
         hasAdministrator || (permissionBits & PermissionFlagsBits.ManageEvents) === PermissionFlagsBits.ManageEvents,
+    },
+    {
+      name: 'Create Events',
+      description: 'Required to create Discord scheduled events',
+      hasPermission:
+        hasAdministrator || (permissionBits & PermissionFlagsBits.CreateEvents) === PermissionFlagsBits.CreateEvents,
     },
     {
       name: 'Send Messages',
