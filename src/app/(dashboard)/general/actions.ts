@@ -107,7 +107,7 @@ export const updateNumberOfEvents = guildActionClient
 
 export const disableFeature = guildActionClient
   .inputSchema(guildIdSchema)
-  .action(async ({ parsedInput: { guildId }, ctx }) => {
+  .action(async ({ parsedInput: { guildId } }) => {
     const resp = await prisma.enabled_guilds.findFirst({
       where: {
         guild_id: BigInt(guildId),
