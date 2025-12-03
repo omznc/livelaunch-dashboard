@@ -104,6 +104,12 @@ export const getUserGuilds = async (retryCount = 0): Promise<RESTAPIPartialCurre
       return [];
     }
 
+    logger.debug('discord-api:getUserGuilds', 'Got access token', {
+      userId: user.id,
+      tokenPrefix: accessToken.substring(0, 20),
+      tokenLength: accessToken.length,
+    });
+
     const response = await fetch('https://discord.com/api/users/@me/guilds', {
       headers: { authorization: `Bearer ${accessToken}` },
       next: {
@@ -127,9 +133,12 @@ export const getUserGuilds = async (retryCount = 0): Promise<RESTAPIPartialCurre
         });
         return getUserGuilds(retryCount + 1);
       }
+      const errorBody = await response.text().catch(() => 'failed to read error body');
       logger.error('discord-api:getUserGuilds', 'API error when getting user guilds', {
         status: response.status,
         userId: user.id,
+        errorBody,
+        tokenPrefix: accessToken.substring(0, 20),
       });
       return [];
     }
