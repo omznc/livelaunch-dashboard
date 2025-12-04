@@ -28,9 +28,10 @@ type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>
 
 interface GuildSwitcherProps extends PopoverTriggerProps {
   guilds: GuildsResponse[];
+  listenForInviteEvent?: boolean;
 }
 
-export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps) {
+export default function GuildSwitcher({ className, guilds, listenForInviteEvent }: GuildSwitcherProps) {
   const [open, setOpen] = React.useState(false);
   const [showNewGuildDialog, setShowNewGuildDialog] = React.useState(false);
   const [revalidating, setRevalidating] = React.useState(false);
@@ -50,6 +51,15 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
       }
     }
   }, [guilds, router, selectedGuild]);
+
+  useEffect(() => {
+    if (!listenForInviteEvent) return;
+    const handler = () => setShowNewGuildDialog(true);
+    window.addEventListener('openInviteGuildDialog', handler);
+    return () => {
+      window.removeEventListener('openInviteGuildDialog', handler);
+    };
+  }, [listenForInviteEvent]);
 
   return (
     <Credenza open={showNewGuildDialog} onOpenChange={setShowNewGuildDialog}>
@@ -162,7 +172,7 @@ export default function GuildSwitcher({ className, guilds }: GuildSwitcherProps)
         </CredenzaHeader>
         <div className="inline-flex justify-center gap-1 sm:justify-start">
           {revalidationCooldown ? (
-            `You've refreshed the servers recently, please wait a few seconds.`
+            `The list was refreshed, please wait a few seconds.`
           ) : (
             <>
               Is LiveLaunch already in your server?

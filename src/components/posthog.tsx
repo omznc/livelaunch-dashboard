@@ -4,7 +4,7 @@ import posthog from 'posthog-js';
 import { useEffect } from 'react';
 import { useSession } from '../lib/auth-client';
 
-export default function PosthogIdentify() {
+export default function Posthog() {
   const { data: session, isPending } = useSession();
 
   useEffect(() => {

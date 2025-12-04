@@ -28,7 +28,7 @@ export default async function User() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-9 w-9 md:h-8 md:w-8">
-          <Avatar className="h-9 w-9 rounded-sm md:h-8 md:w-8 md:rounded-full">
+          <Avatar className="h-9 w-9 rounded-sm md:h-8 md:w-8">
             {user?.image ? (
               <Image width={50} height={50} src={user.image} alt={'Profile photo'} />
             ) : (

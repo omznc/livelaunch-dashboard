@@ -19,6 +19,7 @@ import { Button, buttonVariants } from '@components/ui/button';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
 import type { enabled_guilds } from '@prisma/client';
+import type { GuildsResponse } from '@app/(dashboard)/layout';
 
 const links = [
   {
@@ -49,9 +50,10 @@ const links = [
 
 interface NavProps extends React.HTMLAttributes<HTMLElement> {
   guilds?: enabled_guilds[];
+  allGuilds?: GuildsResponse[];
 }
 
-export function Nav({ className, guilds, ...props }: NavProps) {
+export function Nav({ className, guilds, allGuilds, ...props }: NavProps) {
   const path = usePathname();
   const params = useSearchParams();
   const guildId = params.get('g') ?? '';
@@ -62,6 +64,11 @@ export function Nav({ className, guilds, ...props }: NavProps) {
     if (!guilds) return null;
     return guilds.find(guild => guild.guild_id.toString() === guildId);
   }, [guildId, guilds]);
+
+  const selectedFullGuild = useMemo(() => {
+    if (!allGuilds) return null;
+    return allGuilds.find(guild => guild.id === guildId) ?? null;
+  }, [allGuilds, guildId]);
 
   useEffect(() => {
     const handleShowHelpDialog = (e: Event) => {
@@ -79,11 +86,23 @@ export function Nav({ className, guilds, ...props }: NavProps) {
     <>
       <nav className={cn('flex animate-fade-in items-center justify-start transition-all', className)} {...props}>
         <div className="flex w-full items-center justify-start gap-4 overflow-x-auto border-b px-4 transition-all md:border-b-0">
-          {!guild && guildId && (
-            <Button variant="outline" onClick={() => setShowHelpDialog(true)}>
-              Enable LiveLaunch
-            </Button>
-          )}
+          {guildId &&
+            (selectedFullGuild && !selectedFullGuild.botAccess ? (
+              <Button
+                variant="outline"
+                onClick={() => {
+                  window.dispatchEvent(new Event('openInviteGuildDialog'));
+                }}
+              >
+                Invite LiveLaunch
+              </Button>
+            ) : (
+              !guild && (
+                <Button variant="outline" onClick={() => setShowHelpDialog(true)}>
+                  Enable LiveLaunch
+                </Button>
+              )
+            ))}
           {links
             .filter(({ requiresGuildEnabled }) => !requiresGuildEnabled || (requiresGuildEnabled && guild))
             .map(({ href, label }) => (

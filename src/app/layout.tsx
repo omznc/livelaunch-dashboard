@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import Toast from '@components/toast';
 import type { ReactNode } from 'react';
 import Script from 'next/script';
+import Posthog from '@components/posthog';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -18,6 +19,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <Script defer data-domain="livelaunch.juststephen.com" src="https://analytics.omarzunic.com/js/script.js" />
       <body className={inter.className}>
         <Toast />
+        <Posthog />
         {children}
       </body>
     </html>
