@@ -1,12 +1,22 @@
 import { getBotGuilds, getUserGuilds } from "@lib/discord-api";
 import { prisma } from "@lib/prisma";
 import type { RESTAPIPartialCurrentUserGuild } from "discord.js";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import GuildSwitcher from "@/src/app/(dashboard)/_components/guild-switcher";
 import { Nav } from "@/src/app/(dashboard)/_components/nav";
 import User from "@/src/app/(dashboard)/_components/user";
+import { auth } from "@/src/lib/auth";
 
 export default async function Layout({ children }: { children: ReactNode }) {
+	const session = await auth.api.getSession({
+		headers: await headers(),
+	});
+	if (!session) {
+		redirect("/login");
+	}
+
 	const guilds = await filterGuilds();
 	const enabledGuilds = await prisma.enabled_guilds.findMany({
 		where: {
