@@ -40,6 +40,43 @@
 	--sidebar-ring: #7927f5;
 }
 
+.launch-control {
+	--background: #040511;
+	--foreground: #e9ecff;
+	--card: #080a16;
+	--card-foreground: #e9ecff;
+	--popover: #080a16;
+	--popover-foreground: #e9ecff;
+	--primary: #00ffe1;
+	--primary-foreground: #021016;
+	--secondary: #0c1227;
+	--secondary-foreground: #9fb2ff;
+	--muted: #0c1227;
+	--muted-foreground: #8ea2d7;
+	--accent: #0c1227;
+	--accent-foreground: #e9ecff;
+	--destructive: #ef4444;
+	--destructive-foreground: #ffffff;
+	--border: #1d2646;
+	--input: #0c1227;
+	--ring: #00ffe1;
+	--chart-1: #00ffe1;
+	--chart-2: #8b5cf6;
+	--chart-3: #f59e0b;
+	--chart-4: #22d3ee;
+	--chart-5: #ef4444;
+	--sidebar: #080a16;
+	--sidebar-foreground: #e9ecff;
+	--sidebar-primary: #00ffe1;
+	--sidebar-primary-foreground: #021016;
+	--sidebar-accent: #0c1227;
+	--sidebar-accent-foreground: #e9ecff;
+	--sidebar-border: #1d2646;
+	--sidebar-ring: #00ffe1;
+	--font-sans:
+		"IBM Plex Mono", "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
 @theme {
 	--color-background: var(--background);
 	--color-foreground: var(--foreground);
@@ -98,6 +135,60 @@
 	}
 }
 
+@keyframes rocket-fly {
+	from {
+		transform: translateX(-20vw) translateY(4vh) rotate(-8deg);
+	}
+	to {
+		transform: translateX(120vw) translateY(-120vh) rotate(43deg);
+	}
+}
+
+@keyframes grid-drift {
+	0% {
+		background-position:
+			center,
+			0 0,
+			0 0;
+	}
+	50% {
+		background-position:
+			center,
+			10px 8px,
+			-20px -8px;
+	}
+	100% {
+		background-position:
+			center,
+			20px 16px,
+			-30px -16px;
+	}
+}
+
+@keyframes grid-drift-ctrl {
+	0% {
+		background-position:
+			20% 20%,
+			80% 10%,
+			0 0,
+			0 0;
+	}
+	50% {
+		background-position:
+			20% 20%,
+			80% 10%,
+			32px 10px,
+			-12px -10px;
+	}
+	100% {
+		background-position:
+			20% 20%,
+			80% 10%,
+			22px 18px,
+			-22px -18px;
+	}
+}
+
 @layer base {
 	* {
 		@apply border-border outline-ring/50;
@@ -120,6 +211,37 @@
 	[role="button"] {
 		cursor: pointer;
 	}
+}
+
+.launch-control body {
+	background:
+		radial-gradient(circle at 20% 20%, rgba(0, 255, 225, 0.18), transparent 32%),
+		radial-gradient(circle at 80% 10%, rgba(121, 39, 245, 0.18), transparent 34%),
+		linear-gradient(#0f172a 1px, transparent 1px), linear-gradient(90deg, #0f172a 1px, transparent 1px);
+	background-size:
+		100% 100%,
+		100% 100%,
+		32px 32px,
+		32px 32px;
+	background-position:
+		20% 20%,
+		80% 10%,
+		0 0,
+		0 0;
+	background-attachment: fixed, fixed, fixed, fixed;
+	animation: grid-drift-ctrl 16s ease-in-out infinite alternate;
+	/* biome-ignore lint/complexity/noImportantStyles: Have to - it's an easter egg */
+	font-family: var(--font-sans) !important;
+}
+
+.rocket-fly {
+	position: fixed;
+	left: 0;
+	bottom: 12vh;
+	z-index: 60;
+	font-size: 2.25rem;
+	animation: rocket-fly 1.8s linear;
+	pointer-events: none;
 }
 
 @layer utilities {

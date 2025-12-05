@@ -4,6 +4,7 @@ import { REST } from "@discordjs/rest";
 import env from "@env";
 import { auth } from "@lib/auth";
 import { logger } from "@lib/logger";
+import { prisma } from "@lib/prisma";
 import { isAuthorized } from "@lib/server-utils";
 import avatar from "@public/LiveLaunch_Webhook_Avatar.png";
 import type {
@@ -18,23 +19,40 @@ import { PermissionFlagsBits, Routes } from "discord-api-types/v10";
 import { headers } from "next/headers";
 
 const rest = new REST({ version: "10" }).setToken(env.DISCORD_BOT_TOKEN);
+rest.on("rateLimited", (info) => {
+	logger.warn("discord-api:handleRateLimit", "Bot token rate limited", {
+		actor: "bot",
+		timeToReset: info.timeToReset,
+		limit: info.limit,
+		method: info.method,
+		route: info.route,
+		global: info.global,
+	});
+});
 
-const handleRateLimit = async (response: Response): Promise<boolean> => {
+const handleRateLimit = async (response: Response, actor: "user" | "bot"): Promise<boolean> => {
 	if (response.status === 429) {
 		try {
 			const data = await response.json();
 			if (data.retry_after) {
-				logger.warn("discord-api:handleRateLimit", `Rate limited, waiting ${data.retry_after * 1000}ms`, {
-					retryAfter: data.retry_after,
-				});
+				logger.warn(
+					"discord-api:handleRateLimit",
+					`${actor} token rate limited, waiting ${data.retry_after * 1000}ms`,
+					{
+						actor,
+						retryAfter: data.retry_after,
+					},
+				);
 				await new Promise((resolve) => setTimeout(resolve, data.retry_after * 1000));
 				return true;
 			}
-			logger.debug("discord-api:handleRateLimit", "Rate limited but no retry_after provided", {
+			logger.debug("discord-api:handleRateLimit", `${actor} token rate limited but no retry_after provided`, {
+				actor,
 				status: response.status,
 			});
 		} catch (error) {
-			logger.debug("discord-api:handleRateLimit", "Failed to parse rate limit response", {
+			logger.debug("discord-api:handleRateLimit", `${actor} token rate limit parse failed`, {
+				actor,
 				status: response.status,
 				error,
 			});
@@ -70,9 +88,19 @@ export const getGuildChannels = async (guildId: string): Promise<RESTGetAPIGuild
  */
 export const getBotGuilds = async (): Promise<RESTAPIPartialCurrentUserGuild[]> => {
 	try {
-		const guilds = (await rest.get(Routes.userGuilds())) as RESTAPIPartialCurrentUserGuild[];
-		logger.debug("discord-api:getBotGuilds", "Successfully retrieved bot guilds", { count: guilds.length });
-		return guilds;
+		const guilds = await prisma.guilds.findMany({
+			select: {
+				guild_id: true,
+			},
+		});
+		const mapped = guilds.map(
+			(guild) =>
+				({
+					id: guild.guild_id.toString(),
+				}) as RESTAPIPartialCurrentUserGuild,
+		);
+		logger.debug("discord-api:getBotGuilds", "Successfully retrieved bot guilds", { count: mapped.length });
+		return mapped;
 	} catch (error) {
 		logger.error("discord-api:getBotGuilds", "Failed to get bot guilds", { error });
 		return [];
@@ -111,15 +139,16 @@ export const getUserGuilds = async (retryCount = 0): Promise<RESTAPIPartialCurre
 		});
 
 		const response = await fetch("https://discord.com/api/users/@me/guilds", {
+			cache: "force-cache",
 			headers: { authorization: `Bearer ${accessToken}` },
 			next: {
-				revalidate: 60 * 5,
+				revalidate: 30,
 				tags: [`get-user-guilds-${user.id}`],
 			},
 		});
 
 		if (!response.ok) {
-			if (await handleRateLimit(response)) {
+			if (await handleRateLimit(response, "user")) {
 				if (retryCount >= MAX_RETRIES) {
 					logger.error("discord-api:getUserGuilds", "Max retries reached for rate limit", {
 						userId: user.id,

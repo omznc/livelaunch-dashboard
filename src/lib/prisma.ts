@@ -6,14 +6,6 @@ import env from "../env";
 
 const connectionUrl = new URL(env.DATABASE_URL);
 
-console.log({
-	host: connectionUrl.hostname,
-	port: Number.parseInt(connectionUrl.port ?? "3306", 10),
-	user: connectionUrl.username,
-	password: connectionUrl.password,
-	database: connectionUrl.pathname.slice(1),
-});
-
 const prismaClientSingleton = () => {
 	const adapter = new PrismaMariaDb({
 		host: connectionUrl.hostname,

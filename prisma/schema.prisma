@@ -62,6 +62,10 @@ model Verification {
   @@unique([identifier, value])
 }
 
+model guilds {
+  guild_id BigInt @id @db.UnsignedBigInt
+}
+
 model enabled_guilds {
   guild_id                     BigInt                   @id @db.UnsignedBigInt
   channel_id                   BigInt?                  @db.UnsignedBigInt

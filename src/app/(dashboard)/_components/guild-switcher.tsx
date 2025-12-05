@@ -17,11 +17,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "@components/ui/popover"
 import env from "@env";
 import { cn } from "@lib/utils";
 import { CheckIcon, ChevronsUpDown, RefreshCw } from "lucide-react";
+import type { Route } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
+import posthog from "posthog-js";
 import * as React from "react";
-import { useEffect, useTransition } from "react";
+import { useEffect, useMemo, useTransition } from "react";
+import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
 
 type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>;
@@ -36,21 +39,39 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 	const [showNewGuildDialog, setShowNewGuildDialog] = React.useState(false);
 	const [revalidating, setRevalidating] = React.useState(false);
 	const [revalidationCooldown, setRevalidationCooldown] = React.useState(false);
+	const [search, setSearch] = React.useState("");
+	const [showRocket, setShowRocket] = React.useState(false);
+	const [mounted, setMounted] = React.useState(false);
+	const cooldownTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 	const params = useSearchParams();
 	const router = useRouter();
 	const selectedGuild = guilds.find((guild) => guild.id === params.get("g"));
-	const [pending, _startTransition] = useTransition();
+	const [pending, startTransition] = useTransition();
+	const inviteUrl = `https://discord.com/api/oauth2/authorize?client_id=${env.NEXT_PUBLIC_DISCORD_CLIENT_ID}&permissions=17601312868352&scope=bot%20applications.commands`;
+	const discordDeepLink = `discord://-/application-directory/${env.NEXT_PUBLIC_DISCORD_CLIENT_ID}`;
+	const sortedGuilds = useMemo(
+		() =>
+			[...guilds].sort((a, b) => {
+				if (a.botAccess && !b.botAccess) return -1;
+				if (!a.botAccess && b.botAccess) return 1;
+				return a.name.localeCompare(b.name);
+			}),
+		[guilds],
+	);
 
 	useEffect(() => {
-		if (!selectedGuild && guilds.length !== 0) {
-			const firstGuildWithBot = guilds.find((guild) => guild.botAccess);
-			if (firstGuildWithBot) {
-				router.push(`?g=${firstGuildWithBot.id}`);
-			} else {
-				router.push(`?g=${guilds[0].id}`);
-			}
+		if (!selectedGuild && sortedGuilds.length !== 0) {
+			const firstGuildWithBot = sortedGuilds.find((guild) => guild.botAccess);
+			const targetGuild = firstGuildWithBot ?? sortedGuilds[0];
+			router.replace(`?g=${targetGuild.id}`);
 		}
-	}, [guilds, router, selectedGuild]);
+	}, [router, selectedGuild, sortedGuilds]);
+
+	useEffect(() => {
+		return () => {
+			if (cooldownTimer.current) clearTimeout(cooldownTimer.current);
+		};
+	}, []);
 
 	useEffect(() => {
 		if (!listenForInviteEvent) return;
@@ -61,9 +82,13 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 		};
 	}, [listenForInviteEvent]);
 
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
 	return (
 		<Credenza open={showNewGuildDialog} onOpenChange={setShowNewGuildDialog}>
-			{guilds.length !== 0 && (
+			{sortedGuilds.length !== 0 && (
 				<Popover open={open} onOpenChange={setOpen}>
 					<PopoverTrigger asChild>
 						<Button
@@ -100,63 +125,68 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 					<PopoverContent className="w-[200px] p-0">
 						<Command>
 							<CommandList>
-								<CommandInput placeholder="Search for a server..." />
+								<CommandInput
+									placeholder="Search for a server..."
+									value={search}
+									onValueChange={(v) => {
+										setSearch(v);
+										if (v.trim().toLowerCase() === "rocket") {
+											setShowRocket(true);
+											posthog.capture("easter_egg_rocket");
+											setTimeout(() => setShowRocket(false), 1800);
+										}
+									}}
+								/>
 								<CommandEmpty>No guild found.</CommandEmpty>
 								<CommandGroup heading={"Your Guilds"}>
-									{guilds
-										.sort((a, b) => {
-											if (a.botAccess && !b.botAccess) return -1;
-											if (!a.botAccess && b.botAccess) return 1;
-											return a.name.localeCompare(b.name);
-										})
-										.map((guild) => (
-											<CommandItem
-												key={guild.id}
-												onSelect={async () => {
+									{sortedGuilds.map((guild) => (
+										<CommandItem
+											key={guild.id}
+											onSelect={() =>
+												startTransition(() => {
 													setOpen(false);
 													if (guild.botAccess) {
 														router.push(`?g=${guild.id}`);
 													} else {
 														setShowNewGuildDialog(true);
 													}
-												}}
-												className="text-sm"
-											>
-												<Avatar className="mr-2 h-5 w-5">
-													{guild.icon ? (
-														<Image
-															width={50}
-															height={50}
-															src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
-															alt={guild.name}
-														/>
-													) : (
-														<AvatarFallback>{guild.name[0] || "LL"}</AvatarFallback>
-													)}
-												</Avatar>
-												<div className="flex flex-col">
-													<span>{guild.name}</span>
-													{!guild.botAccess && (
-														<span className="text-muted-foreground text-xs">
-															Bot not added
-														</span>
-													)}
-												</div>
-												<CheckIcon
-													className={cn(
-														"ml-auto h-4 w-4",
-														selectedGuild?.id === guild.id ? "opacity-100" : "opacity-0",
-													)}
-												/>
-											</CommandItem>
-										))}
+												})
+											}
+											className="text-sm"
+										>
+											<Avatar className="mr-2 h-5 w-5">
+												{guild.icon ? (
+													<Image
+														width={50}
+														height={50}
+														src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
+														alt={guild.name}
+													/>
+												) : (
+													<AvatarFallback>{guild.name[0] || "LL"}</AvatarFallback>
+												)}
+											</Avatar>
+											<div className="flex flex-col">
+												<span>{guild.name}</span>
+												{!guild.botAccess && (
+													<span className="text-muted-foreground text-xs">Bot not added</span>
+												)}
+											</div>
+											<CheckIcon
+												className={cn(
+													"ml-auto h-4 w-4",
+													selectedGuild?.id === guild.id ? "opacity-100" : "opacity-0",
+												)}
+											/>
+										</CommandItem>
+									))}
 								</CommandGroup>
 							</CommandList>
 						</Command>
 					</PopoverContent>
 				</Popover>
 			)}
-			{guilds.length === 0 && (
+			{sortedGuilds.length === 0 && (
 				<Button
 					onClick={() => {
 						setShowNewGuildDialog(true);
@@ -165,6 +195,9 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 					Add a Guild
 				</Button>
 			)}
+			{showRocket && mounted && typeof document !== "undefined"
+				? createPortal(<div className="rocket-fly">🚀</div>, document.body)
+				: null}
 			<CredenzaContent>
 				<CredenzaHeader>
 					<CredenzaTitle>Invite LiveLaunch</CredenzaTitle>
@@ -176,22 +209,31 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 				</CredenzaHeader>
 				<div className="inline-flex justify-center gap-1 sm:justify-start">
 					{revalidationCooldown ? (
-						"The list was refreshed, please wait a few seconds."
+						"Refreshed! Check the server list again, or try again in a few seconds."
 					) : (
 						<>
 							Is LiveLaunch already in your server?
 							<button
 								type="button"
 								className="cursor-pointer font-medium text-primary underline underline-offset-4 transition-all hover:brightness-125"
+								disabled={revalidating || revalidationCooldown}
 								onClick={async (_e) => {
-									setRevalidating(true);
-									await revalidateGuilds({}).then(() => {
-										setRevalidating(false);
+									try {
+										if (cooldownTimer.current) {
+											clearTimeout(cooldownTimer.current);
+										}
+										setRevalidating(true);
+										await revalidateGuilds({});
+										router.refresh();
 										setRevalidationCooldown(true);
-										setTimeout(() => {
+										cooldownTimer.current = setTimeout(() => {
 											setRevalidationCooldown(false);
 										}, 10000);
-									});
+									} catch (_error) {
+										toast.error("Refresh failed");
+									} finally {
+										setRevalidating(false);
+									}
 								}}
 							>
 								{revalidating ? <RefreshCw className="h-5 w-5 animate-spin-reverse" /> : "Refresh"}
@@ -200,15 +242,22 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 					)}
 				</div>
 				<CredenzaFooter className="gap-2 md:gap-1">
-					<Button variant="outline" onClick={() => setShowNewGuildDialog(false)}>
-						Cancel
+					<Button
+						variant="outline"
+						onClick={() => {
+							navigator.clipboard.writeText(inviteUrl);
+							toast.success("Invite link copied to clipboard");
+						}}
+					>
+						Copy invite
 					</Button>
 					<Link
 						className={buttonVariants({
 							variant: "secondary",
 						})}
-						href={`https://discord.com/api/oauth2/authorize?client_id=${env.NEXT_PUBLIC_DISCORD_CLIENT_ID}&permissions=17601312868352&scope=bot%20applications.commands`}
+						href={inviteUrl as Route}
 						target={"_blank"}
+						rel="noreferrer"
 					>
 						Open in Browser
 					</Link>
@@ -216,7 +265,7 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 						className={buttonVariants({
 							variant: "default",
 						})}
-						href={`discord://-/application-directory/${env.NEXT_PUBLIC_DISCORD_CLIENT_ID}`}
+						href={discordDeepLink as Route}
 						onClick={() => toast.success("Check your Discord app.")}
 					>
 						Open in Discord

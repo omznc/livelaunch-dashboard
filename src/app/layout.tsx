@@ -1,4 +1,6 @@
 import "./globals.css";
+import ConsoleEasterEgg from "@components/console-easter-egg";
+import EasterEggs from "@components/easter-eggs";
 import Posthog from "@components/posthog";
 import Toast from "@components/toast";
 import type { Metadata } from "next";
@@ -18,6 +20,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 		<html lang="en" className="dark">
 			<Script defer data-domain="livelaunch.juststephen.com" src="https://analytics.omarzunic.com/js/script.js" />
 			<body className={inter.className}>
+				<EasterEggs />
+				<ConsoleEasterEgg />
 				<Toast />
 				<Posthog />
 				{children}

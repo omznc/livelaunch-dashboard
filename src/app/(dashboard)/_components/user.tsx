@@ -12,6 +12,8 @@ import { auth } from "@lib/auth";
 import { headers } from "next/headers";
 import Image from "next/image";
 import { redirect } from "next/navigation";
+import DadJokeButton from "./dad-joke-button";
+import LaunchControlReset from "./launch-control-reset";
 
 export default async function User() {
 	const session = await auth.api.getSession({
@@ -46,6 +48,10 @@ export default async function User() {
 						<p className="text-muted-foreground text-xs leading-none">{user.email}</p>
 					</div>
 				</DropdownMenuLabel>
+				<DropdownMenuSeparator />
+				<LaunchControlReset />
+				<DropdownMenuSeparator />
+				<DadJokeButton />
 				<DropdownMenuSeparator />
 				<DropdownMenuItem asChild>
 					<form action={logout}>
