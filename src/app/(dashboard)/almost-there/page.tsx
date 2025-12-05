@@ -1,31 +1,31 @@
-import { checkBotPermissions } from '@lib/discord-api';
-import { isAuthorizedForGuild } from '@lib/server-utils';
-import { redirect } from 'next/navigation';
-import Client from './client';
+import { checkBotPermissions } from "@lib/discord-api";
+import { isAuthorizedForGuild } from "@lib/server-utils";
+import { redirect } from "next/navigation";
+import Client from "./client";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 export default async function AlmostThere(props: {
-  searchParams: Promise<{
-    g: string | undefined;
-  }>;
+	searchParams: Promise<{
+		g: string | undefined;
+	}>;
 }) {
-  const searchParams = await props.searchParams;
-  const guildId = searchParams?.g;
+	const searchParams = await props.searchParams;
+	const guildId = searchParams?.g;
 
-  if (!guildId) {
-    redirect('/');
-  }
+	if (!guildId) {
+		redirect("/");
+	}
 
-  const authorized = await isAuthorizedForGuild(guildId);
-  if (!authorized) {
-    redirect('/');
-  }
+	const authorized = await isAuthorizedForGuild(guildId);
+	if (!authorized) {
+		redirect("/");
+	}
 
-  const permissionCheck = await checkBotPermissions(guildId);
-  if (permissionCheck.hasAll) {
-    redirect(`/?g=${guildId}`);
-  }
+	const permissionCheck = await checkBotPermissions(guildId);
+	if (permissionCheck.hasAll) {
+		redirect(`/?g=${guildId}`);
+	}
 
-  return <Client guildName={authorized.name} permissions={permissionCheck.permissions} />;
+	return <Client guildName={authorized.name} permissions={permissionCheck.permissions} />;
 }

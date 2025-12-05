@@ -1,40 +1,40 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-export const useDebounce = (value: any, delay: number) => {
-  const [debouncedValue, setDebouncedValue] = useState(value);
+export const useDebounce = <T>(value: T, delay: number) => {
+	const [debouncedValue, setDebouncedValue] = useState(value);
 
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedValue(value);
-    }, delay);
+	useEffect(() => {
+		const handler = setTimeout(() => {
+			setDebouncedValue(value);
+		}, delay);
 
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [value, delay]);
+		return () => {
+			clearTimeout(handler);
+		};
+	}, [value, delay]);
 
-  return debouncedValue;
+	return debouncedValue;
 };
 
 export const useHash = () => {
-  const [hash, setHash] = useState('');
-  const [mounted, setMounted] = useState(false);
+	const [hash, setHash] = useState("");
+	const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    if (!mounted) {
-      setMounted(true);
-      return;
-    }
-    const handler = () => {
-      setHash(window.location.hash);
-    };
-    handler();
+	useEffect(() => {
+		if (!mounted) {
+			setMounted(true);
+			return;
+		}
+		const handler = () => {
+			setHash(window.location.hash);
+		};
+		handler();
 
-    window.addEventListener('hashchange', handler);
-    return () => window.removeEventListener('hashchange', handler);
-  }, [mounted]);
+		window.addEventListener("hashchange", handler);
+		return () => window.removeEventListener("hashchange", handler);
+	}, [mounted]);
 
-  return hash;
+	return hash;
 };

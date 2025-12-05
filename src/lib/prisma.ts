@@ -1,29 +1,38 @@
-import { PrismaClient } from '@prisma/client';
-import { Prisma } from '@prisma/client/extension';
+import "server-only";
+
+import { PrismaClient } from "@generated/client";
+import { PrismaMariaDb } from "@prisma/adapter-mariadb";
+import env from "../env";
+
+const connectionUrl = new URL(env.DATABASE_URL);
+
+console.log({
+	host: connectionUrl.hostname,
+	port: Number.parseInt(connectionUrl.port ?? "3306", 10),
+	user: connectionUrl.username,
+	password: connectionUrl.password,
+	database: connectionUrl.pathname.slice(1),
+});
 
 const prismaClientSingleton = () => {
-  return new PrismaClient().$extends({
-    model: {
-      $allModels: {
-        async exists<T>(this: T, where: Prisma.Args<T, 'findFirst'>['where']): Promise<boolean> {
-          const context = Prisma.getExtensionContext(this);
-          const result = await (context as any).findFirst({ where });
-          return result !== null;
-        },
-      },
-    },
-  });
+	const adapter = new PrismaMariaDb({
+		host: connectionUrl.hostname,
+		port: Number.parseInt(connectionUrl.port ?? "3306", 10),
+		user: connectionUrl.username,
+		password: connectionUrl.password,
+		database: connectionUrl.pathname.slice(1),
+	});
+	return new PrismaClient({ adapter });
 };
 
 type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;
 
 /*global globalThis*/
 const globalForPrisma = globalThis as unknown as {
-  prisma: PrismaClientSingleton | undefined;
+	prisma: PrismaClientSingleton | undefined;
 };
 
-const prisma = globalForPrisma.prisma ?? prismaClientSingleton();
-
-export default prisma;
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+export const prisma = globalForPrisma.prisma ?? prismaClientSingleton();
+if (process.env.NODE_ENV !== "production") {
+	globalForPrisma.prisma = prisma;
+}

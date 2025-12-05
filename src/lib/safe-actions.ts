@@ -1,42 +1,42 @@
-import { createSafeActionClient, DEFAULT_SERVER_ERROR_MESSAGE } from 'next-safe-action';
-import { isAuthorizedForGuild } from './server-utils';
-import { z } from 'zod';
-import { logger } from './logger';
+import { createSafeActionClient, DEFAULT_SERVER_ERROR_MESSAGE } from "next-safe-action";
+import { z } from "zod";
+import { logger } from "./logger";
+import { isAuthorizedForGuild } from "./server-utils";
 
 export const guildIdSchema = z.object({
-  guildId: z.string(),
+	guildId: z.string(),
 });
 
 export const actionClient = createSafeActionClient({
-  handleServerError(e: Error) {
-    logger.error('safe-actions', 'Server action error occurred', {
-      error: e.message,
-      stack: e.stack,
-    });
+	handleServerError(e: Error) {
+		logger.error("safe-actions", "Server action error occurred", {
+			error: e.message,
+			stack: e.stack,
+		});
 
-    if (e.message === 'Unauthorized') {
-      return 'You are not authorized to perform this action';
-    }
+		if (e.message === "Unauthorized") {
+			return "You are not authorized to perform this action";
+		}
 
-    return DEFAULT_SERVER_ERROR_MESSAGE;
-  },
+		return DEFAULT_SERVER_ERROR_MESSAGE;
+	},
 });
 
 export const guildActionClient = actionClient.use(async ({ next, clientInput }) => {
-  const guildId = (clientInput as { guildId?: string })?.guildId;
+	const guildId = (clientInput as { guildId?: string })?.guildId;
 
-  if (!guildId || typeof guildId !== 'string') {
-    throw new Error('Guild ID is required');
-  }
+	if (!guildId || typeof guildId !== "string") {
+		throw new Error("Guild ID is required");
+	}
 
-  const authorized = await isAuthorizedForGuild(guildId);
-  if (!authorized) {
-    throw new Error('Unauthorized');
-  }
+	const authorized = await isAuthorizedForGuild(guildId);
+	if (!authorized) {
+		throw new Error("Unauthorized");
+	}
 
-  return next({
-    ctx: {
-      guildId,
-    },
-  });
+	return next({
+		ctx: {
+			guildId,
+		},
+	});
 });
