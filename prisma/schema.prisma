@@ -9,57 +9,60 @@ datasource db {
 }
 
 model User {
-  id                   String    @id
-  name                 String?
-  email                String?   @unique
-  emailVerified        Boolean   @default(false)
-  image                String?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
-  sessions             Session[]
-  accounts             Account[]
+  id            String    @id
+  name          String?   @db.VarChar(255)
+  createdAt     DateTime  @default(now())
+  email         String?
+  emailVerified Boolean   @default(false)
+  image         String?   @db.VarChar(255)
+  updatedAt     DateTime  @updatedAt
+  accounts      Account[]
+  sessions      Session[]
 }
 
 model Session {
   id        String   @id
-  expiresAt DateTime
-  token     String?  @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  ipAddress String?
-  userAgent String?
   userId    String
-  user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
+  expiresAt DateTime
+  token     String?  @unique(map: "token") @db.VarChar(255)
+  createdAt DateTime @default(now()) @db.DateTime(0)
+  updatedAt DateTime @default(now()) @updatedAt @db.DateTime(0)
+  ipAddress String?  @db.VarChar(255)
+  userAgent String?  @db.VarChar(255)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId], map: "Session_userId_fkey")
 }
 
 model Account {
-  id                    String    @id @default(cuid())
-  accountId             String
-  providerId            String
-  userId                String
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
-  user                  User      @relation(references: [id], fields: [userId], onDelete: Cascade)
+  id                    String    @id @default(dbgenerated("(uuid())")) @db.VarChar(255)
+  accountId             String    @db.VarChar(255)
+  providerId            String    @db.VarChar(255)
+  userId                String    @db.VarChar(255)
+  accessToken           String?   @db.VarChar(255)
+  refreshToken          String?   @db.VarChar(255)
+  idToken               String?   @db.VarChar(255)
+  accessTokenExpiresAt  DateTime? @db.DateTime(0)
+  refreshTokenExpiresAt DateTime? @db.DateTime(0)
+  scope                 String?   @db.VarChar(255)
+  password              String?   @db.VarChar(255)
+  createdAt             DateTime  @default(now()) @db.DateTime(0)
+  updatedAt             DateTime  @default(now()) @updatedAt @db.DateTime(0)
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "Account_ibfk_1")
 
-  @@unique([providerId, accountId])
+  @@unique([providerId, accountId], map: "provider_account_unique")
+  @@index([userId], map: "userId")
 }
 
 model Verification {
-  id         String   @id @default(cuid())
+  id         String   @id @default(dbgenerated("(uuid())")) @db.VarChar(255)
   identifier String   @db.VarChar(255)
   value      String   @db.VarChar(255)
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  expiresAt  DateTime @db.DateTime(0)
+  createdAt  DateTime @default(now()) @db.DateTime(0)
+  updatedAt  DateTime @default(now()) @updatedAt @db.DateTime(0)
 
-  @@unique([identifier, value])
+  @@unique([identifier, value], map: "identifier_value_unique")
 }
 
 model guilds {
@@ -74,6 +77,7 @@ model enabled_guilds {
   se_launch                    Int?                     @default(1) @db.UnsignedTinyInt
   se_event                     Int?                     @default(1) @db.UnsignedTinyInt
   se_no_url                    Int?                     @default(0) @db.UnsignedTinyInt
+  agencies_include_exclude     Int?                     @default(0) @db.UnsignedTinyInt
   news_channel_id              BigInt?                  @db.UnsignedBigInt
   news_webhook_url             String?                  @db.Text
   news_include_exclude         Int?                     @default(0) @db.UnsignedTinyInt
@@ -93,7 +97,6 @@ model enabled_guilds {
   notification_button_fc       Int?                     @default(1) @db.UnsignedTinyInt
   notification_button_g4l      Int?                     @default(1) @db.UnsignedTinyInt
   notification_button_sln      Int?                     @default(1) @db.UnsignedTinyInt
-  agencies_include_exclude     Int                      @default(0) @db.UnsignedTinyInt
   ll2_agencies_filter          ll2_agencies_filter[]
   news_filter                  news_filter[]
   notification_countdown       notification_countdown[]
