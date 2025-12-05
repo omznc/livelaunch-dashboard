@@ -5,7 +5,6 @@ import Posthog from "@components/posthog";
 import Toast from "@components/toast";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import Script from "next/script";
 import type { ReactNode } from "react";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -18,7 +17,6 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
 	return (
 		<html lang="en" className="dark">
-			<Script defer data-domain="livelaunch.juststephen.com" src="https://analytics.omarzunic.com/js/script.js" />
 			<body className={inter.className}>
 				<EasterEggs />
 				<ConsoleEasterEgg />

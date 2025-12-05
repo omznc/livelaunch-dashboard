@@ -8,7 +8,7 @@ export const auth = betterAuth({
 		provider: "mysql",
 	}),
 	secret: env.BETTER_AUTH_SECRET,
-	baseURL: env.PUBLIC_URL,
+	baseURL: env.BETTER_AUTH_URL,
 	socialProviders: {
 		discord: {
 			clientId: env.NEXT_PUBLIC_DISCORD_CLIENT_ID,
@@ -19,6 +19,12 @@ export const auth = betterAuth({
 	session: {
 		fields: {
 			token: "token",
+		},
+	},
+	logger: {
+		level: "debug",
+		log: (level, message, ...args) => {
+			console.log(`[better-auth] ${level.toUpperCase()}: ${message}`, ...args);
 		},
 	},
 });

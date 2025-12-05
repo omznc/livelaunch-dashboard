@@ -213,7 +213,7 @@ export const createWebhook = async (channelId: string, category: string): Promis
 		return null;
 	}
 	try {
-		const avatarResponse = await fetch(`${env.PUBLIC_URL}${avatar.src}`);
+		const avatarResponse = await fetch(`${env.BETTER_AUTH_URL}${avatar.src}`);
 		if (!avatarResponse.ok) {
 			logger.error("discord-api:createWebhook", "Failed to fetch avatar", {
 				channelId,

@@ -9,7 +9,7 @@ const env = createEnv({
 		DISCORD_CLIENT_SECRET: z.string(),
 		DISCORD_BOT_TOKEN: z.string(),
 		BETTER_AUTH_SECRET: z.string(),
-		PUBLIC_URL: z.url().default("http://localhost:3000"),
+		BETTER_AUTH_URL: z.url().default("http://localhost:3000"),
 	},
 	client: {
 		NEXT_PUBLIC_DISCORD_CLIENT_ID: z.string(),

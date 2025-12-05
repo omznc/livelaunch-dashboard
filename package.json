@@ -29,11 +29,11 @@
 		"cmdk": "^1.1.1",
 		"discord-api-types": "^0.38.36",
 		"discord.js": "^14.25.1",
-		"lucide-react": "^0.555.0",
+		"lucide-react": "^0.556.0",
 		"next": "16.0.7",
 		"next-safe-action": "^8.0.11",
 		"postcss": "^8.5.6",
-		"posthog-js": "^1.302.0",
+		"posthog-js": "^1.302.2",
 		"posthog-node": "^5.17.2",
 		"prisma": "^7.1.0",
 		"react": "19.2.1",
@@ -60,8 +60,8 @@
 	"private": true,
 	"scripts": {
 		"build": "next build",
-		"dev": "next dev",
 		"check": "bunx --bun @biomejs/biome check --write .",
+		"dev": "next dev",
 		"start": "next start",
 		"start:db": "docker run --rm -p 3306:3306 -e MYSQL_ROOT_PASSWORD=root -e MYSQL_DATABASE=LiveLaunch mysql:8.0"
 	},

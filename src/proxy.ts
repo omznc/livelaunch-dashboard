@@ -6,7 +6,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
 export async function proxy(request: NextRequest) {
-	const resp = await fetch(`${env.PUBLIC_URL}/api/auth/get-session`, {
+	const resp = await fetch(`${env.BETTER_AUTH_URL}/api/auth/get-session`, {
 		headers: await headers(),
 	});
 
