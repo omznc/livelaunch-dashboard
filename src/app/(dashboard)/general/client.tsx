@@ -11,7 +11,7 @@ import { useDebounce } from "@lib/hooks";
 import type { RESTGetAPIGuildChannelsResult } from "discord.js";
 import { ArrowUp, Hash, Megaphone } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { disableFeature, updateChannel, updateNumberOfEvents, updateSettings } from "./actions";
 
@@ -40,18 +40,30 @@ export default function Client({ guild, channels }: ClientProps) {
 	});
 	const [numberOfEvents, setNumberOfEvents] = useState<number>(guild.scheduled_events ?? 0);
 	const [selectedChannelID, setSelectedChannelID] = useState<string | undefined>(guild.channel_id?.toString());
-	const [mounted, setMounted] = useState(false);
+	const hydratedRef = useRef(false);
+	const lastGuildIdRef = useRef(guild.guild_id);
+	const lastSavedRef = useRef<number>(guild.scheduled_events ?? 0);
 	const debounced = useDebounce(numberOfEvents, 1000);
 
 	useEffect(() => {
-		if (!mounted) {
-			setMounted(true);
+		const first = !hydratedRef.current || lastGuildIdRef.current !== guild.guild_id;
+		hydratedRef.current = true;
+		lastGuildIdRef.current = guild.guild_id;
+
+		if (first) {
+			lastSavedRef.current = debounced;
 			return;
 		}
-		updateNumberOfEvents({ guildId: String(guild.guild_id), num: debounced }).catch(() => {
-			toast.error("Failed to save.");
-		});
-	}, [debounced]);
+		if (debounced === lastSavedRef.current) return;
+
+		updateNumberOfEvents({ guildId: String(guild.guild_id), num: debounced })
+			.then(() => {
+				lastSavedRef.current = debounced;
+			})
+			.catch(() => {
+				toast.error("Failed to save.");
+			});
+	}, [debounced, guild.guild_id]);
 
 	return (
 		<div className="flex flex-col gap-4">

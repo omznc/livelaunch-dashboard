@@ -14,7 +14,7 @@ import type { RESTGetAPIGuildChannelsResult } from "discord.js";
 import { FrownIcon, Hash, Megaphone } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { disableFeature, setNewsSites, updateChannel, updateSettings } from "./actions";
 
@@ -47,23 +47,33 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
 		whitelist: Boolean(guild.news_include_exclude),
 	});
 	const [selectedChannelID, setSelectedChannelID] = useState<string | undefined>(guild.news_channel_id?.toString());
-	const [mounted, setMounted] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
 
-	const _debounced = useDebounce(selectedNewsSites, 1000 * 1.5);
+	const debouncedNewsSites = useDebounce(selectedNewsSites, 1000 * 1.5);
+	const hydratedRef = useRef(false);
+	const lastGuildIdRef = useRef(guild.guild_id);
+	const lastSavedSnapshotRef = useRef<string>("");
 
 	useEffect(() => {
-		if (!mounted) {
-			setMounted(true);
+		const snapshot = JSON.stringify(
+			debouncedNewsSites.map(({ news_site_id, selected }) => ({ news_site_id, selected })),
+		);
+		const first = !hydratedRef.current || lastGuildIdRef.current !== guild.guild_id;
+		hydratedRef.current = true;
+		lastGuildIdRef.current = guild.guild_id;
+		if (first) {
+			lastSavedSnapshotRef.current = snapshot;
 			return;
 		}
-		toast.promise(setNewsSites({ guildId: String(guild.guild_id), newsSites: selectedNewsSites }), {
+		if (snapshot === lastSavedSnapshotRef.current) return;
+		lastSavedSnapshotRef.current = snapshot;
+
+		toast.promise(setNewsSites({ guildId: String(guild.guild_id), newsSites: debouncedNewsSites }), {
 			loading: "Saving...",
 			success: "Saved!",
 			error: "Failed to save!",
 		});
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [guild.guild_id, mounted, selectedNewsSites]);
+	}, [debouncedNewsSites, guild.guild_id]);
 
 	// sort by name, alphabetically
 	const filtered = selectedNewsSites

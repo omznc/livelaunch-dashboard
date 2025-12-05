@@ -189,6 +189,27 @@
 	}
 }
 
+@keyframes xp-stars {
+	0% {
+		background-position:
+			0 0,
+			0 0,
+			0 0;
+	}
+	50% {
+		background-position:
+			24px 16px,
+			-18px -10px,
+			12px -12px;
+	}
+	100% {
+		background-position:
+			48px 32px,
+			-36px -20px,
+			24px -24px;
+	}
+}
+
 @layer base {
 	* {
 		@apply border-border outline-ring/50;
@@ -210,6 +231,14 @@
 	button,
 	[role="button"] {
 		cursor: pointer;
+	}
+	input[type="number"] {
+		-moz-appearance: textfield;
+	}
+	input[type="number"]::-webkit-inner-spin-button,
+	input[type="number"]::-webkit-outer-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
 	}
 }
 
@@ -242,6 +271,81 @@
 	font-size: 2.25rem;
 	animation: rocket-fly 1.8s linear;
 	pointer-events: none;
+}
+
+.saver-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 70;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	border: none;
+	outline: none;
+	cursor: default;
+	background:
+		radial-gradient(ellipse at 20% 20%, rgba(255, 255, 255, 0.12), transparent 40%),
+		radial-gradient(ellipse at 80% 10%, rgba(255, 255, 255, 0.08), transparent 38%),
+		linear-gradient(120deg, rgba(90, 140, 255, 0.14), transparent 60%),
+		linear-gradient(180deg, #0f1f5c 0%, #0b2f7a 50%, #051335 100%);
+	background-size:
+		100% 100%,
+		100% 100%,
+		200% 200%,
+		100% 100%;
+	animation: xp-stars 16s ease-in-out infinite alternate;
+}
+
+.saver-window {
+	width: min(720px, 90vw);
+	background: linear-gradient(#ffffff 0%, #f5f8ff 40%, #d9e6ff 100%);
+	border: 1px solid #9cb8f3;
+	border-radius: 12px;
+	box-shadow:
+		0 18px 40px rgba(6, 16, 58, 0.45),
+		inset 0 1px 0 #ffffff;
+	overflow: hidden;
+}
+
+.saver-title {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 14px;
+	background: linear-gradient(90deg, #0c3ea8 0%, #1e63e2 60%, #4e88ff 100%);
+	color: #f5faff;
+	font-weight: 700;
+	letter-spacing: 0.01em;
+}
+
+.saver-body {
+	position: relative;
+	overflow: hidden;
+	isolation: isolate;
+	padding: 18px 20px 20px;
+	min-height: 220px;
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.55) 0%, rgba(255, 255, 255, 0.82) 100%);
+	color: #0f2c72;
+}
+
+.saver-body-content {
+	position: relative;
+	z-index: 1;
+}
+
+.saver-rocket {
+	position: absolute;
+	top: 0;
+	left: 0;
+	font-size: 64px;
+	line-height: 1;
+	filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.25));
+	pointer-events: none;
+	z-index: 0;
 }
 
 @layer utilities {

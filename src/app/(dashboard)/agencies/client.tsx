@@ -10,7 +10,7 @@ import type { enabled_guilds, ll2_agencies, ll2_agencies_filter } from "@generat
 import { cn } from "@lib/utils";
 import { FrownIcon } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 interface ClientProps {
@@ -37,21 +37,29 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
 	const [settings, setSettings] = useState<AgenciesSettings>({
 		whitelist: Boolean(guild.agencies_include_exclude),
 	});
-	const [mounted, setMounted] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
+	const hydratedRef = useRef(false);
+	const lastGuildIdRef = useRef(guild.guild_id);
+	const lastSavedSnapshotRef = useRef<string>("");
 
 	useEffect(() => {
-		if (!mounted) {
-			setMounted(true);
+		const snapshot = JSON.stringify(selectedAgencies.map(({ agency_id, selected }) => ({ agency_id, selected })));
+		const first = !hydratedRef.current || lastGuildIdRef.current !== guild.guild_id;
+		hydratedRef.current = true;
+		lastGuildIdRef.current = guild.guild_id;
+		if (first) {
+			lastSavedSnapshotRef.current = snapshot;
 			return;
 		}
+		if (snapshot === lastSavedSnapshotRef.current) return;
+		lastSavedSnapshotRef.current = snapshot;
+
 		toast.promise(SetAgencies({ guildId: String(guild.guild_id), agencies: selectedAgencies }), {
 			loading: "Saving...",
 			success: "Saved!",
 			error: "Failed to save!",
 		});
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [guild.guild_id, mounted, selectedAgencies]);
+	}, [selectedAgencies, guild.guild_id]);
 
 	const filtered = selectedAgencies
 		.filter((a) => a.name?.toLowerCase().includes(searchQuery.toLowerCase()))
