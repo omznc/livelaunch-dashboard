@@ -48,12 +48,12 @@ const links = [
 	},
 ];
 
-interface NavProps extends React.HTMLAttributes<HTMLElement> {
+interface NavigationProps extends React.HTMLAttributes<HTMLElement> {
 	guilds?: enabled_guilds[];
 	allGuilds?: GuildsResponse[];
 }
 
-export function Nav({ className, guilds, allGuilds, ...props }: NavProps) {
+export function Navigation({ className, guilds, allGuilds, ...props }: NavigationProps) {
 	const path = usePathname();
 	const params = useSearchParams();
 	const guildId = params.get("g") ?? "";

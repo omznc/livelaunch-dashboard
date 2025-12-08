@@ -12,8 +12,9 @@ import { auth } from "@lib/auth";
 import { headers } from "next/headers";
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import DadJokeButton from "./dad-joke-button";
-import LaunchControlReset from "./launch-control-reset";
+import DadJokeButton from "@/src/components/easter-eggs/dad-joke-easter-egg";
+import { LaunchControlResetEasterEgg } from "@/src/components/easter-eggs/launch-control-easter-egg";
+import { ScreensaverToggle } from "@/src/components/easter-eggs/screensaver-easter-egg";
 
 export default async function User() {
 	const session = await auth.api.getSession({
@@ -49,7 +50,8 @@ export default async function User() {
 					</div>
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
-				<LaunchControlReset />
+				<LaunchControlResetEasterEgg />
+				<ScreensaverToggle />
 				<DropdownMenuSeparator />
 				<DadJokeButton />
 				<DropdownMenuSeparator />

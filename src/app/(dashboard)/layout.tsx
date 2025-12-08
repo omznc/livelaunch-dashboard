@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import GuildSwitcher from "@/src/app/(dashboard)/_components/guild-switcher";
-import { Nav } from "@/src/app/(dashboard)/_components/nav";
+import { Navigation } from "@/src/app/(dashboard)/_components/navigation";
 import User from "@/src/app/(dashboard)/_components/user";
 import { auth } from "@/src/lib/auth";
 
@@ -32,7 +32,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
 				<div className="hidden w-full flex-row justify-between border-b md:flex">
 					<div className="flex h-16 items-center px-4">
 						<GuildSwitcher guilds={guilds} listenForInviteEvent />
-						<Nav className="md:mx-6" guilds={enabledGuilds} allGuilds={guilds} />
+						<Navigation className="md:mx-6" guilds={enabledGuilds} allGuilds={guilds} />
 					</div>
 					<div className="flex h-16 items-center gap-4 px-4">
 						<User />
@@ -47,7 +47,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
 							<User />
 						</div>
 					</div>
-					<Nav className="md:mx-6" guilds={enabledGuilds} allGuilds={guilds} />
+					<Navigation className="md:mx-6" guilds={enabledGuilds} allGuilds={guilds} />
 				</div>
 			</div>
 			<div className="flex w-full justify-center p-4 md:p-8">

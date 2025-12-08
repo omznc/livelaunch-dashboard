@@ -5,7 +5,7 @@ import posthog from "posthog-js";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
-export default function DadJokeButton() {
+export default function DadJokeEasterEgg() {
 	const [loading, setLoading] = useState(false);
 
 	const fetchJoke = async () => {

@@ -1,58 +1,41 @@
 "use client";
 
+import { DropdownMenuItem } from "@components/ui/dropdown-menu";
 import posthog from "posthog-js";
 import { type RefObject, useEffect, useRef, useState } from "react";
 
-const SEQ = [
-	"ArrowUp",
-	"ArrowUp",
-	"ArrowDown",
-	"ArrowDown",
-	"ArrowLeft",
-	"ArrowRight",
-	"ArrowLeft",
-	"ArrowRight",
-	"b",
-	"a",
-];
-
 const IDLE_MS = 30_000;
 const ESC_GAP = 500;
+export const SCREENSAVER_DISABLED_KEY = "ll-screensaver-disabled";
+export const SCREENSAVER_PREF_EVENT = "screensaverPreferenceChanged";
 
-export default function EasterEggs() {
-	const buffer = useRef<string[]>([]);
+export function ScreensaverEasterEgg() {
 	const timeoutRef = useRef<number | undefined>(undefined);
 	const lastEscRef = useRef(0);
 	const skipNextActivity = useRef(false);
 	const wakeRef = useRef<() => void>(() => {});
 	const [screensaver, setScreensaver] = useState(false);
+	const [disabled, setDisabled] = useState(false);
 
 	useEffect(() => {
-		const html = document.documentElement;
-
-		if (localStorage.getItem("ll-launch-control") === "1") {
-			html.classList.add("launch-control");
-		}
-
-		const onKey = (e: KeyboardEvent) => {
-			if (e.key === "Escape") {
-				const now = Date.now();
-				if (now - lastEscRef.current < ESC_GAP) {
-					skipNextActivity.current = true;
-					if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
-					setScreensaver(true);
-					posthog.capture("easter_egg_screensaver", { trigger: "double_escape" });
-					return;
-				}
-				lastEscRef.current = now;
-			}
-			buffer.current = [...buffer.current.slice(-(SEQ.length - 1)), e.key];
-			if (buffer.current.join(",") === SEQ.join(",")) {
-				const on = html.classList.toggle("launch-control");
-				localStorage.setItem("ll-launch-control", on ? "1" : "0");
-				posthog.capture("easter_egg_konami_toggle", { on });
-			}
+		const sync = () => setDisabled(localStorage.getItem(SCREENSAVER_DISABLED_KEY) === "1");
+		sync();
+		window.addEventListener("storage", sync);
+		window.addEventListener(SCREENSAVER_PREF_EVENT, sync);
+		return () => {
+			window.removeEventListener("storage", sync);
+			window.removeEventListener(SCREENSAVER_PREF_EVENT, sync);
 		};
+	}, []);
+
+	useEffect(() => {
+		if (disabled) {
+			if (timeoutRef.current) {
+				window.clearTimeout(timeoutRef.current);
+			}
+			setScreensaver(false);
+			return;
+		}
 
 		const startIdleTimer = () => {
 			if (timeoutRef.current) {
@@ -69,6 +52,20 @@ export default function EasterEggs() {
 			startIdleTimer();
 		};
 
+		const onKey = (e: KeyboardEvent) => {
+			if (e.key === "Escape") {
+				const now = Date.now();
+				if (now - lastEscRef.current < ESC_GAP) {
+					skipNextActivity.current = true;
+					if (timeoutRef.current) window.clearTimeout(timeoutRef.current);
+					setScreensaver(true);
+					posthog.capture("easter_egg_screensaver", { trigger: "double_escape" });
+					return;
+				}
+				lastEscRef.current = now;
+			}
+		};
+
 		const onActivity = () => {
 			if (skipNextActivity.current) {
 				skipNextActivity.current = false;
@@ -76,6 +73,7 @@ export default function EasterEggs() {
 			}
 			wakeRef.current();
 		};
+
 		const events: (keyof WindowEventMap)[] = ["mousemove", "mousedown", "keydown", "touchstart", "scroll"];
 
 		window.addEventListener("keydown", onKey);
@@ -94,13 +92,45 @@ export default function EasterEggs() {
 				window.removeEventListener(event, onActivity);
 			}
 		};
-	}, []);
+	}, [disabled]);
 
 	if (screensaver) {
 		return <Screensaver onExit={() => wakeRef.current()} />;
 	}
 
 	return null;
+}
+
+export function ScreensaverToggle() {
+	const [disabled, setDisabled] = useState(false);
+
+	useEffect(() => {
+		const sync = () => setDisabled(localStorage.getItem(SCREENSAVER_DISABLED_KEY) === "1");
+		sync();
+		window.addEventListener("storage", sync);
+		window.addEventListener(SCREENSAVER_PREF_EVENT, sync);
+		return () => {
+			window.removeEventListener("storage", sync);
+			window.removeEventListener(SCREENSAVER_PREF_EVENT, sync);
+		};
+	}, []);
+
+	return (
+		<DropdownMenuItem
+			onClick={() => {
+				const next = !disabled;
+				if (next) {
+					localStorage.setItem(SCREENSAVER_DISABLED_KEY, "1");
+				} else {
+					localStorage.removeItem(SCREENSAVER_DISABLED_KEY);
+				}
+				setDisabled(next);
+				window.dispatchEvent(new Event(SCREENSAVER_PREF_EVENT));
+			}}
+		>
+			{disabled ? "Enable Screensaver" : "Disable Screensaver"}
+		</DropdownMenuItem>
+	);
 }
 
 function Screensaver({ onExit }: { onExit: () => void }) {
