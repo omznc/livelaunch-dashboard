@@ -179,6 +179,11 @@ export default function GuildSwitcher({ className, guilds, clientId, listenForIn
 			)}
 			{sortedGuilds.length === 0 && (
 				<Button
+					variant="outline"
+					className={cn(
+						"h-full w-full min-w-0 border-0 px-4 font-sans text-[15px] focus-visible:outline-offset-[-2px]",
+						className,
+					)}
 					onClick={() => {
 						setShowNewGuildDialog(true);
 					}}

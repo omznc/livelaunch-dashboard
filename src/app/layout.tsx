@@ -18,7 +18,10 @@ export const metadata: Metadata = {
 // Both color schemes are allowed. The theme script picks one before the first paint.
 export const viewport: Viewport = {
 	colorScheme: "light dark",
-	themeColor: "#0b0c0a",
+	themeColor: [
+		{ media: "(prefers-color-scheme: light)", color: "#f4f3ee" },
+		{ media: "(prefers-color-scheme: dark)", color: "#0b0c0a" },
+	],
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
