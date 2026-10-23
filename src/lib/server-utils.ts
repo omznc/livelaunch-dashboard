@@ -27,13 +27,15 @@ export async function checkGuildPermissions(guildId: string): Promise<RESTAPIPar
 	return authorized;
 }
 
-// Sends a request without a valid ?g= to the first guild. Returns null if the user has no guild.
+// Sends a request without a valid ?g= to the first guild that has the bot. Otherwise it goes to the home page.
 export async function redirectToDefaultGuild(path: string, current?: string): Promise<null> {
 	const guilds = await getGuildsWithBotAccess();
 	if (current && guilds.some((guild) => guild.id === current)) return null;
 
-	const target = [...guilds].sort(compareGuilds)[0];
+	const target = guilds.filter((guild) => guild.botAccess).sort(compareGuilds)[0];
 	if (target) redirect(`${path}?g=${target.id}` as Route);
+	// No guild has the bot: show the home page, which has the invite state.
+	if (path !== "/") redirect("/");
 	return null;
 }
 

@@ -4,9 +4,19 @@ import { StatusPage } from "@components/status-page";
 import { Button } from "@components/ui/button";
 import { logger } from "@lib/logger";
 import { catchError, type ErrorInfo } from "next/error";
-import { useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 function ErrorView({ error, retry }: ErrorInfo) {
+	// catchError has no reset keys. The guild switcher changes only ?g=, so retry when it changes.
+	const guild = useSearchParams().get("g");
+	const shownFor = useRef(guild);
+	useEffect(() => {
+		if (guild === shownFor.current) return;
+		shownFor.current = guild;
+		retry();
+	}, [guild, retry]);
+
 	useEffect(() => {
 		logger.error("section-error", "Dashboard section error occurred", {
 			error: error instanceof Error ? error.message : String(error),
