@@ -9,7 +9,7 @@ import { cn } from '@lib/utils';
 const secondary = 'border border-line2 bg-transparent font-medium text-fg hover:bg-raised';
 
 const buttonVariants = cva(
-  'press inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap font-mono text-[12.5px] disabled:pointer-events-none disabled:border-transparent disabled:bg-raised disabled:font-semibold disabled:text-fg3 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+  'press inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap font-mono text-[13.5px] disabled:pointer-events-none disabled:border-transparent disabled:bg-raised disabled:font-semibold disabled:text-fg3 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
@@ -23,10 +23,10 @@ const buttonVariants = cva(
         link: 'text-brand underline-offset-4 hover:underline',
       },
       size: {
-        default: 'h-9 px-3.5',
-        sm: 'h-8 px-3 text-xs',
-        lg: 'h-10 px-5',
-        icon: 'h-9 w-9',
+        default: 'h-10 px-4',
+        sm: 'h-9 px-3.5 text-[13px]',
+        lg: 'h-11 px-5 text-sm',
+        icon: 'h-10 w-10',
       },
     },
     defaultVariants: {

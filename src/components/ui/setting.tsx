@@ -61,30 +61,30 @@ export function Setting({
       aria-labelledby={labelId}
       data-active={active || undefined}
       className={cn(
-        'flex flex-wrap items-center justify-between gap-x-8 gap-y-3 px-4 py-3.5 hover:bg-hover data-[active]:bg-primary/[0.07]',
-        disabled ? 'cursor-not-allowed' : 'cursor-pointer',
+        'flex flex-wrap items-center justify-between gap-x-8 gap-y-3 px-4 py-4 sm:px-6 sm:py-5',
+        disabled ? 'cursor-not-allowed' : 'cursor-pointer hover:bg-hover',
         className
       )}
       onClick={handleSettingClick}
     >
-      <div className="flex min-w-0 flex-1 basis-60 items-center gap-3">
+      <div className="flex min-w-0 flex-1 basis-60 items-center gap-4">
         {image && (
           <Image
             src={image}
             alt=""
-            width={28}
-            height={28}
-            className="h-7 w-7 shrink-0 border border-line bg-bg object-contain"
+            width={32}
+            height={32}
+            className="h-8 w-8 shrink-0 border border-line bg-bg object-contain"
           />
         )}
         <div className="flex min-w-0 flex-col gap-0.5">
-          <span id={labelId} className="font-medium text-sm leading-5">
+          <span id={labelId} className="font-medium text-[15px] leading-6">
             {label}
           </span>
-          <p className="select-none text-fg2 text-sm leading-5">{description}</p>
+          <p className="select-none text-fg2 text-sm leading-[22px]">{description}</p>
           {disabled && (
-            <p className="mt-1 inline-flex select-none items-center gap-1.5 text-amber text-xs">
-              <Lock className="h-4 w-4 shrink-0" />
+            <p className="mt-1 inline-flex select-none items-center gap-1.5 text-amber text-sm">
+              <Lock className="h-[18px] w-[18px] shrink-0" />
               {disabledMessage ?? 'This setting is disabled'}
             </p>
           )}
@@ -108,7 +108,7 @@ interface SettingGroupProps {
   children?: ReactNode;
 }
 
-// A section: a small uppercase label, then the rows divided by hairlines.
+// A section: a heading band with a hairline above it, then full-width rows split by hairlines.
 export function SettingGroup({ title, description, children }: SettingGroupProps) {
   const id = title.toLowerCase().replaceAll(' ', '-');
   const hash = useHash();
@@ -116,14 +116,14 @@ export function SettingGroup({ title, description, children }: SettingGroupProps
   if (Children.count(children) === 0) return null;
 
   return (
-    <section className="flex flex-col gap-2" key={hash}>
-      <div className="flex flex-col gap-1">
+    <section className="flex flex-col border-line border-t first:border-t-0 last:border-b" key={hash}>
+      <div className="flex flex-col gap-1 px-4 pt-6 pb-4 sm:px-6">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild className={'w-fit'}>
               <button
                 type="button"
-                className={cn('group inline-flex w-fit scroll-m-20 items-center gap-1 font-semibold text-sm hover:text-brand', {
+                className={cn('group inline-flex w-fit scroll-m-20 items-center gap-1.5 font-semibold text-lg leading-7 tracking-head hover:text-brand', {
                   'text-brand': id === hash.slice(1),
                 })}
                 id={id}
@@ -140,7 +140,7 @@ export function SettingGroup({ title, description, children }: SettingGroupProps
                   window.location.hash = id;
                 }}
               >
-                <Hash className="h-4 w-4" />
+                <Hash className="h-[18px] w-[18px] text-fg3" />
                 {title}
               </button>
             </TooltipTrigger>
@@ -148,10 +148,10 @@ export function SettingGroup({ title, description, children }: SettingGroupProps
           </Tooltip>
         </TooltipProvider>
         {description && (
-          <p className="inline-flex select-none flex-wrap items-center gap-x-2 text-fg2 text-sm">{description}</p>
+          <p className="inline-flex select-none flex-wrap items-center gap-x-2 text-fg2 text-sm leading-[22px]">{description}</p>
         )}
       </div>
-      <div className="flex flex-col divide-y divide-line border border-line bg-panel">{children}</div>
+      <div className="flex flex-col divide-y divide-line border-line border-t">{children}</div>
     </section>
   );
 }

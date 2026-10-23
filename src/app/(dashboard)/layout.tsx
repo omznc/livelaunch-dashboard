@@ -17,11 +17,11 @@ export default function Layout({ children }: { children: ReactNode }) {
 		<div className="flex min-h-screen w-full flex-col">
 			{/* Same height as the real header, so nothing jumps when it streams in. */}
 			<Suspense
-				fallback={<div className="material sticky top-0 z-50 h-[97px] border-b border-line md:h-[53px]" />}
+				fallback={<div className="material sticky top-0 z-50 h-[105px] border-b border-line md:h-[57px]" />}
 			>
 				<Header />
 			</Suspense>
-			<main className="mx-auto w-full max-w-[1180px] flex-1 border-line px-4 py-8 sm:px-6 sm:py-10 min-[1180px]:border-x">
+			<main className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col border-line min-[1180px]:border-x">
 				<SectionError>{children}</SectionError>
 			</main>
 		</div>
@@ -49,19 +49,19 @@ async function Header() {
 	return (
 		<header className="material sticky top-0 z-50 border-b border-line">
 			<div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-stretch min-[1180px]:border-x min-[1180px]:border-line md:flex-nowrap">
-				<div className="flex h-[52px] min-w-0 flex-1 items-center px-4 md:flex-none">
+				<div className="flex h-14 min-w-0 flex-1 md:w-[280px] md:flex-none">
 					<GuildSwitcher
 						guilds={guilds}
 						clientId={env.DISCORD_CLIENT_ID}
 						listenForInviteEvent
-						className="max-w-full"
+						className="w-full"
 					/>
 				</div>
-				<div className="flex h-[52px] items-center px-4 md:order-last">
+				<div className="flex h-14 w-14 border-line border-l min-[1100px]:w-[280px] md:order-last">
 					<User />
 				</div>
 				<Navigation
-					className="order-last h-11 w-full border-line border-t px-4 md:order-none md:h-[52px] md:flex-1 md:border-t-0 md:border-l"
+					className="order-last h-12 w-full border-line border-t md:order-none md:h-14 md:flex-1 md:border-t-0 md:border-l"
 					guilds={enabledGuilds}
 					allGuilds={guilds}
 				/>

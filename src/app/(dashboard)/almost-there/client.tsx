@@ -119,6 +119,7 @@ export default function AlmostThereClient({ guildName, permissions, lookupFailed
 								<Link
 									href="https://support.discord.com/hc/en-us/articles/206029707-Setting-Up-Permissions-FAQ"
 									target="_blank"
+									rel="noreferrer"
 									className="inline-flex items-center gap-0.5 text-brand hover:underline"
 								>
 									Learn more <ArrowUpRight className="h-[18px] w-[18px]" />
