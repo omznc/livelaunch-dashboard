@@ -99,14 +99,13 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 	const [addCountdownDialogOpen, setAddCountdownDialogOpen] = useState(false);
 
 	return (
-		<div className="flex flex-col gap-4">
+		<div className="flex flex-col gap-10">
 			<SettingGroup title={"Notifications"} description={"Settings for the notification feature."}>
 				{guild.notification_channel_id !== null && (
 					<Setting
 						label={"Disable Feature"}
 						description={"Disable this feature for your server."}
 						active={false}
-						className="flex flex-col gap-4"
 					>
 						<Button
 							onClick={() => {
@@ -157,9 +156,9 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 									return (
 										<span>
 											{chan.type === 0 ? (
-												<Hash className="mr-2 inline-block" />
+												<Hash className="mr-2 inline-block h-4 w-4" />
 											) : (
-												<Megaphone className="mr-2 inline-block" />
+												<Megaphone className="mr-2 inline-block h-4 w-4" />
 											)}
 											{chan.name}
 										</span>
@@ -172,9 +171,9 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 							{channels.map((channel) => (
 								<SelectItem key={channel.id} value={channel.id}>
 									{channel.type === 0 ? (
-										<Hash className="mr-2 inline-block" />
+										<Hash className="mr-2 inline-block h-4 w-4" />
 									) : (
-										<Megaphone className="mr-2 inline-block" />
+										<Megaphone className="mr-2 inline-block h-4 w-4" />
 									)}
 									{channel.name}
 								</SelectItem>
@@ -186,7 +185,6 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					label={"Notification Countdown"}
 					description={"Set how long before a launch the bot should send a notification."}
 					active={false}
-					className="flex flex-col gap-4"
 					disabled={guild.notification_channel_id === null}
 					disabledMessage={"Requires a notification channel to be set"}
 				>
@@ -289,55 +287,61 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 						</CredenzaContent>
 					</Credenza>
 				</Setting>
-				<h2 className="text-sm">
-					{countdowns.length > 0
-						? "Current Countdowns"
-						: "This is where you'd see your countdowns, if you had any."}
-				</h2>
-				<div className="flex flex-wrap gap-2">
-					{countdowns.map((countdown) => (
-						<Badge key={`${countdown.guild_id}-${countdown.minutes}`} className="group hover:gap-2">
-							{(() => {
-								const days = Math.floor(countdown.minutes / 60 / 24);
-								const hours = Math.floor(countdown.minutes / 60) % 24;
-								const minutes = countdown.minutes % 60;
+				<div className="flex flex-col gap-2 px-4 py-3.5">
+					<h2 className="font-medium text-sm">
+						{countdowns.length > 0
+							? "Current Countdowns"
+							: "This is where you'd see your countdowns, if you had any."}
+					</h2>
+					<div className="flex flex-wrap gap-2 empty:hidden">
+						{countdowns.map((countdown) => (
+							<Badge key={`${countdown.guild_id}-${countdown.minutes}`} className="gap-2 pr-1">
+								{(() => {
+									const days = Math.floor(countdown.minutes / 60 / 24);
+									const hours = Math.floor(countdown.minutes / 60) % 24;
+									const minutes = countdown.minutes % 60;
 
-								return (
-									<div className="flex items-center gap-1">
-										{days > 0 && (
-											<span className="text-sm">
-												{days} day
-												{days > 1 ? "s" : ""}
-											</span>
-										)}
-										{hours > 0 && (
-											<span className="text-sm">
-												{hours} hour
-												{hours > 1 ? "s" : ""}
-											</span>
-										)}
-										{minutes > 0 && (
-											<span className="text-sm">
-												{minutes} minute
-												{minutes > 1 ? "s" : ""}
-											</span>
-										)}
-									</div>
-								);
-							})()}
-							<X
-								onClick={() => {
-									removeCountdown({
-										guildId: String(guild.guild_id),
-										minutes: countdown.minutes,
-									}).catch(() => {
-										toast.error("Failed to remove countdown.");
-									});
-								}}
-								className="invisible w-0 cursor-pointer transition-all group-hover:visible group-hover:w-2"
-							/>
-						</Badge>
-					))}
+									return (
+										<div className="flex items-center gap-1">
+											{days > 0 && (
+												<span>
+													{days} day
+													{days > 1 ? "s" : ""}
+												</span>
+											)}
+											{hours > 0 && (
+												<span>
+													{hours} hour
+													{hours > 1 ? "s" : ""}
+												</span>
+											)}
+											{minutes > 0 && (
+												<span>
+													{minutes} minute
+													{minutes > 1 ? "s" : ""}
+												</span>
+											)}
+										</div>
+									);
+								})()}
+								<button
+									type="button"
+									aria-label="Remove countdown"
+									className="grid h-5 w-5 place-items-center text-fg2 hover:text-fg"
+									onClick={() => {
+										removeCountdown({
+											guildId: String(guild.guild_id),
+											minutes: countdown.minutes,
+										}).catch(() => {
+											toast.error("Failed to remove countdown.");
+										});
+									}}
+								>
+									<X className="h-4 w-4" />
+								</button>
+							</Badge>
+						))}
+					</div>
 				</div>
 			</SettingGroup>
 

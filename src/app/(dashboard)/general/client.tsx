@@ -9,7 +9,7 @@ import { Switch } from "@components/ui/switch";
 import type { enabled_guilds } from "@generated/client";
 import { useDebounce } from "@lib/hooks";
 import type { RESTGetAPIGuildChannelsResult } from "discord-api-types/v10";
-import { ArrowUp, Hash, Megaphone } from "lucide-react";
+import { ArrowUpRight, Hash, Megaphone } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
@@ -77,14 +77,13 @@ export default function Client({ guild, channels }: ClientProps) {
 	}, [debounced, guild.guild_id]);
 
 	return (
-		<div className="flex flex-col gap-4">
+		<div className="flex flex-col gap-10">
 			<SettingGroup title={"Videos"}>
 				{guild.channel_id !== null ? (
 					<Setting
 						label={"Disable Feature"}
 						description={"Disable this feature for your server."}
 						active={false}
-						className="flex flex-col gap-4"
 						disabled={guild.channel_id === null}
 						disabledMessage={"You can't disable this feature if it's not enabled"}
 					>
@@ -135,9 +134,9 @@ export default function Client({ guild, channels }: ClientProps) {
 									return (
 										<span>
 											{chan.type === 0 ? (
-												<Hash className="mr-2 inline-block" />
+												<Hash className="mr-2 inline-block h-4 w-4" />
 											) : (
-												<Megaphone className="mr-2 inline-block" />
+												<Megaphone className="mr-2 inline-block h-4 w-4" />
 											)}
 											{chan.name}
 										</span>
@@ -150,9 +149,9 @@ export default function Client({ guild, channels }: ClientProps) {
 							{channels.map((channel) => (
 								<SelectItem key={channel.id} value={channel.id}>
 									{channel.type === 0 ? (
-										<Hash className="mr-2 inline-block" />
+										<Hash className="mr-2 inline-block h-4 w-4" />
 									) : (
-										<Megaphone className="mr-2 inline-block" />
+										<Megaphone className="mr-2 inline-block h-4 w-4" />
 									)}
 									{channel.name}
 								</SelectItem>
@@ -170,9 +169,9 @@ export default function Client({ guild, channels }: ClientProps) {
 						<Link
 							href={"https://i.imgur.com/ZFi4hEt.png"}
 							target={"_blank"}
-							className="inline-flex items-center gap-1 brightness-125 hover:underline"
+							className="inline-flex items-center gap-0.5 text-brand hover:underline"
 						>
-							Example <ArrowUp className="rotate-45" />
+							Example <ArrowUpRight className="h-4 w-4" />
 						</Link>
 					</>
 				}
@@ -259,9 +258,9 @@ export default function Client({ guild, channels }: ClientProps) {
 						<Link
 							href={"https://support.discord.com/hc/en-us/articles/4409494125719-Scheduled-Events"}
 							target={"_blank"}
-							className="inline-flex items-center gap-1 brightness-125 hover:underline"
+							className="inline-flex items-center gap-0.5 text-brand hover:underline"
 						>
-							Learn more <ArrowUp className="rotate-45" />
+							Learn more <ArrowUpRight className="h-4 w-4" />
 						</Link>
 					</>
 				}
