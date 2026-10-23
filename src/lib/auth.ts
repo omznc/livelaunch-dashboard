@@ -13,7 +13,13 @@ export const auth = betterAuth({
 		discord: {
 			clientId: env.NEXT_PUBLIC_DISCORD_CLIENT_ID,
 			clientSecret: env.DISCORD_CLIENT_SECRET,
-			scope: ["guilds"],
+			// Skip the default "email" scope. better-auth needs an email, so store one unique per Discord ID.
+			disableDefaultScope: true,
+			scope: ["identify", "guilds"],
+			mapProfileToUser: (profile) => ({
+				email: `${profile.id}@discord.invalid`,
+				emailVerified: false,
+			}),
 		},
 	},
 	session: {

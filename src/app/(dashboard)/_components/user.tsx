@@ -44,10 +44,7 @@ export default async function User() {
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="w-56" align="end" forceMount>
 				<DropdownMenuLabel className="font-normal">
-					<div className="flex flex-col space-y-1">
-						<p className="font-medium text-sm leading-none">{user.name}</p>
-						<p className="text-muted-foreground text-xs leading-none">{user.email}</p>
-					</div>
+					<p className="font-medium text-sm leading-none">{user.name}</p>
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
 				<LaunchControlResetEasterEgg />
