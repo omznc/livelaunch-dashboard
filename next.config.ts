@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
 	typedRoutes: true,
 	reactCompiler: true,
 	cacheComponents: true,
+	// true renders each page twice per request (double DB reads); staleTimes covers fast returns
+	partialPrefetching: false,
 	experimental: {
 		serverActions: {
 			allowedOrigins: [
