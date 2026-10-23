@@ -17,6 +17,7 @@ import type {
 	RESTPostAPIChannelWebhookResult,
 } from "discord-api-types/v10";
 import { PermissionFlagsBits, Routes } from "discord-api-types/v10";
+import { cacheLife, cacheTag } from "next/cache";
 import { headers } from "next/headers";
 import { cache } from "react";
 
@@ -35,10 +36,10 @@ rest.on("rateLimited", (info) => {
 const MAX_RETRY_AFTER_SECONDS = 5;
 
 // Waits and returns true only for a short rate limit. A long one fails fast.
-const handleRateLimit = async (response: Response, actor: "user" | "bot"): Promise<boolean> => {
-	if (response.status !== 429) return false;
+const handleRateLimit = async (status: number, body: string, actor: "user" | "bot"): Promise<boolean> => {
+	if (status !== 429) return false;
 	try {
-		const data = await response.json();
+		const data = JSON.parse(body);
 		if (!data.retry_after || data.retry_after > MAX_RETRY_AFTER_SECONDS) {
 			logger.warn("discord-api:handleRateLimit", `${actor} token rate limited, not retrying`, {
 				actor,
@@ -59,7 +60,7 @@ const handleRateLimit = async (response: Response, actor: "user" | "bot"): Promi
 	} catch (error) {
 		logger.debug("discord-api:handleRateLimit", `${actor} token rate limit parse failed`, {
 			actor,
-			status: response.status,
+			status,
 			error,
 		});
 		return false;
@@ -114,9 +115,39 @@ export const getBotGuilds = async (): Promise<RESTAPIPartialCurrentUserGuild[]> 
 	}
 };
 
-const MAX_USER_GUILD_RETRIES = 1;
+// The user's admin guilds, keyed by user and token. A stale entry is at most 60 s old.
+// It throws on a failure, so a failure is never cached.
+// The rate limit retry is in here: an error loses its class and fields when it leaves a cache scope.
+const fetchAdminGuilds = async (userId: string, accessToken: string): Promise<RESTAPIPartialCurrentUserGuild[]> => {
+	"use cache";
+	cacheLife({ stale: 0, revalidate: 15, expire: 60 });
+	cacheTag(`get-user-guilds-${userId}`);
 
-const fetchUserGuilds = async (retryCount: number): Promise<RESTAPIPartialCurrentUserGuild[]> => {
+	const request = () =>
+		fetch("https://discord.com/api/users/@me/guilds", { headers: { authorization: `Bearer ${accessToken}` } });
+	let response = await request();
+	if (response.status === 429 && (await handleRateLimit(response.status, await response.clone().text(), "user"))) {
+		response = await request();
+	}
+	if (!response.ok) {
+		const errorBody = await response.text().catch(() => "failed to read error body");
+		logger.error("discord-api:getUserGuilds", "API error when getting user guilds", {
+			status: response.status,
+			userId,
+			errorBody,
+		});
+		throw new Error(`Discord API returned ${response.status}`);
+	}
+	const guilds = await response.json();
+	if (!Array.isArray(guilds)) throw new Error("Discord returned a guild list that is not an array");
+
+	return guilds.filter(
+		(guild) =>
+			(BigInt(guild.permissions) & PermissionFlagsBits.Administrator) === PermissionFlagsBits.Administrator,
+	) as RESTAPIPartialCurrentUserGuild[];
+};
+
+const fetchUserGuilds = async (): Promise<RESTAPIPartialCurrentUserGuild[]> => {
 	try {
 		const data = await isAuthorized();
 		if (!data) {
@@ -146,48 +177,13 @@ const fetchUserGuilds = async (retryCount: number): Promise<RESTAPIPartialCurren
 			return [];
 		}
 
-		const response = await fetch("https://discord.com/api/users/@me/guilds", {
-			cache: "force-cache",
-			headers: { authorization: `Bearer ${accessToken}` },
-			next: {
-				revalidate: 30,
-				tags: [`get-user-guilds-${user.id}`],
-			},
-		});
-
-		if (!response.ok) {
-			if (retryCount < MAX_USER_GUILD_RETRIES && (await handleRateLimit(response, "user"))) {
-				return fetchUserGuilds(retryCount + 1);
-			}
-			const errorBody = await response.text().catch(() => "failed to read error body");
-			logger.error("discord-api:getUserGuilds", "API error when getting user guilds", {
-				status: response.status,
-				userId: user.id,
-				errorBody,
-			});
-			return [];
-		}
-
-		const guilds = await response.json();
-		if (!Array.isArray(guilds)) {
-			logger.debug("discord-api:getUserGuilds", "Early return: response is not an array", {
-				userId: user.id,
-				type: typeof guilds,
-			});
-			return [];
-		}
-
-		const filtered = guilds.filter(
-			(guild) =>
-				(BigInt(guild.permissions) & PermissionFlagsBits.Administrator) === PermissionFlagsBits.Administrator,
-		) as RESTAPIPartialCurrentUserGuild[];
+		const guilds = await fetchAdminGuilds(user.id, accessToken);
 
 		logger.debug("discord-api:getUserGuilds", "Successfully retrieved user guilds", {
 			userId: user.id,
-			total: guilds.length,
-			admin: filtered.length,
+			admin: guilds.length,
 		});
-		return filtered;
+		return guilds;
 	} catch (error) {
 		logger.error("discord-api:getUserGuilds", "Failed to get user guilds", { error });
 		return [];
@@ -197,7 +193,7 @@ const fetchUserGuilds = async (retryCount: number): Promise<RESTAPIPartialCurren
 /**
  * Gets the guilds the user is in (once for each request)
  */
-export const getUserGuilds = cache(() => fetchUserGuilds(0));
+export const getUserGuilds = cache(fetchUserGuilds);
 
 let avatarPromise: Promise<string> | null = null;
 
