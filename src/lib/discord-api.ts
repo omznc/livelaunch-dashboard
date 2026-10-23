@@ -18,7 +18,6 @@ import type {
 } from "discord-api-types/v10";
 import { PermissionFlagsBits, Routes } from "discord-api-types/v10";
 import { cacheLife, cacheTag } from "next/cache";
-import { headers } from "next/headers";
 import { unstable_rethrow } from "next/navigation";
 import { cache } from "react";
 
@@ -197,9 +196,10 @@ const fetchUserGuilds = async (): Promise<RESTAPIPartialCurrentUserGuild[]> => {
 		}
 
 		const { accessToken } = await auth.api.getAccessToken({
-			headers: await headers(),
+			// No headers: better-auth then skips a second session read and uses the userId. The userId comes from our session.
 			body: {
 				accountId: account.id,
+				userId: user.id,
 			},
 		});
 
