@@ -40,7 +40,7 @@ export const getGuild = guildActionClient
 export const enableGuild = guildActionClient
 	.inputSchema(z.object({ guildId: z.string() }))
 	.action(async ({ parsedInput: { guildId } }) => {
-		const botGuilds = await getBotGuilds();
+		const botGuilds = await getBotGuilds([guildId]);
 		if (!botGuilds.some((guild) => guild.id === guildId)) {
 			throw new Error("The bot is not in this guild");
 		}

@@ -1,5 +1,5 @@
 import env from "@env";
-import { getBotGuilds, getUserGuilds } from "@lib/discord-api";
+import { getGuildsWithBotAccess } from "@lib/discord-api";
 import { prisma } from "@lib/prisma";
 import { getSession } from "@lib/session";
 import type { RESTAPIPartialCurrentUserGuild } from "discord-api-types/v10";
@@ -33,7 +33,7 @@ async function Header() {
 		redirect("/login");
 	}
 
-	const guilds = await filterGuilds();
+	const guilds = await getGuildsWithBotAccess();
 	const enabledGuilds = await prisma.enabled_guilds.findMany({
 		select: { guild_id: true },
 		where: {
@@ -70,23 +70,3 @@ async function Header() {
 export interface GuildsResponse extends RESTAPIPartialCurrentUserGuild {
 	botAccess: boolean;
 }
-
-const filterGuilds = async () => {
-	const [userGuilds, botGuilds] = await Promise.all([getUserGuilds(), getBotGuilds()]);
-
-	if (!Array.isArray(userGuilds)) {
-		return [];
-	}
-
-	if (!Array.isArray(botGuilds)) {
-		return userGuilds.map((guild) => ({ ...guild, botAccess: false }));
-	}
-
-	// Map all user guilds and mark bot access
-	const guilds: GuildsResponse[] = userGuilds.map((guild) => ({
-		...guild,
-		botAccess: botGuilds.some((botGuild) => botGuild.id === guild.id),
-	}));
-
-	return guilds;
-};

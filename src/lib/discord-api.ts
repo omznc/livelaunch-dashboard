@@ -92,14 +92,16 @@ export const getGuildChannels = cache(async (guildId: string): Promise<RESTGetAP
 });
 
 /**
- * Gets the guilds the bot is in
+ * Gets the guilds, from the given IDs, that the bot is in
  */
-export const getBotGuilds = async (): Promise<RESTAPIPartialCurrentUserGuild[]> => {
+export const getBotGuilds = async (guildIds: string[]): Promise<RESTAPIPartialCurrentUserGuild[]> => {
+	if (guildIds.length === 0) return [];
 	try {
 		const guilds = await prisma.guilds.findMany({
 			select: {
 				guild_id: true,
 			},
+			where: { guild_id: { in: guildIds.map((id) => BigInt(id)) } },
 		});
 		const mapped = guilds.map(
 			(guild) =>
@@ -194,6 +196,16 @@ const fetchUserGuilds = async (): Promise<RESTAPIPartialCurrentUserGuild[]> => {
  * Gets the guilds the user is in (once for each request)
  */
 export const getUserGuilds = cache(fetchUserGuilds);
+
+/**
+ * Gets the user's guilds, each marked with whether the bot is in it (once for each request)
+ */
+export const getGuildsWithBotAccess = cache(async () => {
+	const userGuilds = await getUserGuilds();
+	const botGuilds = await getBotGuilds(userGuilds.map((guild) => guild.id));
+	const botIds = new Set(botGuilds.map((guild) => guild.id));
+	return userGuilds.map((guild) => ({ ...guild, botAccess: botIds.has(guild.id) }));
+});
 
 let avatarPromise: Promise<string> | null = null;
 
