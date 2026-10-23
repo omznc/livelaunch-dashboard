@@ -6,6 +6,7 @@ import type { RESTAPIPartialCurrentUserGuild } from "discord-api-types/v10";
 import { redirect } from "next/navigation";
 import { type ReactNode, Suspense } from "react";
 import GuildSwitcher from "@/src/app/(dashboard)/_components/guild-switcher";
+import { HeaderSkeleton } from "@/src/app/(dashboard)/_components/header-skeleton";
 import { Navigation } from "@/src/app/(dashboard)/_components/navigation";
 import SectionError from "@/src/app/(dashboard)/_components/section-error";
 import User from "@/src/app/(dashboard)/_components/user";
@@ -14,10 +15,7 @@ import User from "@/src/app/(dashboard)/_components/user";
 export default function Layout({ children }: { children: ReactNode }) {
 	return (
 		<div className="flex min-h-screen w-full flex-col">
-			{/* Same height as the real header, so nothing jumps when it streams in. */}
-			<Suspense
-				fallback={<div className="material sticky top-0 z-50 h-[105px] border-b border-line md:h-[57px]" />}
-			>
+			<Suspense fallback={<HeaderSkeleton />}>
 				<Header />
 			</Suspense>
 			<main className="mx-auto flex w-full max-w-[1180px] flex-1 flex-col border-line min-[1180px]:border-x">

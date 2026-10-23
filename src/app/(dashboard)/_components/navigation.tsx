@@ -23,7 +23,7 @@ import type * as React from "react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
-const links = [
+export const links = [
 	{
 		href: "/",
 		label: "Home",
@@ -49,6 +49,12 @@ const links = [
 		requiresGuildEnabled: true,
 	},
 ];
+
+// The header skeleton uses the same classes, so the tabs keep their size when the header loads.
+export const tabClass =
+	"inline-flex shrink-0 snap-start items-center justify-center border-line border-r px-5 font-medium font-mono text-[13.5px] text-fg2 hover:bg-raised hover:text-fg focus-visible:outline-offset-[-2px] motion-reduce:transition-none aria-[current=page]:bg-primary/[0.13] aria-[current=page]:text-brand aria-[current=page]:hover:bg-primary/[0.18]";
+export const tabStripClass =
+	"ll-scroll ll-fade flex min-w-0 flex-1 snap-x items-stretch overflow-x-auto [scrollbar-width:none]";
 
 interface NavigationProps extends React.HTMLAttributes<HTMLElement> {
 	guilds?: Pick<enabled_guilds, "guild_id">[];
@@ -152,16 +158,13 @@ export function Navigation({ className, guilds, allGuilds, ...props }: Navigatio
 							</div>
 						)
 					))}
-				<div
-					ref={stripRef}
-					className="ll-scroll ll-fade flex min-w-0 flex-1 snap-x items-stretch overflow-x-auto [scrollbar-width:none]"
-				>
+				<div ref={stripRef} className={tabStripClass}>
 					{visibleLinks.map(({ href, label }) => (
 						<RetainQueryLink
 							key={`${href}${label}`}
 							href={href}
 							aria-current={path === href ? "page" : undefined}
-							className="inline-flex shrink-0 snap-start items-center justify-center border-line border-r px-5 font-medium font-mono text-[13.5px] text-fg2 hover:bg-raised hover:text-fg focus-visible:outline-offset-[-2px] motion-reduce:transition-none aria-[current=page]:bg-primary/[0.13] aria-[current=page]:text-brand aria-[current=page]:hover:bg-primary/[0.18]"
+							className={tabClass}
 						>
 							{label}
 						</RetainQueryLink>
