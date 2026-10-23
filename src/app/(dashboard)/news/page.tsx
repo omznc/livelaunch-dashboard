@@ -28,18 +28,14 @@ export default async function NewsSites(props: {
 		notFound();
 	}
 
-	const guild = await prisma.enabled_guilds.findFirst({
-		where: {
-			guild_id: BigInt(guildId),
-		},
-		select: { guild_id: true, news_channel_id: true, news_include_exclude: true },
-	});
-
-	if (!guild) return <NotEnabled />;
-
-	const newsSites = await getNewsSites();
-
-	const [enabledNewsSites, channels] = await Promise.all([
+	const [guild, newsSites, enabledNewsSites, channels] = await Promise.all([
+		prisma.enabled_guilds.findFirst({
+			where: {
+				guild_id: BigInt(guildId),
+			},
+			select: { guild_id: true, news_channel_id: true, news_include_exclude: true },
+		}),
+		getNewsSites(),
 		prisma.news_filter.findMany({
 			where: {
 				guild_id: BigInt(guildId),
@@ -48,6 +44,8 @@ export default async function NewsSites(props: {
 		}),
 		getDisplayChannels(guildId),
 	]);
+
+	if (!guild) return <NotEnabled />;
 
 	return (
 		<Client

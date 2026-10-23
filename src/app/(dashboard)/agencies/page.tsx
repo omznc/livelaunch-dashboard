@@ -27,23 +27,23 @@ export default async function Agencies(props: {
 		notFound();
 	}
 
-	const agencies = await getAgencies();
-
-	const guild = await prisma.enabled_guilds.findFirst({
-		where: {
-			guild_id: BigInt(guildId),
-		},
-		select: { guild_id: true, agencies_include_exclude: true },
-	});
+	const [agencies, guild, enabledAgencies] = await Promise.all([
+		getAgencies(),
+		prisma.enabled_guilds.findFirst({
+			where: {
+				guild_id: BigInt(guildId),
+			},
+			select: { guild_id: true, agencies_include_exclude: true },
+		}),
+		prisma.ll2_agencies_filter.findMany({
+			where: {
+				guild_id: BigInt(guildId),
+			},
+			select: { agency_id: true },
+		}),
+	]);
 
 	if (!guild) return <NotEnabled />;
-
-	const enabledAgencies = await prisma.ll2_agencies_filter.findMany({
-		where: {
-			guild_id: BigInt(guildId),
-		},
-		select: { agency_id: true },
-	});
 
 	return <Client agencies={agencies} enabledAgencies={enabledAgencies} guild={guild} key={guildId} />;
 }

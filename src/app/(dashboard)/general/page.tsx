@@ -19,26 +19,27 @@ export default async function Agencies(props: {
 		notFound();
 	}
 
-	const guild = await prisma.enabled_guilds.findFirst({
-		where: {
-			guild_id: BigInt(guildId),
-		},
-		select: {
-			guild_id: true,
-			channel_id: true,
-			scheduled_events: true,
-			notification_button_fc: true,
-			notification_button_g4l: true,
-			notification_button_sln: true,
-			se_launch: true,
-			se_event: true,
-			se_no_url: true,
-		},
-	});
+	const [guild, channels] = await Promise.all([
+		prisma.enabled_guilds.findFirst({
+			where: {
+				guild_id: BigInt(guildId),
+			},
+			select: {
+				guild_id: true,
+				channel_id: true,
+				scheduled_events: true,
+				notification_button_fc: true,
+				notification_button_g4l: true,
+				notification_button_sln: true,
+				se_launch: true,
+				se_event: true,
+				se_no_url: true,
+			},
+		}),
+		getDisplayChannels(guildId),
+	]);
 
 	if (!guild) return <NotEnabled />;
-
-	const channels = await getDisplayChannels(guildId);
 
 	return <Client guild={guild} channels={channels} key={guildId} />;
 }
