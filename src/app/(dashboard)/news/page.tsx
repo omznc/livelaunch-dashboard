@@ -44,6 +44,7 @@ export default async function NewsSites(props: {
 			where: {
 				guild_id: BigInt(guildId),
 			},
+			select: { news_site_id: true },
 		}),
 		getDisplayChannels(guildId),
 	]);

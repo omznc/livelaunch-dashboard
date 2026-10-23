@@ -21,7 +21,7 @@ import { disableFeature, setNewsSites, updateChannel, updateSettings } from "./a
 
 interface ClientProps {
 	newsSites: news_sites[];
-	enabledNewsSites: news_filter[];
+	enabledNewsSites: Pick<news_filter, "news_site_id">[];
 	guild: Pick<enabled_guilds, "guild_id" | "news_channel_id" | "news_include_exclude">;
 	channels: RESTGetAPIGuildChannelsResult;
 }

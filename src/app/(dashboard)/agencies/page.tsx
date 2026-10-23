@@ -42,6 +42,7 @@ export default async function Agencies(props: {
 		where: {
 			guild_id: BigInt(guildId),
 		},
+		select: { agency_id: true },
 	});
 
 	return <Client agencies={agencies} enabledAgencies={enabledAgencies} guild={guild} key={guildId} />;

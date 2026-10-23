@@ -110,6 +110,7 @@ export const updateChannel = guildActionClient
 				where: {
 					guild_id: BigInt(guildId),
 				},
+				select: { notification_webhook_url: true },
 			}),
 		]);
 
