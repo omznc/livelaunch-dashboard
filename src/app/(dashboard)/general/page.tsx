@@ -1,4 +1,4 @@
-import { getGuildChannels } from "@lib/discord-api";
+import { getDisplayChannels } from "@lib/discord-api";
 import { prisma } from "@lib/prisma";
 import { checkGuildPermissions } from "@lib/server-utils";
 import { notFound } from "next/navigation";
@@ -38,7 +38,7 @@ export default async function Agencies(props: {
 
 	if (!guild) return <NotEnabled />;
 
-	const channels = await getGuildChannels(guildId);
+	const channels = await getDisplayChannels(guildId);
 
 	return <Client guild={guild} channels={channels} key={guildId} />;
 }

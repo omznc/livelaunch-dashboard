@@ -1,4 +1,4 @@
-import { getGuildChannels } from "@lib/discord-api";
+import { getDisplayChannels } from "@lib/discord-api";
 import { prisma } from "@lib/prisma";
 import { checkGuildPermissions } from "@lib/server-utils";
 import { notFound } from "next/navigation";
@@ -47,7 +47,7 @@ export default async function Agencies(props: {
 				guild_id: BigInt(guildId),
 			},
 		}),
-		getGuildChannels(guildId),
+		getDisplayChannels(guildId),
 	]);
 
 	return <Client guild={guild} countdowns={countdowns} channels={channels} key={guildId} />;

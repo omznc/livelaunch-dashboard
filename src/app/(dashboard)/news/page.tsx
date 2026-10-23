@@ -1,5 +1,5 @@
 import Client from "@app/(dashboard)/news/client";
-import { getGuildChannels } from "@lib/discord-api";
+import { getDisplayChannels } from "@lib/discord-api";
 import { prisma } from "@lib/prisma";
 import { checkGuildPermissions } from "@lib/server-utils";
 import { cacheLife, cacheTag } from "next/cache";
@@ -45,7 +45,7 @@ export default async function NewsSites(props: {
 				guild_id: BigInt(guildId),
 			},
 		}),
-		getGuildChannels(guildId),
+		getDisplayChannels(guildId),
 	]);
 
 	return (

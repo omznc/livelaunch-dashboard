@@ -4,7 +4,7 @@ import { createWebhook, deleteWebhook, replaceWebhook } from "@lib/discord-api";
 import { prisma } from "@lib/prisma";
 import { guildActionClient, guildIdSchema, snowflakeSchema } from "@lib/safe-actions";
 import { toFlags } from "@lib/server-utils";
-import { refresh } from "next/cache";
+import { refresh, updateTag } from "next/cache";
 import { z } from "zod";
 
 const generalSettingsSchema = z.object({
@@ -65,6 +65,7 @@ export const updateChannel = guildActionClient
 			}),
 		);
 
+		updateTag(`channels-${guildId}`);
 		refresh();
 		return { success: true };
 	});

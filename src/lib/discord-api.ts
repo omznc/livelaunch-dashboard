@@ -69,27 +69,53 @@ const handleRateLimit = async (status: number, body: string, actor: "user" | "bo
 
 const SNOWFLAKE = /^\d{17,20}$/;
 
-/**
- * Gets the channels the bot can send messages in (once for each request)
- */
-export const getGuildChannels = cache(async (guildId: string): Promise<RESTGetAPIGuildChannelsResult> => {
+// Throws on a failure.
+const fetchGuildChannels = async (guildId: string): Promise<RESTGetAPIGuildChannelsResult> => {
+	const channels = (await rest.get(Routes.guildChannels(guildId))) as RESTGetAPIGuildChannelsResult;
+	return channels.filter((channel) => channel.type === 0 || channel.type === 5);
+};
+
+// Short cache across requests. Only for a page display, never for a check. It throws on a failure,
+// so a failure is never cached.
+const fetchGuildChannelsCached = async (guildId: string): Promise<RESTGetAPIGuildChannelsResult> => {
+	"use cache";
+	cacheLife({ stale: 30, revalidate: 30, expire: 60 });
+	cacheTag(`channels-${guildId}`);
+	return fetchGuildChannels(guildId);
+};
+
+const loadGuildChannels = async (
+	guildId: string,
+	fetcher: (guildId: string) => Promise<RESTGetAPIGuildChannelsResult>,
+): Promise<RESTGetAPIGuildChannelsResult> => {
 	if (!guildId || typeof guildId !== "string") {
 		logger.debug("discord-api:getGuildChannels", "Invalid guildId provided", { guildId });
 		return [];
 	}
 	try {
-		const channels = (await rest.get(Routes.guildChannels(guildId))) as RESTGetAPIGuildChannelsResult;
-		const filtered = channels.filter((channel) => channel.type === 0 || channel.type === 5);
+		const channels = await fetcher(guildId);
 		logger.debug("discord-api:getGuildChannels", "Successfully retrieved guild channels", {
 			guildId,
-			count: filtered.length,
+			count: channels.length,
 		});
-		return filtered;
+		return channels;
 	} catch (error) {
 		logger.error("discord-api:getGuildChannels", "Failed to get guild channels", { guildId, error });
 		return [];
 	}
-});
+};
+
+/**
+ * Gets the channels the bot can send messages in, fresh from Discord (once for each request).
+ * Use this for a check, for example before it creates a webhook.
+ */
+export const getGuildChannels = cache((guildId: string) => loadGuildChannels(guildId, fetchGuildChannels));
+
+/**
+ * Gets the same channels, up to 60 s old. Call it only after the guild access check.
+ * Use it only to show a page.
+ */
+export const getDisplayChannels = cache((guildId: string) => loadGuildChannels(guildId, fetchGuildChannelsCached));
 
 /**
  * Gets the guilds, from the given IDs, that the bot is in
