@@ -7,6 +7,7 @@ import PartnerTheSpaceDevs from "@public/Partner_TheSpaceDevs.png";
 import { ArrowUpRight, Hash, ThumbsUp } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { connection } from "next/server";
 import { type ReactNode, Suspense } from "react";
 import { siDiscord, siGithub } from "simple-icons";
 
@@ -47,6 +48,27 @@ function LinkRow({ title, description, children }: { title: string; description:
 // Reads the query behind its own boundary, so the rest of the page stays static.
 async function GuildRedirect({ searchParams }: { searchParams: Promise<{ g?: string }> }) {
 	return redirectToDefaultGuild("/", (await searchParams).g);
+}
+
+function VoteLink({ clientId }: { clientId?: string }) {
+	return (
+		<Link
+			className={buttonVariants({ variant: "secondary" })}
+			href={clientId ? `https://top.gg/bot/${clientId}/vote` : "https://top.gg/search?q=LiveLaunch"}
+			target={"_blank"}
+			rel="noreferrer"
+		>
+			<ThumbsUp />
+			Vote
+			<ArrowUpRight />
+		</Link>
+	);
+}
+
+// The client ID is a runtime value. Read it after connection(), so the build does not freeze it.
+async function DynamicVoteLink() {
+	await connection();
+	return <VoteLink clientId={env.DISCORD_CLIENT_ID} />;
 }
 
 export default function Home(props: { searchParams: Promise<{ g?: string }> }) {
@@ -107,16 +129,9 @@ export default function Home(props: { searchParams: Promise<{ g?: string }> }) {
 					</Link>
 				</LinkRow>
 				<LinkRow title="Vote" description="Vote for LiveLaunch on top.gg to help more people find it.">
-					<Link
-						className={secondary}
-						href={`https://top.gg/bot/${env.DISCORD_CLIENT_ID}/vote`}
-						target={"_blank"}
-						rel="noreferrer"
-					>
-						<ThumbsUp />
-						Vote
-						<ArrowUpRight />
-					</Link>
+					<Suspense fallback={<VoteLink />}>
+						<DynamicVoteLink />
+					</Suspense>
 				</LinkRow>
 				<LinkRow
 					title="Support"
