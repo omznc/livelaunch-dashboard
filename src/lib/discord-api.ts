@@ -10,10 +10,10 @@ import { prisma } from "@lib/prisma";
 import { isAuthorized } from "@lib/server-utils";
 import type {
 	APIApplication,
-	APIGuild,
 	APIGuildMember,
 	RESTAPIPartialCurrentUserGuild,
 	RESTGetAPIGuildChannelsResult,
+	RESTGetAPIGuildRolesResult,
 	RESTPostAPIChannelWebhookResult,
 } from "discord-api-types/v10";
 import { PermissionFlagsBits, Routes } from "discord-api-types/v10";
@@ -350,15 +350,15 @@ export const getBotPermissions = cache(async (guildId: string): Promise<string |
 			return null;
 		}
 
-		const [guild, member] = await Promise.all([
-			rest.get(Routes.guild(guildId)) as Promise<APIGuild>,
+		const [roles, member] = await Promise.all([
+			rest.get(Routes.guildRoles(guildId)) as Promise<RESTGetAPIGuildRolesResult>,
 			rest.get(Routes.guildMember(guildId, botUserId)) as Promise<APIGuildMember>,
 		]);
 
-		let permissions = BigInt(guild.roles.find((r) => r.id === guildId)?.permissions || "0");
+		let permissions = BigInt(roles.find((r) => r.id === guildId)?.permissions || "0");
 
 		for (const roleId of member.roles) {
-			const role = guild.roles.find((r) => r.id === roleId);
+			const role = roles.find((r) => r.id === roleId);
 			if (role) {
 				permissions |= BigInt(role.permissions);
 			}
