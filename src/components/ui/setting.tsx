@@ -1,8 +1,7 @@
-import { Children, type ReactNode, useRef } from 'react';
-import { Label } from '@components/ui/label';
+import { Children, type ReactNode, useId, useRef } from 'react';
 import { cn } from '@lib/utils';
 import Image from 'next/image';
-import { Hash, Copy } from 'lucide-react';
+import { Hash, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@components/ui/tooltip';
 import { useHash } from '@lib/hooks';
@@ -18,6 +17,7 @@ interface SettingProps {
   disabledMessage?: string;
 }
 
+// One settings row: label and description on the left, the control on the right.
 export function Setting({
   label,
   description,
@@ -29,6 +29,7 @@ export function Setting({
   disabledMessage,
 }: SettingProps) {
   const childRef = useRef<HTMLDivElement>(null);
+  const labelId = useId();
 
   const handleSettingClick = (e: React.MouseEvent) => {
     if (disabled) return;
@@ -56,47 +57,46 @@ export function Setting({
     // biome-ignore lint/a11y/noStaticElementInteractions: Works as expected
     // biome-ignore lint/a11y/useKeyWithClickEvents: Works as expected
     <div
+      role="group"
+      aria-labelledby={labelId}
+      data-active={active || undefined}
       className={cn(
-        `relative flex w-full items-center justify-center justify-center rounded-md border bg-black/50 p-4 transition-all`,
-        {
-          'bg-primary/10': active,
-          'space-x-2 overflow-auto': !disabled,
-          'cursor-not-allowed overflow-hidden': disabled,
-          'cursor-pointer': !disabled,
-        },
+        'flex flex-wrap items-center justify-between gap-x-8 gap-y-3 px-4 py-3.5 hover:bg-hover data-[active]:bg-primary/[0.07]',
+        disabled ? 'cursor-not-allowed' : 'cursor-pointer',
         className
       )}
       onClick={handleSettingClick}
     >
-      {disabled && (
-        <p className="absolute select-none text-center font-semibold text-sm">
-          {disabledMessage ?? 'This setting is disabled'}
-        </p>
-      )}
-      <div
-        className={cn(
-          'flex w-full flex-col items-center justify-between gap-4 rounded-md transition-all md:flex-row md:gap-0',
-          {
-            'pointer-events-none select-none blur-sm': disabled,
-          }
+      <div className="flex min-w-0 flex-1 basis-60 items-center gap-3">
+        {image && (
+          <Image
+            src={image}
+            alt=""
+            width={28}
+            height={28}
+            className="h-7 w-7 shrink-0 border border-line bg-bg object-contain"
+          />
         )}
-      >
-        <div className={cn('flex h-full flex-1 gap-4 transition-all')}>
-          {image && (
-            <Image
-              src={image}
-              alt={label}
-              width={42}
-              height={42}
-              className="h-full max-h-[42px] w-auto rounded-full bg-black"
-            />
+        <div className="flex min-w-0 flex-col gap-0.5">
+          <span id={labelId} className="font-medium text-sm leading-5">
+            {label}
+          </span>
+          <p className="select-none text-fg2 text-sm leading-5">{description}</p>
+          {disabled && (
+            <p className="mt-1 inline-flex select-none items-center gap-1.5 text-amber text-xs">
+              <Lock className="h-4 w-4 shrink-0" />
+              {disabledMessage ?? 'This setting is disabled'}
+            </p>
           )}
-          <div className="flex flex-col gap-2">
-            <Label>{label}</Label>
-            <p className="select-none text-sm opacity-50">{description}</p>
-          </div>
         </div>
-        <div ref={childRef}>{children}</div>
+      </div>
+      <div
+        ref={childRef}
+        className={cn('shrink-0', {
+          'pointer-events-none select-none opacity-40': disabled,
+        })}
+      >
+        {children}
       </div>
     </div>
   );
@@ -108,6 +108,7 @@ interface SettingGroupProps {
   children?: ReactNode;
 }
 
+// A section: a small uppercase label, then the rows divided by hairlines.
 export function SettingGroup({ title, description, children }: SettingGroupProps) {
   const id = title.toLowerCase().replaceAll(' ', '-');
   const hash = useHash();
@@ -115,46 +116,42 @@ export function SettingGroup({ title, description, children }: SettingGroupProps
   if (Children.count(children) === 0) return null;
 
   return (
-    <div className="flex flex-col gap-2" key={hash}>
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild className={'w-fit'}>
-            <button
-              type="button"
-              className={cn(
-                'group inline-flex w-fit cursor-pointer scroll-m-20 items-center gap-1 text-xl tracking-tight',
-                {
-                  'font-bold': id === hash.slice(1),
-                }
-              )}
-              id={id}
-              onClick={() => {
-                const url = window.location.href.split('#')[0];
-                navigator.clipboard
-                  .writeText(`${url}#${id}`)
-                  .then(() => {
-                    toast.success('Copied link');
-                  })
-                  .catch(() => {
-                    toast.error('Failed to copy to clipboard!');
-                  });
-                window.location.hash = id;
-              }}
-            >
-              <Hash
-                className={cn('opacity-50 transition-all group-hover:opacity-100', {
-                  'opacity-100': id === hash.slice(1),
+    <section className="flex flex-col gap-2" key={hash}>
+      <div className="flex flex-col gap-1">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild className={'w-fit'}>
+              <button
+                type="button"
+                className={cn('group inline-flex w-fit scroll-m-20 items-center gap-1 font-semibold text-sm hover:text-brand', {
+                  'text-brand': id === hash.slice(1),
                 })}
-              />
-              {title}
-              <Copy className="h-4 w-4 opacity-0 transition-all group-hover:opacity-50" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent>Copy link to this section</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-      {description && <p className="inline-flex select-none items-center gap-1 text-sm opacity-50">{description}</p>}
-      <div className="flex flex-col gap-4">{children}</div>
-    </div>
+                id={id}
+                onClick={() => {
+                  const url = window.location.href.split('#')[0];
+                  navigator.clipboard
+                    .writeText(`${url}#${id}`)
+                    .then(() => {
+                      toast.success('Copied link');
+                    })
+                    .catch(() => {
+                      toast.error('Failed to copy to clipboard!');
+                    });
+                  window.location.hash = id;
+                }}
+              >
+                <Hash className="h-4 w-4" />
+                {title}
+              </button>
+            </TooltipTrigger>
+            <TooltipContent>Copy link to this section</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        {description && (
+          <p className="inline-flex select-none flex-wrap items-center gap-x-2 text-fg2 text-sm">{description}</p>
+        )}
+      </div>
+      <div className="flex flex-col divide-y divide-line border border-line bg-panel">{children}</div>
+    </section>
   );
 }

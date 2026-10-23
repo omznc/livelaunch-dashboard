@@ -41,23 +41,23 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(
       return (
         <div
           className={cn(
-            'group flex h-10 w-full items-stretch overflow-hidden rounded-md border border-normal bg-background ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2',
+            'group flex h-9 w-full items-stretch overflow-hidden border border-line2 bg-bg focus-within:outline-2 focus-within:outline-brand focus-within:outline-offset-2',
             className
           )}
         >
           <input
             type="number"
-            className="flex-1 bg-transparent px-3 py-2 text-base outline-none ring-0 file:border-0 file:bg-transparent file:font-medium file:text-foreground file:text-sm placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 md:text-sm appearance-none"
+            className="min-w-0 flex-1 appearance-none bg-transparent px-3 font-mono text-base tabular-nums outline-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
             ref={setRef}
             {...props}
           />
-          <div className="grid w-11 grid-rows-2 border-l border-border/60 bg-secondary/40">
+          <div className="grid w-9 grid-rows-2 border-l border-line2 bg-panel">
             <button
               type="button"
               tabIndex={-1}
               disabled={props.disabled || props.readOnly}
               onClick={() => adjustValue(1)}
-              className="flex items-center justify-center text-muted-foreground transition hover:bg-secondary/70 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex items-center justify-center text-fg2 hover:bg-raised hover:text-fg disabled:cursor-not-allowed disabled:opacity-40"
             >
               <ChevronUp className="h-3 w-3" />
             </button>
@@ -66,7 +66,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(
               tabIndex={-1}
               disabled={props.disabled || props.readOnly}
               onClick={() => adjustValue(-1)}
-              className="flex items-center justify-center text-muted-foreground transition hover:bg-secondary/70 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex items-center justify-center text-fg2 hover:bg-raised hover:text-fg disabled:cursor-not-allowed disabled:opacity-40"
             >
               <ChevronDown className="h-3 w-3" />
             </button>
@@ -79,7 +79,7 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<'input'>>(
       <input
         type={type}
         className={cn(
-          'flex h-10 w-full rounded-md border border-normal bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:font-medium file:text-foreground file:text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
+          'flex h-9 w-full border border-line2 bg-bg px-3 text-base file:border-0 file:bg-transparent file:font-medium file:text-fg file:text-sm hover:border-fg3 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm',
           className
         )}
         ref={forwardedRef}
