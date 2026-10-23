@@ -27,6 +27,16 @@ export const auth = betterAuth({
 			token: "token",
 		},
 	},
+	databaseHooks: {
+		session: {
+			create: {
+				// Not disableIpTracking: it also turns off the rate limiter.
+				before: async (session) => ({
+					data: { ...session, ipAddress: null, userAgent: null },
+				}),
+			},
+		},
+	},
 	logger: {
 		level: process.env.NODE_ENV === "production" ? "warn" : "debug",
 		log: (level, message, ...args) => {
