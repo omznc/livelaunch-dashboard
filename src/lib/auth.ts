@@ -28,7 +28,7 @@ export const auth = betterAuth({
 		},
 	},
 	logger: {
-		level: "debug",
+		level: process.env.NODE_ENV === "production" ? "warn" : "debug",
 		log: (level, message, ...args) => {
 			console.log(`[better-auth] ${level.toUpperCase()}: ${message}`, ...args);
 		},
