@@ -12,9 +12,10 @@ import toast from "react-hot-toast";
 interface AlmostThereClientProps {
 	guildName: string;
 	permissions: PermissionStatus[];
+	lookupFailed: boolean;
 }
 
-export default function AlmostThereClient({ guildName, permissions }: AlmostThereClientProps) {
+export default function AlmostThereClient({ guildName, permissions, lookupFailed }: AlmostThereClientProps) {
 	const [isRefreshing, setIsRefreshing] = useState(false);
 	const [lastRefresh, setLastRefresh] = useState<number | null>(null);
 	const [countdown, setCountdown] = useState<number>(0);
@@ -67,62 +68,89 @@ export default function AlmostThereClient({ guildName, permissions }: AlmostTher
 	}, [lastRefresh]);
 
 	const canRefresh = countdown === 0;
+	const refreshButton = (
+		<Button onClick={handleRefresh} disabled={isRefreshing || !canRefresh}>
+			<RefreshCw className={isRefreshing ? "animate-spin" : undefined} />
+			{isRefreshing ? "Checking..." : "Check Again"}
+		</Button>
+	);
+	const refreshNote = lastRefresh && !canRefresh && (
+		<p className="text-fg2 text-sm">
+			You can check again in {countdown} second{countdown !== 1 ? "s" : ""}
+		</p>
+	);
 
 	return (
-		<div className="flex flex-col gap-10">
-			<div className="flex w-full flex-col gap-8">
-				<div className="flex flex-col gap-2">
-					<div className="mb-2 flex h-9 w-9 items-center justify-center tint-amber">
-						<AlertCircle className="h-4 w-4" />
-					</div>
-					<h2 className="font-semibold text-2xl tracking-title">Almost There!</h2>
-					<p className="mt-1 text-fg2">
-						LiveLaunch needs additional permissions in <strong>{guildName}</strong> to work properly. You
-						can also just re-invite the bot to your server.
-					</p>
-				</div>
+		<div className="flex flex-col">
+			<div className="flex flex-col gap-2 px-4 py-8 sm:px-6 sm:py-10">
+				<h1 className="font-semibold text-3xl leading-9 tracking-title">Almost There</h1>
+				<p className="max-w-2xl text-fg2">
+					{lookupFailed ? (
+						<>Could not check the permissions of LiveLaunch in {guildName}.</>
+					) : (
+						<>
+							LiveLaunch needs more permissions in <strong className="text-fg">{guildName}</strong> to
+							work. You can also re-invite the bot to your server.
+						</>
+					)}
+				</p>
 			</div>
 
-			<SettingGroup
-				title="Missing Permissions"
-				description={
-					<>
-						The following Discord permissions are required for LiveLaunch to function properly.{" "}
-						<Link
-							href="https://support.discord.com/hc/en-us/articles/206029707-Setting-Up-Permissions-FAQ"
-							target="_blank"
-							className="inline-flex items-center gap-0.5 text-brand hover:underline"
-						>
-							Learn more <ArrowUpRight className="h-4 w-4" />
-						</Link>
-					</>
-				}
-			>
-				{permissions.map((permission, index) => (
-					<Setting
-						key={index}
-						label={permission.name}
-						description={permission.description}
-						active={permission.hasPermission}
+			{lookupFailed ? (
+				<section className="flex flex-col border-line border-t border-b">
+					<div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-3 px-4 py-4 sm:px-6 sm:py-5">
+						<div className="flex min-w-0 flex-1 basis-60 items-center gap-4">
+							<AlertCircle className="h-[18px] w-[18px] shrink-0 text-amber" />
+							<p role="alert">{"Could not check the bot's permissions. Try again later."}</p>
+						</div>
+						<div className="flex shrink-0 items-center gap-4">
+							{refreshNote}
+							{refreshButton}
+						</div>
+					</div>
+				</section>
+			) : (
+				<>
+					<SettingGroup
+						title="Missing Permissions"
+						description={
+							<>
+								These Discord permissions are required for LiveLaunch to work.{" "}
+								<Link
+									href="https://support.discord.com/hc/en-us/articles/206029707-Setting-Up-Permissions-FAQ"
+									target="_blank"
+									className="inline-flex items-center gap-0.5 text-brand hover:underline"
+								>
+									Learn more <ArrowUpRight className="h-[18px] w-[18px]" />
+								</Link>
+							</>
+						}
 					>
-						{permission.hasPermission ? (
-							<CheckCircle className="h-4 w-4 text-green" />
-						) : (
-							<XCircle className="h-4 w-4 text-red" />
-						)}
-					</Setting>
-				))}
-			</SettingGroup>
+						{permissions.map((permission) => (
+							<Setting
+								key={permission.name}
+								label={permission.name}
+								description={permission.description}
+								active={permission.hasPermission}
+							>
+								{permission.hasPermission ? (
+									<CheckCircle className="h-[18px] w-[18px] text-green" aria-label="Granted" />
+								) : (
+									<XCircle className="h-[18px] w-[18px] text-red" aria-label="Missing" />
+								)}
+							</Setting>
+						))}
+					</SettingGroup>
 
-			{permissions.some((p) => !p.hasPermission) && (
-				<div className="flex w-full flex-col gap-4">
-					<div>
-						<h3 className="mb-1 font-semibold text-base">How to Fix</h3>
-						<p className="mb-4 text-fg2 text-sm">
-							Follow these steps to grant the required permissions to the LiveLaunch bot:
-						</p>
-						<div className="mb-4 border border-line bg-panel p-4">
-							<ol className="list-inside list-decimal space-y-2 text-sm">
+					{permissions.some((p) => !p.hasPermission) && (
+						<section className="flex flex-col border-line border-t border-b">
+							<div className="flex flex-col gap-1 px-4 pt-6 pb-4 sm:px-6">
+								<h2 className="font-semibold text-lg leading-7 tracking-head">How to fix</h2>
+								<p className="text-fg2 text-sm leading-[22px]">
+									Follow these steps to give the LiveLaunch bot the permissions.
+								</p>
+							</div>
+							<ol className="list-inside list-decimal space-y-2 border-line border-t px-4 py-4 sm:px-6 sm:py-5">
 								<li>Go to your Discord server settings</li>
 								<li>Navigate to "Roles" in the left sidebar</li>
 								<li>Find the "LiveLaunch" role</li>
@@ -130,37 +158,17 @@ export default function AlmostThereClient({ guildName, permissions }: AlmostTher
 								<li>Click "Save Changes"</li>
 								<li>Come back and click "Check Again" below</li>
 							</ol>
-						</div>
-						<div className="flex justify-center">
-							<Button
-								onClick={handleRefresh}
-								disabled={isRefreshing || !canRefresh}
-								className="min-w-[140px]"
-							>
-								{isRefreshing ? (
-									<>
-										<RefreshCw className="h-4 w-4 animate-spin" />
-										Checking...
-									</>
-								) : (
-									<>
-										<RefreshCw className="h-4 w-4" />
-										Check Again
-									</>
-								)}
-							</Button>
-						</div>
-						{lastRefresh && !canRefresh && (
-							<p className="mt-2 text-center text-fg2 text-sm">
-								You can check again in {countdown} second{countdown !== 1 ? "s" : ""}
-							</p>
-						)}
-						<p className="mx-auto mt-2 w-full text-center text-fg2 text-sm md:w-1/2">
-							Discord might take a few minutes to update the permissions, so if you don't see the changes
-							right away, check back in a few minutes.
-						</p>
-					</div>
-				</div>
+							<div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-line border-t px-4 py-4 sm:px-6 sm:py-5">
+								{refreshButton}
+								{refreshNote}
+								<p className="basis-full text-fg2 text-sm">
+									Discord can take a few minutes to update the permissions. If you do not see the
+									change, check back later.
+								</p>
+							</div>
+						</section>
+					)}
+				</>
 			)}
 		</div>
 	);

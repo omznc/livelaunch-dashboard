@@ -376,7 +376,28 @@ export interface PermissionStatus {
 
 export interface BotPermissionCheck {
 	hasAll: boolean;
+	// True when the Discord lookup failed. Then `permissions` says nothing about the real state.
+	lookupFailed: boolean;
 	permissions: PermissionStatus[];
+}
+
+// A failed lookup is not a missing permission. hasAll stays false, so access is still denied.
+function lookupFailedResult(): BotPermissionCheck {
+	return {
+		hasAll: false,
+		lookupFailed: true,
+		permissions: [
+			{ name: "Manage Webhooks", description: "Required to create webhooks for messages", hasPermission: false },
+			{
+				name: "Manage Events",
+				description: "Required to edit and cancel Discord scheduled events",
+				hasPermission: false,
+			},
+			{ name: "Create Events", description: "Required to create Discord scheduled events", hasPermission: false },
+			{ name: "Send Messages", description: "Required to send messages to channels", hasPermission: false },
+			{ name: "Embed Links", description: "Required to send rich embeds with links", hasPermission: false },
+		],
+	};
 }
 
 /**
@@ -385,54 +406,12 @@ export interface BotPermissionCheck {
 export const checkBotPermissions = async (guildId: string): Promise<BotPermissionCheck> => {
 	if (!guildId || typeof guildId !== "string") {
 		logger.debug("discord-api:checkBotPermissions", "Invalid guildId provided", { guildId });
-		return {
-			hasAll: false,
-			permissions: [
-				{
-					name: "Manage Webhooks",
-					description: "Required to create webhooks for messages",
-					hasPermission: false,
-				},
-				{
-					name: "Manage Events",
-					description: "Required to edit and cancel Discord scheduled events",
-					hasPermission: false,
-				},
-				{
-					name: "Create Events",
-					description: "Required to create Discord scheduled events",
-					hasPermission: false,
-				},
-				{ name: "Send Messages", description: "Required to send messages to channels", hasPermission: false },
-				{ name: "Embed Links", description: "Required to send rich embeds with links", hasPermission: false },
-			],
-		};
+		return lookupFailedResult();
 	}
 	const permissions = await getBotPermissions(guildId);
 	if (!permissions) {
 		logger.debug("discord-api:checkBotPermissions", "Early return: could not get bot permissions", { guildId });
-		return {
-			hasAll: false,
-			permissions: [
-				{
-					name: "Manage Webhooks",
-					description: "Required to create webhooks for messages",
-					hasPermission: false,
-				},
-				{
-					name: "Manage Events",
-					description: "Required to edit and cancel Discord scheduled events",
-					hasPermission: false,
-				},
-				{
-					name: "Create Events",
-					description: "Required to create Discord scheduled events",
-					hasPermission: false,
-				},
-				{ name: "Send Messages", description: "Required to send messages to channels", hasPermission: false },
-				{ name: "Embed Links", description: "Required to send rich embeds with links", hasPermission: false },
-			],
-		};
+		return lookupFailedResult();
 	}
 
 	const permissionBits = BigInt(permissions);
@@ -488,6 +467,7 @@ export const checkBotPermissions = async (guildId: string): Promise<BotPermissio
 
 	return {
 		hasAll,
+		lookupFailed: false,
 		permissions: permissionChecks,
 	};
 };
