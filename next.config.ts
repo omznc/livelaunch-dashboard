@@ -4,6 +4,8 @@ const nextConfig: NextConfig = {
 	reactStrictMode: true,
 	typedRoutes: true,
 	reactCompiler: true,
+	cacheComponents: true,
+	partialPrefetching: true,
 	experimental: {
 		serverActions: {
 			allowedOrigins: [

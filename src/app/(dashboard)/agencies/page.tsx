@@ -1,11 +1,17 @@
 import Client from "@app/(dashboard)/agencies/client";
 import { prisma } from "@lib/prisma";
 import { checkGuildPermissions } from "@lib/server-utils";
-import { unstable_cache as cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
 import NotEnabled from "@/src/app/(dashboard)/_components/not-enabled";
 
-export const dynamic = "force-dynamic";
+// Only the bot writes this list, so no action invalidates the tag.
+async function getAgencies() {
+	"use cache";
+	cacheLife("hours");
+	cacheTag("agencies");
+	return prisma.ll2_agencies.findMany();
+}
 
 export default async function Agencies(props: {
 	searchParams: Promise<{
@@ -21,10 +27,7 @@ export default async function Agencies(props: {
 		notFound();
 	}
 
-	const agencies = await cache(async () => prisma.ll2_agencies.findMany(), ["agencies"], {
-		tags: ["agencies"],
-		revalidate: 60 * 60,
-	})();
+	const agencies = await getAgencies();
 
 	const guild = await prisma.enabled_guilds.findFirst({
 		where: {

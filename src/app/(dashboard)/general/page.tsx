@@ -5,8 +5,6 @@ import { notFound } from "next/navigation";
 import NotEnabled from "@/src/app/(dashboard)/_components/not-enabled";
 import Client from "./client";
 
-export const dynamic = "force-dynamic";
-
 export default async function Agencies(props: {
 	searchParams: Promise<{
 		g: string | undefined;

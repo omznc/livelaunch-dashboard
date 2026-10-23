@@ -12,8 +12,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { siDiscord, siGithub } from "simple-icons";
 
-export const dynamic = "force-dynamic";
-
 export default async function Home() {
 	return (
 		<div className="flex flex-col gap-24 pb-8">

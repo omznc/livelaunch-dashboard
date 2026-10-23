@@ -2,11 +2,17 @@ import Client from "@app/(dashboard)/news/client";
 import { getGuildChannels } from "@lib/discord-api";
 import { prisma } from "@lib/prisma";
 import { checkGuildPermissions } from "@lib/server-utils";
-import { unstable_cache as cache } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
 import NotEnabled from "@/src/app/(dashboard)/_components/not-enabled";
 
-export const dynamic = "force-dynamic";
+// Only the bot writes this list, so no action invalidates the tag.
+async function getNewsSites() {
+	"use cache";
+	cacheLife("hours");
+	cacheTag("news-sites");
+	return prisma.news_sites.findMany();
+}
 
 export default async function NewsSites(props: {
 	searchParams: Promise<{
@@ -31,10 +37,7 @@ export default async function NewsSites(props: {
 
 	if (!guild) return <NotEnabled />;
 
-	const newsSites = await cache(async () => prisma.news_sites.findMany(), ["news-sites"], {
-		tags: ["news-sites"],
-		revalidate: 60 * 60,
-	})();
+	const newsSites = await getNewsSites();
 
 	const [enabledNewsSites, channels] = await Promise.all([
 		prisma.news_filter.findMany({

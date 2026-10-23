@@ -3,13 +3,29 @@ import { prisma } from "@lib/prisma";
 import type { RESTAPIPartialCurrentUserGuild } from "discord-api-types/v10";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import type { ReactNode } from "react";
+import { type ReactNode, Suspense } from "react";
 import GuildSwitcher from "@/src/app/(dashboard)/_components/guild-switcher";
 import { Navigation } from "@/src/app/(dashboard)/_components/navigation";
 import User from "@/src/app/(dashboard)/_components/user";
 import { auth } from "@/src/lib/auth";
 
-export default async function Layout({ children }: { children: ReactNode }) {
+// The session and guild reads are per request, so they stream behind a Suspense boundary.
+export default function Layout({ children }: { children: ReactNode }) {
+	return (
+		<div className="flex min-h-screen w-full flex-col items-center">
+			<Suspense
+				fallback={<div className="sticky top-0 z-50 h-16 w-full border-b bg-primary/20 backdrop-blur-sm" />}
+			>
+				<Header />
+			</Suspense>
+			<div className="flex w-full justify-center p-4 md:p-8">
+				<div className="flex w-full max-w-[1200px] flex-col gap-8 py-12">{children}</div>
+			</div>
+		</div>
+	);
+}
+
+async function Header() {
 	const session = await auth.api.getSession({
 		headers: await headers(),
 	});
@@ -28,31 +44,26 @@ export default async function Layout({ children }: { children: ReactNode }) {
 	});
 
 	return (
-		<div className="flex min-h-screen w-full flex-col items-center">
-			<div className="sticky top-0 z-50 w-full bg-primary/20 backdrop-blur-sm">
-				<div className="hidden w-full flex-row justify-between border-b md:flex">
-					<div className="flex h-16 items-center px-4">
-						<GuildSwitcher guilds={guilds} listenForInviteEvent />
-						<Navigation className="md:mx-6" guilds={enabledGuilds} allGuilds={guilds} />
+		<div className="sticky top-0 z-50 w-full bg-primary/20 backdrop-blur-sm">
+			<div className="hidden w-full flex-row justify-between border-b md:flex">
+				<div className="flex h-16 items-center px-4">
+					<GuildSwitcher guilds={guilds} listenForInviteEvent />
+					<Navigation className="md:mx-6" guilds={enabledGuilds} allGuilds={guilds} />
+				</div>
+				<div className="flex h-16 items-center gap-4 px-4">
+					<User />
+				</div>
+			</div>
+			<div className="flex w-full flex-col md:hidden md:gap-4">
+				<div className="flex h-16 items-center justify-between gap-2 px-4">
+					<div className="flex items-center">
+						<GuildSwitcher guilds={guilds} />
 					</div>
-					<div className="flex h-16 items-center gap-4 px-4">
+					<div className="flex items-center gap-2">
 						<User />
 					</div>
 				</div>
-				<div className="flex w-full flex-col md:hidden md:gap-4">
-					<div className="flex h-16 items-center justify-between gap-2 px-4">
-						<div className="flex items-center">
-							<GuildSwitcher guilds={guilds} />
-						</div>
-						<div className="flex items-center gap-2">
-							<User />
-						</div>
-					</div>
-					<Navigation className="md:mx-6" guilds={enabledGuilds} allGuilds={guilds} />
-				</div>
-			</div>
-			<div className="flex w-full justify-center p-4 md:p-8">
-				<div className="flex w-full max-w-[1200px] flex-col gap-8 py-12">{children}</div>
+				<Navigation className="md:mx-6" guilds={enabledGuilds} allGuilds={guilds} />
 			</div>
 		</div>
 	);
