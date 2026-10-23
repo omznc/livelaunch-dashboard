@@ -6,10 +6,11 @@ const env = createEnv({
 		DATABASE_URL: z.url({
 			message: "DATABASE_URL must be a valid URL (mysql://)",
 		}),
-		DISCORD_CLIENT_ID: z.string().min(1),
-		DISCORD_CLIENT_SECRET: z.string(),
-		DISCORD_BOT_TOKEN: z.string(),
-		BETTER_AUTH_SECRET: z.string(),
+		// trim(): a CRLF .env can leave a "\r" at the end of a value
+		DISCORD_CLIENT_ID: z.string().trim().min(1),
+		DISCORD_CLIENT_SECRET: z.string().trim(),
+		DISCORD_BOT_TOKEN: z.string().trim(),
+		BETTER_AUTH_SECRET: z.string().trim(),
 		BETTER_AUTH_URL: z.url(),
 	},
 	client: {},
