@@ -34,6 +34,39 @@ interface GuildSwitcherProps extends PopoverTriggerProps {
 	listenForInviteEvent?: boolean;
 }
 
+function compareGuilds(a: GuildsResponse, b: GuildsResponse) {
+	if (a.botAccess !== b.botAccess) return a.botAccess ? -1 : 1;
+	return a.name.localeCompare(b.name);
+}
+
+function GuildAvatar({ guild }: { guild: GuildsResponse }) {
+	return (
+		<Avatar className="mr-2 h-5 w-5">
+			{guild.icon ? (
+				<Image
+					width={50}
+					height={50}
+					src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
+					alt={guild.name}
+				/>
+			) : (
+				<AvatarFallback>{guild.name[0] || "LL"}</AvatarFallback>
+			)}
+		</Avatar>
+	);
+}
+
+function RocketPortal({ show }: { show: boolean }) {
+	const [mounted, setMounted] = React.useState(false);
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	if (!show || !mounted) return null;
+	return createPortal(<div className="rocket-fly">🚀</div>, document.body);
+}
+
 export default function GuildSwitcher({ className, guilds, listenForInviteEvent }: GuildSwitcherProps) {
 	const [open, setOpen] = React.useState(false);
 	const [showNewGuildDialog, setShowNewGuildDialog] = React.useState(false);
@@ -41,7 +74,6 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 	const [revalidationCooldown, setRevalidationCooldown] = React.useState(false);
 	const [search, setSearch] = React.useState("");
 	const [showRocket, setShowRocket] = React.useState(false);
-	const [mounted, setMounted] = React.useState(false);
 	const cooldownTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 	const params = useSearchParams();
 	const router = useRouter();
@@ -49,15 +81,7 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 	const [pending, startTransition] = useTransition();
 	const inviteUrl = `https://discord.com/api/oauth2/authorize?client_id=${env.NEXT_PUBLIC_DISCORD_CLIENT_ID}&permissions=17601312868352&scope=bot%20applications.commands`;
 	const discordDeepLink = `discord://-/application-directory/${env.NEXT_PUBLIC_DISCORD_CLIENT_ID}`;
-	const sortedGuilds = useMemo(
-		() =>
-			[...guilds].sort((a, b) => {
-				if (a.botAccess && !b.botAccess) return -1;
-				if (!a.botAccess && b.botAccess) return 1;
-				return a.name.localeCompare(b.name);
-			}),
-		[guilds],
-	);
+	const sortedGuilds = useMemo(() => [...guilds].sort(compareGuilds), [guilds]);
 
 	useEffect(() => {
 		if (!selectedGuild && sortedGuilds.length !== 0) {
@@ -82,10 +106,6 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 		};
 	}, [listenForInviteEvent]);
 
-	useEffect(() => {
-		setMounted(true);
-	}, []);
-
 	return (
 		<Credenza open={showNewGuildDialog} onOpenChange={setShowNewGuildDialog}>
 			{sortedGuilds.length !== 0 && (
@@ -102,18 +122,7 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 						>
 							{selectedGuild ? (
 								<>
-									<Avatar className="mr-2 h-5 w-5">
-										{selectedGuild.icon ? (
-											<Image
-												width={50}
-												height={50}
-												src={`https://cdn.discordapp.com/icons/${selectedGuild.id}/${selectedGuild.icon}.png`}
-												alt={selectedGuild.name}
-											/>
-										) : (
-											<AvatarFallback>{selectedGuild.name[0] || "LL"}</AvatarFallback>
-										)}
-									</Avatar>
+									<GuildAvatar guild={selectedGuild} />
 									<span className="truncate">{selectedGuild.name}</span>
 								</>
 							) : (
@@ -154,18 +163,7 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 											}
 											className="text-sm"
 										>
-											<Avatar className="mr-2 h-5 w-5">
-												{guild.icon ? (
-													<Image
-														width={50}
-														height={50}
-														src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
-														alt={guild.name}
-													/>
-												) : (
-													<AvatarFallback>{guild.name[0] || "LL"}</AvatarFallback>
-												)}
-											</Avatar>
+											<GuildAvatar guild={guild} />
 											<div className="flex flex-col">
 												<span>{guild.name}</span>
 												{!guild.botAccess && (
@@ -195,9 +193,7 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 					Add a Guild
 				</Button>
 			)}
-			{showRocket && mounted && typeof document !== "undefined"
-				? createPortal(<div className="rocket-fly">🚀</div>, document.body)
-				: null}
+			<RocketPortal show={showRocket} />
 			<CredenzaContent>
 				<CredenzaHeader>
 					<CredenzaTitle>Invite LiveLaunch</CredenzaTitle>
