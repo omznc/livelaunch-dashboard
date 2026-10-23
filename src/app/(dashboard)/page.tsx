@@ -92,7 +92,7 @@ export default async function Home() {
 								}),
 								"inline-flex w-full gap-2 md:w-fit",
 							)}
-							href={`https://top.gg/bot/${env.NEXT_PUBLIC_DISCORD_CLIENT_ID}/vote`}
+							href={`https://top.gg/bot/${env.DISCORD_CLIENT_ID}/vote`}
 							target={"_blank"}
 						>
 							<ThumbsUp />

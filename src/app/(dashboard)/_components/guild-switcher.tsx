@@ -14,7 +14,6 @@ import {
 	CredenzaTitle,
 } from "@components/ui/credenza";
 import { Popover, PopoverContent, PopoverTrigger } from "@components/ui/popover";
-import env from "@env";
 import { cn } from "@lib/utils";
 import { CheckIcon, ChevronsUpDown, RefreshCw } from "lucide-react";
 import type { Route } from "next";
@@ -31,6 +30,7 @@ type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>
 
 interface GuildSwitcherProps extends PopoverTriggerProps {
 	guilds: GuildsResponse[];
+	clientId: string;
 	listenForInviteEvent?: boolean;
 }
 
@@ -67,7 +67,7 @@ function RocketPortal({ show }: { show: boolean }) {
 	return createPortal(<div className="rocket-fly">🚀</div>, document.body);
 }
 
-export default function GuildSwitcher({ className, guilds, listenForInviteEvent }: GuildSwitcherProps) {
+export default function GuildSwitcher({ className, guilds, clientId, listenForInviteEvent }: GuildSwitcherProps) {
 	const [open, setOpen] = React.useState(false);
 	const [showNewGuildDialog, setShowNewGuildDialog] = React.useState(false);
 	const [revalidating, setRevalidating] = React.useState(false);
@@ -79,8 +79,8 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 	const router = useRouter();
 	const selectedGuild = guilds.find((guild) => guild.id === params.get("g"));
 	const [pending, startTransition] = useTransition();
-	const inviteUrl = `https://discord.com/api/oauth2/authorize?client_id=${env.NEXT_PUBLIC_DISCORD_CLIENT_ID}&permissions=17601312868352&scope=bot%20applications.commands`;
-	const discordDeepLink = `discord://-/application-directory/${env.NEXT_PUBLIC_DISCORD_CLIENT_ID}`;
+	const inviteUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&permissions=17601312868352&scope=bot%20applications.commands`;
+	const discordDeepLink = `discord://-/application-directory/${clientId}`;
 	const sortedGuilds = useMemo(() => [...guilds].sort(compareGuilds), [guilds]);
 
 	useEffect(() => {

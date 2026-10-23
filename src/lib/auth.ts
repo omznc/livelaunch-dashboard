@@ -11,7 +11,7 @@ export const auth = betterAuth({
 	baseURL: env.BETTER_AUTH_URL,
 	socialProviders: {
 		discord: {
-			clientId: env.NEXT_PUBLIC_DISCORD_CLIENT_ID,
+			clientId: env.DISCORD_CLIENT_ID,
 			clientSecret: env.DISCORD_CLIENT_SECRET,
 			// Skip the default "email" scope. better-auth needs an email, so store one unique per Discord ID.
 			disableDefaultScope: true,
