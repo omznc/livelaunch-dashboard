@@ -1,33 +1,38 @@
 "use server";
 
-import { REST } from "@discordjs/rest";
-import env from "@env";
-import { createWebhook } from "@lib/discord-api";
-import { logger } from "@lib/logger";
+import { createWebhook, deleteWebhook, replaceWebhook } from "@lib/discord-api";
 import { prisma } from "@lib/prisma";
-import { guildActionClient, guildIdSchema } from "@lib/safe-actions";
-import { Routes } from "discord-api-types/v10";
+import { guildActionClient, guildIdSchema, snowflakeSchema } from "@lib/safe-actions";
+import { toFlags } from "@lib/server-utils";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-const rest = new REST({ version: "9" }).setToken(env.DISCORD_BOT_TOKEN);
+const MAX_COUNTDOWNS = 64;
 
 const notificationsFilterSchema = z.object({
 	guildId: z.string(),
-	settings: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])),
+	settings: z.object({
+		notification_end_status: z.boolean().optional(),
+		notification_deploy: z.boolean().optional(),
+		notification_hold: z.boolean().optional(),
+		notification_go: z.boolean().optional(),
+		notification_liftoff: z.boolean().optional(),
+		notification_tbc: z.boolean().optional(),
+		notification_tbd: z.boolean().optional(),
+		notification_t0_change: z.boolean().optional(),
+		notification_launch: z.boolean().optional(),
+		notification_event: z.boolean().optional(),
+	}),
 });
 
 export const updateFilters = guildActionClient
 	.inputSchema(notificationsFilterSchema)
 	.action(async ({ parsedInput: { guildId, settings } }) => {
-		const data = Object.fromEntries(Object.entries(settings).map(([key, value]) => [key, Number(value)]));
 		await prisma.enabled_guilds.update({
 			where: {
 				guild_id: BigInt(guildId),
 			},
-			data: {
-				...data,
-			},
+			data: toFlags(settings),
 		});
 	});
 
@@ -47,24 +52,30 @@ const addCountdownSchema = z.object({
 export const addCountdown = guildActionClient
 	.inputSchema(addCountdownSchema)
 	.action(async ({ parsedInput: { guildId, settings } }) => {
-		const current = await prisma.notification_countdown.count({
-			where: {
-				guild_id: BigInt(guildId),
+		await prisma.$transaction(
+			async (tx) => {
+				const current = await tx.notification_countdown.count({
+					where: {
+						guild_id: BigInt(guildId),
+					},
+				});
+
+				if (current >= MAX_COUNTDOWNS) {
+					throw new Error("Countdown limit reached");
+				}
+
+				await tx.notification_countdown.create({
+					data: {
+						guild_id: BigInt(guildId),
+						minutes: settings.days * 24 * 60 + settings.hours * 60 + settings.minutes,
+					},
+				});
+				// Serializable, so two requests cannot both pass the limit check
 			},
-		});
+			{ isolationLevel: "Serializable" },
+		);
 
-		if (current > 64) {
-			throw new Error("Countdown limit reached");
-		}
-
-		await prisma.notification_countdown.create({
-			data: {
-				guild_id: BigInt(guildId),
-				minutes: settings.days * 24 * 60 + settings.hours * 60 + settings.minutes,
-			},
-		});
-
-		revalidatePath(`/notifications?g=${guildId}`);
+		revalidatePath("/notifications");
 	});
 
 const removeCountdownSchema = z.object({
@@ -75,28 +86,26 @@ const removeCountdownSchema = z.object({
 export const removeCountdown = guildActionClient
 	.inputSchema(removeCountdownSchema)
 	.action(async ({ parsedInput: { guildId, minutes } }) => {
-		await prisma.notification_countdown.delete({
+		await prisma.notification_countdown.deleteMany({
 			where: {
-				guild_id_minutes: {
-					guild_id: BigInt(guildId),
-					minutes,
-				},
+				guild_id: BigInt(guildId),
+				minutes,
 			},
 		});
 
-		revalidatePath(`/notifications?g=${guildId}`);
+		revalidatePath("/notifications");
 	});
 
 const updateChannelSchema = z.object({
 	guildId: z.string(),
-	channelId: z.string(),
+	channelId: snowflakeSchema,
 });
 
 export const updateChannel = guildActionClient
 	.inputSchema(updateChannelSchema)
 	.action(async ({ parsedInput: { guildId, channelId } }) => {
 		const [newWebhookURL, guild] = await Promise.all([
-			createWebhook(channelId, "Notifications"),
+			createWebhook(guildId, channelId, "Notifications"),
 			prisma.enabled_guilds.findFirst({
 				where: {
 					guild_id: BigInt(guildId),
@@ -105,40 +114,24 @@ export const updateChannel = guildActionClient
 		]);
 
 		if (!newWebhookURL) {
-			return { error: "Missing permission: Manage Webhooks" };
+			return {
+				error: "Could not create a webhook. Check that the channel exists and that the bot has the Manage Webhooks permission.",
+			};
 		}
 
-		await prisma.enabled_guilds.update({
-			where: {
-				guild_id: BigInt(guildId),
-			},
-			data: {
-				notification_webhook_url: newWebhookURL,
-				notification_channel_id: BigInt(channelId),
-			},
-		});
+		await replaceWebhook(newWebhookURL, guild?.notification_webhook_url, () =>
+			prisma.enabled_guilds.update({
+				where: {
+					guild_id: BigInt(guildId),
+				},
+				data: {
+					notification_webhook_url: newWebhookURL,
+					notification_channel_id: BigInt(channelId),
+				},
+			}),
+		);
 
-		if (guild?.notification_webhook_url) {
-			await rest.delete(Routes.webhook(guild.notification_webhook_url.split("/")[5])).catch(async (e) => {
-				await prisma.enabled_guilds.update({
-					where: {
-						guild_id: BigInt(guildId),
-					},
-					data: {
-						notification_channel_id: null,
-						notification_webhook_url: null,
-					},
-				});
-				await rest.delete(Routes.webhook(newWebhookURL.split("/")[5]));
-
-				revalidatePath(`/notifications?g=${guildId}`);
-
-				throw e;
-			});
-		} else {
-			revalidatePath(`/notifications?g=${guildId}`);
-		}
-
+		revalidatePath("/notifications");
 		return { success: true };
 	});
 
@@ -155,17 +148,7 @@ export const disableFeature = guildActionClient
 		});
 
 		if (resp?.notification_webhook_url) {
-			await rest.delete(Routes.webhook(resp.notification_webhook_url.split("/")[5])).catch((e) => {
-				logger.error(
-					"notifications:actions:disableFeature",
-					"Failed to delete notification webhook during disable",
-					{
-						guildId,
-						error: e.message,
-						webhookUrl: resp.notification_webhook_url,
-					},
-				);
-			});
+			await deleteWebhook(resp.notification_webhook_url);
 		}
 
 		await prisma.enabled_guilds.update({
@@ -178,5 +161,5 @@ export const disableFeature = guildActionClient
 			},
 		});
 
-		revalidatePath(`/notifications?g=${guildId}`);
+		revalidatePath("/notifications");
 	});

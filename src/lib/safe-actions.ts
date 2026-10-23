@@ -3,6 +3,8 @@ import { z } from "zod";
 import { logger } from "./logger";
 import { isAuthorizedForGuild } from "./server-utils";
 
+export const snowflakeSchema = z.string().regex(/^\d{17,20}$/);
+
 export const guildIdSchema = z.object({
 	guildId: z.string(),
 });

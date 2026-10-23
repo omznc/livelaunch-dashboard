@@ -49,7 +49,7 @@ const links = [
 ];
 
 interface NavigationProps extends React.HTMLAttributes<HTMLElement> {
-	guilds?: enabled_guilds[];
+	guilds?: Pick<enabled_guilds, "guild_id">[];
 	allGuilds?: GuildsResponse[];
 }
 

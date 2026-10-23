@@ -1,6 +1,6 @@
 import { getBotGuilds, getUserGuilds } from "@lib/discord-api";
 import { prisma } from "@lib/prisma";
-import type { RESTAPIPartialCurrentUserGuild } from "discord.js";
+import type { RESTAPIPartialCurrentUserGuild } from "discord-api-types/v10";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
@@ -19,6 +19,7 @@ export default async function Layout({ children }: { children: ReactNode }) {
 
 	const guilds = await filterGuilds();
 	const enabledGuilds = await prisma.enabled_guilds.findMany({
+		select: { guild_id: true },
 		where: {
 			guild_id: {
 				in: guilds.map((guild) => BigInt(guild.id)),

@@ -10,7 +10,7 @@ import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import type { enabled_guilds, news_filter, news_sites } from "@generated/client";
 import { useDebounce } from "@lib/hooks";
 import { cn } from "@lib/utils";
-import type { RESTGetAPIGuildChannelsResult } from "discord.js";
+import type { RESTGetAPIGuildChannelsResult } from "discord-api-types/v10";
 import { FrownIcon, Hash, Megaphone } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -21,7 +21,7 @@ import { disableFeature, setNewsSites, updateChannel, updateSettings } from "./a
 interface ClientProps {
 	newsSites: news_sites[];
 	enabledNewsSites: news_filter[];
-	guild: enabled_guilds;
+	guild: Pick<enabled_guilds, "guild_id" | "news_channel_id" | "news_include_exclude">;
 	channels: RESTGetAPIGuildChannelsResult;
 }
 

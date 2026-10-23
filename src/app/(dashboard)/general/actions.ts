@@ -1,46 +1,45 @@
 "use server";
 
-import { REST } from "@discordjs/rest";
-import env from "@env";
-import { createWebhook } from "@lib/discord-api";
-import { logger } from "@lib/logger";
+import { createWebhook, deleteWebhook, replaceWebhook } from "@lib/discord-api";
 import { prisma } from "@lib/prisma";
-import { guildActionClient, guildIdSchema } from "@lib/safe-actions";
-import { Routes } from "discord-api-types/v10";
+import { guildActionClient, guildIdSchema, snowflakeSchema } from "@lib/safe-actions";
+import { toFlags } from "@lib/server-utils";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
-const rest = new REST({ version: "9" }).setToken(env.DISCORD_BOT_TOKEN);
-
 const generalSettingsSchema = z.object({
 	guildId: z.string(),
-	settings: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])),
+	settings: z.object({
+		notification_button_fc: z.boolean().optional(),
+		notification_button_g4l: z.boolean().optional(),
+		notification_button_sln: z.boolean().optional(),
+		se_launch: z.boolean().optional(),
+		se_event: z.boolean().optional(),
+		se_no_url: z.boolean().optional(),
+	}),
 });
 
 export const updateSettings = guildActionClient
 	.inputSchema(generalSettingsSchema)
 	.action(async ({ parsedInput: { guildId, settings } }) => {
-		const data = Object.fromEntries(Object.entries(settings).map(([key, value]) => [key, Number(value)]));
 		await prisma.enabled_guilds.update({
 			where: {
 				guild_id: BigInt(guildId),
 			},
-			data: {
-				...data,
-			},
+			data: toFlags(settings),
 		});
 	});
 
 const updateChannelSchema = z.object({
 	guildId: z.string(),
-	channelId: z.string(),
+	channelId: snowflakeSchema,
 });
 
 export const updateChannel = guildActionClient
 	.inputSchema(updateChannelSchema)
 	.action(async ({ parsedInput: { guildId, channelId } }) => {
 		const [newWebhookURL, guild] = await Promise.all([
-			createWebhook(channelId, "Messages"),
+			createWebhook(guildId, channelId, "Messages"),
 			prisma.enabled_guilds.findFirst({
 				where: {
 					guild_id: BigInt(guildId),
@@ -49,45 +48,30 @@ export const updateChannel = guildActionClient
 		]);
 
 		if (!newWebhookURL) {
-			return { error: "Missing permission: Manage Webhooks" };
+			return {
+				error: "Could not create a webhook. Check that the channel exists and that the bot has the Manage Webhooks permission.",
+			};
 		}
 
-		await prisma.enabled_guilds.update({
-			where: {
-				guild_id: BigInt(guildId),
-			},
-			data: {
-				channel_id: BigInt(channelId),
-				webhook_url: newWebhookURL,
-			},
-		});
+		await replaceWebhook(newWebhookURL, guild?.webhook_url, () =>
+			prisma.enabled_guilds.update({
+				where: {
+					guild_id: BigInt(guildId),
+				},
+				data: {
+					channel_id: BigInt(channelId),
+					webhook_url: newWebhookURL,
+				},
+			}),
+		);
 
-		if (guild?.webhook_url) {
-			await rest.delete(Routes.webhook(guild.webhook_url.split("/")[5])).catch(async (e) => {
-				await prisma.enabled_guilds.update({
-					where: {
-						guild_id: BigInt(guildId),
-					},
-					data: {
-						channel_id: null,
-						webhook_url: null,
-					},
-				});
-				await rest.delete(Routes.webhook(newWebhookURL.split("/")[5]));
-
-				revalidatePath(`/general?g=${guildId}`);
-				throw e;
-			});
-		} else {
-			revalidatePath(`/general?g=${guildId}`);
-		}
-
+		revalidatePath("/general");
 		return { success: true };
 	});
 
 const updateNumberOfEventsSchema = z.object({
 	guildId: z.string(),
-	num: z.number().min(0).max(50),
+	num: z.number().int().min(0).max(50),
 });
 
 export const updateNumberOfEvents = guildActionClient
@@ -102,7 +86,7 @@ export const updateNumberOfEvents = guildActionClient
 			},
 		});
 
-		revalidatePath(`/general?g=${guildId}`);
+		revalidatePath("/general");
 	});
 
 export const disableFeature = guildActionClient
@@ -118,13 +102,7 @@ export const disableFeature = guildActionClient
 		});
 
 		if (resp?.webhook_url) {
-			await rest.delete(Routes.webhook(resp.webhook_url.split("/")[5])).catch((e) => {
-				logger.error("general:actions:disableFeature", "Failed to delete webhook during disable", {
-					guildId,
-					error: e.message,
-					webhookUrl: resp.webhook_url,
-				});
-			});
+			await deleteWebhook(resp.webhook_url);
 		}
 
 		await prisma.enabled_guilds.update({
@@ -137,5 +115,5 @@ export const disableFeature = guildActionClient
 			},
 		});
 
-		revalidatePath(`/general?g=${guildId}`);
+		revalidatePath("/general");
 	});

@@ -16,7 +16,7 @@ import toast from "react-hot-toast";
 interface ClientProps {
 	agencies: ll2_agencies[];
 	enabledAgencies: ll2_agencies_filter[];
-	guild: enabled_guilds;
+	guild: Pick<enabled_guilds, "guild_id" | "agencies_include_exclude">;
 }
 
 export interface Agency extends ll2_agencies {

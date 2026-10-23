@@ -16,7 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@components/ui
 import { Setting, SettingGroup } from "@components/ui/setting";
 import { Switch } from "@components/ui/switch";
 import type { enabled_guilds, notification_countdown } from "@generated/client";
-import type { RESTGetAPIGuildChannelsResult } from "discord.js";
+import type { RESTGetAPIGuildChannelsResult } from "discord-api-types/v10";
 import { Hash, Megaphone, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -24,7 +24,21 @@ import toast from "react-hot-toast";
 import { addCountdown, disableFeature, removeCountdown, updateChannel, updateFilters } from "./actions";
 
 interface ClientProps {
-	guild: enabled_guilds;
+	guild: Pick<
+		enabled_guilds,
+		| "guild_id"
+		| "notification_channel_id"
+		| "notification_end_status"
+		| "notification_deploy"
+		| "notification_hold"
+		| "notification_go"
+		| "notification_liftoff"
+		| "notification_tbc"
+		| "notification_tbd"
+		| "notification_t0_change"
+		| "notification_launch"
+		| "notification_event"
+	>;
 	countdowns: notification_countdown[];
 	channels: RESTGetAPIGuildChannelsResult;
 }

@@ -1,12 +1,13 @@
 import "server-only";
 
-import { REST } from "@discordjs/rest";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { DiscordAPIError, REST } from "@discordjs/rest";
 import env from "@env";
 import { auth } from "@lib/auth";
 import { logger } from "@lib/logger";
 import { prisma } from "@lib/prisma";
 import { isAuthorized } from "@lib/server-utils";
-import avatar from "@public/LiveLaunch_Webhook_Avatar.png";
 import type {
 	APIApplication,
 	APIGuild,
@@ -14,11 +15,12 @@ import type {
 	RESTAPIPartialCurrentUserGuild,
 	RESTGetAPIGuildChannelsResult,
 	RESTPostAPIChannelWebhookResult,
-} from "discord.js";
+} from "discord-api-types/v10";
 import { PermissionFlagsBits, Routes } from "discord-api-types/v10";
 import { headers } from "next/headers";
+import { cache } from "react";
 
-const rest = new REST({ version: "10" }).setToken(env.DISCORD_BOT_TOKEN);
+export const rest = new REST({ version: "10" }).setToken(env.DISCORD_BOT_TOKEN);
 rest.on("rateLimited", (info) => {
 	logger.warn("discord-api:handleRateLimit", "Bot token rate limited", {
 		actor: "bot",
@@ -30,41 +32,46 @@ rest.on("rateLimited", (info) => {
 	});
 });
 
+const MAX_RETRY_AFTER_SECONDS = 5;
+
+// Waits and returns true only for a short rate limit. A long one fails fast.
 const handleRateLimit = async (response: Response, actor: "user" | "bot"): Promise<boolean> => {
-	if (response.status === 429) {
-		try {
-			const data = await response.json();
-			if (data.retry_after) {
-				logger.warn(
-					"discord-api:handleRateLimit",
-					`${actor} token rate limited, waiting ${data.retry_after * 1000}ms`,
-					{
-						actor,
-						retryAfter: data.retry_after,
-					},
-				);
-				await new Promise((resolve) => setTimeout(resolve, data.retry_after * 1000));
-				return true;
-			}
-			logger.debug("discord-api:handleRateLimit", `${actor} token rate limited but no retry_after provided`, {
+	if (response.status !== 429) return false;
+	try {
+		const data = await response.json();
+		if (!data.retry_after || data.retry_after > MAX_RETRY_AFTER_SECONDS) {
+			logger.warn("discord-api:handleRateLimit", `${actor} token rate limited, not retrying`, {
 				actor,
-				status: response.status,
+				retryAfter: data.retry_after,
 			});
-		} catch (error) {
-			logger.debug("discord-api:handleRateLimit", `${actor} token rate limit parse failed`, {
-				actor,
-				status: response.status,
-				error,
-			});
+			return false;
 		}
+		logger.warn(
+			"discord-api:handleRateLimit",
+			`${actor} token rate limited, waiting ${data.retry_after * 1000}ms`,
+			{
+				actor,
+				retryAfter: data.retry_after,
+			},
+		);
+		await new Promise((resolve) => setTimeout(resolve, data.retry_after * 1000));
+		return true;
+	} catch (error) {
+		logger.debug("discord-api:handleRateLimit", `${actor} token rate limit parse failed`, {
+			actor,
+			status: response.status,
+			error,
+		});
+		return false;
 	}
-	return false;
 };
 
+const SNOWFLAKE = /^\d{17,20}$/;
+
 /**
- * Gets the channels the bot can send messages in
+ * Gets the channels the bot can send messages in (once for each request)
  */
-export const getGuildChannels = async (guildId: string): Promise<RESTGetAPIGuildChannelsResult> => {
+export const getGuildChannels = cache(async (guildId: string): Promise<RESTGetAPIGuildChannelsResult> => {
 	if (!guildId || typeof guildId !== "string") {
 		logger.debug("discord-api:getGuildChannels", "Invalid guildId provided", { guildId });
 		return [];
@@ -81,7 +88,7 @@ export const getGuildChannels = async (guildId: string): Promise<RESTGetAPIGuild
 		logger.error("discord-api:getGuildChannels", "Failed to get guild channels", { guildId, error });
 		return [];
 	}
-};
+});
 
 /**
  * Gets the guilds the bot is in
@@ -107,11 +114,9 @@ export const getBotGuilds = async (): Promise<RESTAPIPartialCurrentUserGuild[]> 
 	}
 };
 
-/**
- * Gets the guilds the user is in
- */
-export const getUserGuilds = async (retryCount = 0): Promise<RESTAPIPartialCurrentUserGuild[]> => {
-	const MAX_RETRIES = 3;
+const MAX_USER_GUILD_RETRIES = 1;
+
+const fetchUserGuilds = async (retryCount: number): Promise<RESTAPIPartialCurrentUserGuild[]> => {
 	try {
 		const data = await isAuthorized();
 		if (!data) {
@@ -120,10 +125,19 @@ export const getUserGuilds = async (retryCount = 0): Promise<RESTAPIPartialCurre
 		}
 		const { user } = data;
 
+		const account = await prisma.account.findFirst({
+			where: { userId: user.id, providerId: "discord" },
+			select: { id: true },
+		});
+		if (!account) {
+			logger.debug("discord-api:getUserGuilds", "Early return: no discord account", { userId: user.id });
+			return [];
+		}
+
 		const { accessToken } = await auth.api.getAccessToken({
 			headers: await headers(),
 			body: {
-				providerId: "discord",
+				accountId: account.id,
 			},
 		});
 
@@ -131,12 +145,6 @@ export const getUserGuilds = async (retryCount = 0): Promise<RESTAPIPartialCurre
 			logger.debug("discord-api:getUserGuilds", "Early return: failed to get access token", { userId: user.id });
 			return [];
 		}
-
-		logger.debug("discord-api:getUserGuilds", "Got access token", {
-			userId: user.id,
-			tokenPrefix: accessToken.substring(0, 20),
-			tokenLength: accessToken.length,
-		});
 
 		const response = await fetch("https://discord.com/api/users/@me/guilds", {
 			cache: "force-cache",
@@ -148,26 +156,14 @@ export const getUserGuilds = async (retryCount = 0): Promise<RESTAPIPartialCurre
 		});
 
 		if (!response.ok) {
-			if (await handleRateLimit(response, "user")) {
-				if (retryCount >= MAX_RETRIES) {
-					logger.error("discord-api:getUserGuilds", "Max retries reached for rate limit", {
-						userId: user.id,
-						retryCount,
-					});
-					return [];
-				}
-				logger.debug("discord-api:getUserGuilds", "Rate limited, retrying", {
-					userId: user.id,
-					retryCount: retryCount + 1,
-				});
-				return getUserGuilds(retryCount + 1);
+			if (retryCount < MAX_USER_GUILD_RETRIES && (await handleRateLimit(response, "user"))) {
+				return fetchUserGuilds(retryCount + 1);
 			}
 			const errorBody = await response.text().catch(() => "failed to read error body");
 			logger.error("discord-api:getUserGuilds", "API error when getting user guilds", {
 				status: response.status,
 				userId: user.id,
 				errorBody,
-				tokenPrefix: accessToken.substring(0, 20),
 			});
 			return [];
 		}
@@ -199,12 +195,31 @@ export const getUserGuilds = async (retryCount = 0): Promise<RESTAPIPartialCurre
 };
 
 /**
+ * Gets the guilds the user is in (once for each request)
+ */
+export const getUserGuilds = cache(() => fetchUserGuilds(0));
+
+let avatarPromise: Promise<string> | null = null;
+
+// Reads from disk. The Dockerfile copies public/ into the standalone image.
+const getAvatarDataUri = () => {
+	avatarPromise ??= readFile(path.join(process.cwd(), "public", "LiveLaunch_Webhook_Avatar.png"))
+		.then((file) => `data:image/png;base64,${file.toString("base64")}`)
+		.catch((error) => {
+			avatarPromise = null;
+			throw error;
+		});
+	return avatarPromise;
+};
+
+/**
  * Creates a webhook in the specified channel
+ * @param guildId Guild ID that must own the channel
  * @param channelId Channel ID
  * @param category Category name
  */
-export const createWebhook = async (channelId: string, category: string): Promise<string | null> => {
-	if (!channelId || typeof channelId !== "string") {
+export const createWebhook = async (guildId: string, channelId: string, category: string): Promise<string | null> => {
+	if (!SNOWFLAKE.test(channelId ?? "")) {
 		logger.debug("discord-api:createWebhook", "Invalid channelId provided", { channelId, category });
 		return null;
 	}
@@ -213,20 +228,16 @@ export const createWebhook = async (channelId: string, category: string): Promis
 		return null;
 	}
 	try {
-		const avatarResponse = await fetch(`${env.BETTER_AUTH_URL}${avatar.src}`);
-		if (!avatarResponse.ok) {
-			logger.error("discord-api:createWebhook", "Failed to fetch avatar", {
-				channelId,
-				category,
-				status: avatarResponse.status,
-			});
-			throw new Error(`Failed to fetch avatar: ${avatarResponse.status}`);
+		const channels = await getGuildChannels(guildId);
+		if (!channels.some((channel) => channel.id === channelId)) {
+			logger.warn("discord-api:createWebhook", "Channel is not in the guild", { guildId, channelId });
+			return null;
 		}
 
 		const webhook = (await rest.post(Routes.channelWebhooks(channelId), {
 			body: {
 				name: `LiveLaunch ${category}`,
-				avatar: `data:image/png;base64,${Buffer.from(await avatarResponse.arrayBuffer()).toString("base64")}`,
+				avatar: await getAvatarDataUri(),
 			},
 		})) as RESTPostAPIChannelWebhookResult;
 
@@ -251,27 +262,90 @@ export const createWebhook = async (channelId: string, category: string): Promis
 	}
 };
 
+// Webhook URL shape: https://discord.com/api/webhooks/{id}/{token}
+const parseWebhookId = (url: string): string | null => {
+	try {
+		const parts = new URL(url).pathname.split("/").filter(Boolean);
+		const index = parts.indexOf("webhooks");
+		const id = index === -1 ? undefined : parts[index + 1];
+		return id && SNOWFLAKE.test(id) ? id : null;
+	} catch {
+		return null;
+	}
+};
+
 /**
- * Gets the bot's permissions in a guild
+ * Deletes a webhook by URL. Never throws. A missing webhook (404) counts as success.
  */
-export const getBotPermissions = async (guildId: string): Promise<string | null> => {
+export const deleteWebhook = async (url: string): Promise<boolean> => {
+	const id = parseWebhookId(url);
+	if (!id) {
+		logger.error("discord-api:deleteWebhook", "Unexpected webhook URL shape");
+		return false;
+	}
+	try {
+		await rest.delete(Routes.webhook(id));
+		return true;
+	} catch (error) {
+		if (error instanceof DiscordAPIError && error.status === 404) return true;
+		logger.error("discord-api:deleteWebhook", "Failed to delete webhook", {
+			webhookId: id,
+			error: error instanceof Error ? error.message : String(error),
+		});
+		return false;
+	}
+};
+
+/**
+ * Saves the new webhook, then deletes the old one.
+ * If the save fails, the new webhook is deleted and the error is thrown again.
+ * If the old webhook cannot be deleted, the new webhook stays.
+ */
+export const replaceWebhook = async (
+	newUrl: string,
+	oldUrl: string | null | undefined,
+	save: () => Promise<unknown>,
+) => {
+	try {
+		await save();
+	} catch (error) {
+		await deleteWebhook(newUrl);
+		throw error;
+	}
+	if (oldUrl) await deleteWebhook(oldUrl);
+};
+
+let botUserIdPromise: Promise<string | undefined> | null = null;
+
+const getBotUserId = () => {
+	botUserIdPromise ??= (rest.get(Routes.oauth2CurrentApplication()) as Promise<APIApplication>)
+		.then((app) => app.bot?.id)
+		.catch((error) => {
+			botUserIdPromise = null;
+			throw error;
+		});
+	return botUserIdPromise;
+};
+
+/**
+ * Gets the bot's permissions in a guild (once for each request)
+ */
+export const getBotPermissions = cache(async (guildId: string): Promise<string | null> => {
 	if (!guildId || typeof guildId !== "string") {
 		logger.debug("discord-api:getBotPermissions", "Invalid guildId provided", { guildId });
 		return null;
 	}
 	try {
-		const [guild, app] = await Promise.all([
-			rest.get(Routes.guild(guildId)) as Promise<APIGuild>,
-			rest.get(Routes.oauth2CurrentApplication()) as Promise<APIApplication>,
-		]);
-
-		const botUserId = app.bot?.id;
+		const botUserId = await getBotUserId();
 		if (!botUserId) {
 			logger.debug("discord-api:getBotPermissions", "Early return: could not get bot user ID", { guildId });
 			return null;
 		}
 
-		const member = (await rest.get(Routes.guildMember(guildId, botUserId))) as APIGuildMember;
+		const [guild, member] = await Promise.all([
+			rest.get(Routes.guild(guildId)) as Promise<APIGuild>,
+			rest.get(Routes.guildMember(guildId, botUserId)) as Promise<APIGuildMember>,
+		]);
 
 		let permissions = BigInt(guild.roles.find((r) => r.id === guildId)?.permissions || "0");
 
@@ -292,7 +366,7 @@ export const getBotPermissions = async (guildId: string): Promise<string | null>
 		logger.error("discord-api:getBotPermissions", "Failed to get bot permissions", { guildId, error });
 		return null;
 	}
-};
+});
 
 export interface PermissionStatus {
 	name: string;

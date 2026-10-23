@@ -24,6 +24,20 @@ export default async function Agencies(props: {
 		where: {
 			guild_id: BigInt(guildId),
 		},
+		select: {
+			guild_id: true,
+			notification_channel_id: true,
+			notification_end_status: true,
+			notification_deploy: true,
+			notification_hold: true,
+			notification_go: true,
+			notification_liftoff: true,
+			notification_tbc: true,
+			notification_tbd: true,
+			notification_t0_change: true,
+			notification_launch: true,
+			notification_event: true,
+		},
 	});
 
 	if (!guild) return <NotEnabled />;

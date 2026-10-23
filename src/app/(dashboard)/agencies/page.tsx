@@ -1,7 +1,7 @@
 import Client from "@app/(dashboard)/agencies/client";
 import { prisma } from "@lib/prisma";
 import { checkGuildPermissions } from "@lib/server-utils";
-import { unstable_cache as cache } from "next/dist/server/web/spec-extension/unstable-cache";
+import { unstable_cache as cache } from "next/cache";
 import NotEnabled from "@/src/app/(dashboard)/_components/not-enabled";
 
 export const dynamic = "force-dynamic";
@@ -29,6 +29,7 @@ export default async function Agencies(props: {
 		where: {
 			guild_id: BigInt(guildId),
 		},
+		select: { guild_id: true, agencies_include_exclude: true },
 	});
 
 	if (!guild) return <NotEnabled />;

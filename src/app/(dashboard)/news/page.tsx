@@ -25,6 +25,7 @@ export default async function NewsSites(props: {
 		where: {
 			guild_id: BigInt(guildId),
 		},
+		select: { guild_id: true, news_channel_id: true, news_include_exclude: true },
 	});
 
 	if (!guild) return <NotEnabled />;

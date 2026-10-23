@@ -8,7 +8,7 @@ import { Setting, SettingGroup } from "@components/ui/setting";
 import { Switch } from "@components/ui/switch";
 import type { enabled_guilds } from "@generated/client";
 import { useDebounce } from "@lib/hooks";
-import type { RESTGetAPIGuildChannelsResult } from "discord.js";
+import type { RESTGetAPIGuildChannelsResult } from "discord-api-types/v10";
 import { ArrowUp, Hash, Megaphone } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -16,7 +16,18 @@ import toast from "react-hot-toast";
 import { disableFeature, updateChannel, updateNumberOfEvents, updateSettings } from "./actions";
 
 interface ClientProps {
-	guild: enabled_guilds;
+	guild: Pick<
+		enabled_guilds,
+		| "guild_id"
+		| "channel_id"
+		| "scheduled_events"
+		| "notification_button_fc"
+		| "notification_button_g4l"
+		| "notification_button_sln"
+		| "se_launch"
+		| "se_event"
+		| "se_no_url"
+	>;
 	channels: RESTGetAPIGuildChannelsResult;
 }
 
