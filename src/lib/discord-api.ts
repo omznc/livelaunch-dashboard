@@ -19,6 +19,7 @@ import type {
 import { PermissionFlagsBits, Routes } from "discord-api-types/v10";
 import { cacheLife, cacheTag } from "next/cache";
 import { headers } from "next/headers";
+import { unstable_rethrow } from "next/navigation";
 import { cache } from "react";
 
 export const rest = new REST({ version: "10" }).setToken(env.DISCORD_BOT_TOKEN);
@@ -99,7 +100,8 @@ const loadGuildChannels = async (
 			count: channels.length,
 		});
 		return channels;
-	} catch (error) {
+		} catch (error) {
+			unstable_rethrow(error);
 		logger.error("discord-api:getGuildChannels", "Failed to get guild channels", { guildId, error });
 		return [];
 	}
@@ -138,6 +140,7 @@ export const getBotGuilds = async (guildIds: string[]): Promise<RESTAPIPartialCu
 		logger.debug("discord-api:getBotGuilds", "Successfully retrieved bot guilds", { count: mapped.length });
 		return mapped;
 	} catch (error) {
+		unstable_rethrow(error);
 		logger.error("discord-api:getBotGuilds", "Failed to get bot guilds", { error });
 		return [];
 	}
@@ -213,6 +216,7 @@ const fetchUserGuilds = async (): Promise<RESTAPIPartialCurrentUserGuild[]> => {
 		});
 		return guilds;
 	} catch (error) {
+		unstable_rethrow(error);
 		logger.error("discord-api:getUserGuilds", "Failed to get user guilds", { error });
 		return [];
 	}
@@ -291,6 +295,7 @@ export const createWebhook = async (guildId: string, channelId: string, category
 		});
 		return webhook.url;
 	} catch (error) {
+		unstable_rethrow(error);
 		logger.error("discord-api:createWebhook", "Failed to create webhook", { channelId, category, error });
 		return null;
 	}
@@ -397,6 +402,7 @@ export const getBotPermissions = cache(async (guildId: string): Promise<string |
 		});
 		return permissions.toString();
 	} catch (error) {
+		unstable_rethrow(error);
 		logger.error("discord-api:getBotPermissions", "Failed to get bot permissions", { guildId, error });
 		return null;
 	}
