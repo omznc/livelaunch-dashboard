@@ -25,6 +25,7 @@
 			"@interfaces/*": ["./src/interfaces/*"],
 			"@public/*": ["./public/*"],
 			"@lib/*": ["./src/lib/*"],
+			"@hooks/*": ["./src/hooks/*"],
 			"@stores/*": ["./src/stores/*"],
 			"@env": ["./src/env.ts"],
 			"@generated/*": ["./generated/client/*"]
