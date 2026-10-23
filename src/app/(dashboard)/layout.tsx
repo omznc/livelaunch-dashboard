@@ -14,17 +14,16 @@ import { auth } from "@/src/lib/auth";
 // The session and guild reads are per request, so they stream behind a Suspense boundary.
 export default function Layout({ children }: { children: ReactNode }) {
 	return (
-		<div className="flex min-h-screen w-full flex-col items-center">
+		<div className="flex min-h-screen w-full flex-col">
+			{/* Same height as the real header, so nothing jumps when it streams in. */}
 			<Suspense
-				fallback={<div className="sticky top-0 z-50 h-16 w-full border-b bg-primary/20 backdrop-blur-sm" />}
+				fallback={<div className="material sticky top-0 z-50 h-[97px] border-b border-line md:h-[53px]" />}
 			>
 				<Header />
 			</Suspense>
-			<div className="flex w-full justify-center p-4 md:p-8">
-				<div className="flex w-full max-w-[1200px] flex-col gap-8 py-12">
-					<SectionError>{children}</SectionError>
-				</div>
-			</div>
+			<main className="mx-auto w-full max-w-[1180px] flex-1 border-line px-4 py-8 sm:px-6 sm:py-10 min-[1180px]:border-x">
+				<SectionError>{children}</SectionError>
+			</main>
 		</div>
 	);
 }
@@ -48,28 +47,26 @@ async function Header() {
 	});
 
 	return (
-		<div className="sticky top-0 z-50 w-full bg-primary/20 backdrop-blur-sm">
-			<div className="hidden w-full flex-row justify-between border-b md:flex">
-				<div className="flex h-16 items-center px-4">
-					<GuildSwitcher guilds={guilds} clientId={env.DISCORD_CLIENT_ID} listenForInviteEvent />
-					<Navigation className="md:mx-6" guilds={enabledGuilds} allGuilds={guilds} />
+		<header className="material sticky top-0 z-50 border-b border-line">
+			<div className="mx-auto flex w-full max-w-[1180px] flex-wrap items-stretch min-[1180px]:border-x min-[1180px]:border-line md:flex-nowrap">
+				<div className="flex h-[52px] min-w-0 flex-1 items-center px-4 md:flex-none">
+					<GuildSwitcher
+						guilds={guilds}
+						clientId={env.DISCORD_CLIENT_ID}
+						listenForInviteEvent
+						className="max-w-full"
+					/>
 				</div>
-				<div className="flex h-16 items-center gap-4 px-4">
+				<div className="flex h-[52px] items-center px-4 md:order-last">
 					<User />
 				</div>
+				<Navigation
+					className="order-last h-11 w-full border-line border-t px-4 md:order-none md:h-[52px] md:flex-1 md:border-t-0 md:border-l"
+					guilds={enabledGuilds}
+					allGuilds={guilds}
+				/>
 			</div>
-			<div className="flex w-full flex-col md:hidden md:gap-4">
-				<div className="flex h-16 items-center justify-between gap-2 px-4">
-					<div className="flex items-center">
-						<GuildSwitcher guilds={guilds} clientId={env.DISCORD_CLIENT_ID} />
-					</div>
-					<div className="flex items-center gap-2">
-						<User />
-					</div>
-				</div>
-				<Navigation className="md:mx-6" guilds={enabledGuilds} allGuilds={guilds} />
-			</div>
-		</div>
+		</header>
 	);
 }
 

@@ -30,8 +30,13 @@ export default async function User() {
 	return (
 		<DropdownMenu>
 			<DropdownMenuTrigger asChild>
-				<Button variant="ghost" className="relative h-9 w-9 md:h-8 md:w-8">
-					<Avatar className="h-9 w-9 rounded-sm md:h-8 md:w-8">
+				<Button
+					variant="ghost"
+					size="icon"
+					className="relative h-9 w-9 border-line2 p-0"
+					aria-label="Account menu"
+				>
+					<Avatar className="h-full w-full">
 						{user?.image ? (
 							<Image width={50} height={50} src={user.image} alt={"Profile photo"} />
 						) : (
@@ -44,7 +49,9 @@ export default async function User() {
 			</DropdownMenuTrigger>
 			<DropdownMenuContent className="w-56" align="end" forceMount>
 				<DropdownMenuLabel className="font-normal">
-					<p className="font-medium text-sm leading-none">{user.name}</p>
+					<p className="truncate font-medium font-sans text-fg text-sm normal-case leading-5 tracking-normal">
+						{user.name}
+					</p>
 				</DropdownMenuLabel>
 				<DropdownMenuSeparator />
 				<LaunchControlResetEasterEgg />

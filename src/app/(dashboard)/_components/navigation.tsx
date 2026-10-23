@@ -15,10 +15,11 @@ import {
 } from "@components/ui/credenza";
 import type { enabled_guilds } from "@generated/client";
 import { cn } from "@lib/utils";
+import { Power, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import type * as React from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 const links = [
@@ -32,6 +33,11 @@ const links = [
 		requiresGuildEnabled: true,
 	},
 	{
+		href: "/notifications",
+		label: "Notifications",
+		requiresGuildEnabled: true,
+	},
+	{
 		href: "/agencies",
 		label: "Agencies",
 		requiresGuildEnabled: true,
@@ -41,16 +47,51 @@ const links = [
 		label: "News",
 		requiresGuildEnabled: true,
 	},
-	{
-		href: "/notifications",
-		label: "Notifications",
-		requiresGuildEnabled: true,
-	},
 ];
 
 interface NavigationProps extends React.HTMLAttributes<HTMLElement> {
 	guilds?: Pick<enabled_guilds, "guild_id">[];
 	allGuilds?: GuildsResponse[];
+}
+
+// Moves the underline to the current tab with transform only.
+function placeIndicator(strip: HTMLElement) {
+	const bar = strip.querySelector<HTMLElement>("[data-indicator]");
+	if (!bar) return;
+	const current = strip.querySelector<HTMLElement>('[aria-current="page"]');
+	if (!current) {
+		bar.style.opacity = "0";
+		return;
+	}
+	bar.style.opacity = "1";
+	bar.style.transform = `translateX(${current.offsetLeft}px) scaleX(${current.offsetWidth})`;
+}
+
+function useIndicator(path: string, count: number) {
+	const ref = useRef<HTMLDivElement>(null);
+
+	// The first placement does not slide. The bar follows a resize.
+	useLayoutEffect(() => {
+		const strip = ref.current;
+		if (!strip) return;
+		placeIndicator(strip);
+		const frame = requestAnimationFrame(() => {
+			strip.querySelector<HTMLElement>("[data-indicator]")?.setAttribute("data-ready", "");
+		});
+		const watch = new ResizeObserver(() => placeIndicator(strip));
+		watch.observe(strip);
+		for (const child of strip.children) watch.observe(child);
+		return () => {
+			cancelAnimationFrame(frame);
+			watch.disconnect();
+		};
+	}, []);
+
+	useLayoutEffect(() => {
+		if (ref.current) placeIndicator(ref.current);
+	}, [path, count]);
+
+	return ref;
 }
 
 export function Navigation({ className, guilds, allGuilds, ...props }: NavigationProps) {
@@ -69,6 +110,9 @@ export function Navigation({ className, guilds, allGuilds, ...props }: Navigatio
 		return allGuilds.find((guild) => guild.id === guildId) ?? null;
 	}, [allGuilds, guildId]);
 
+	const visibleLinks = links.filter(({ requiresGuildEnabled }) => !requiresGuildEnabled || guild);
+	const stripRef = useIndicator(path, visibleLinks.length);
+
 	useEffect(() => {
 		const handleShowHelpDialog = (e: Event) => {
 			e.stopImmediatePropagation();
@@ -83,41 +127,49 @@ export function Navigation({ className, guilds, allGuilds, ...props }: Navigatio
 
 	return (
 		<>
-			<nav className={cn("flex animate-fade-in items-center justify-start transition-all", className)} {...props}>
-				<div className="flex w-full items-center justify-start gap-4 overflow-x-auto border-b px-4 transition-all md:border-b-0">
-					{guildId &&
-						(selectedFullGuild && !selectedFullGuild.botAccess ? (
+			<nav aria-label="Sections" className={cn("flex items-stretch gap-3", className)} {...props}>
+				{guildId &&
+					(selectedFullGuild && !selectedFullGuild.botAccess ? (
+						<Button
+							variant="secondary"
+							size="sm"
+							className="my-auto shrink-0"
+							onClick={() => {
+								window.dispatchEvent(new Event("openInviteGuildDialog"));
+							}}
+						>
+							<UserPlus />
+							Invite LiveLaunch
+						</Button>
+					) : (
+						!guild && (
 							<Button
-								variant="outline"
-								onClick={() => {
-									window.dispatchEvent(new Event("openInviteGuildDialog"));
-								}}
+								variant="secondary"
+								size="sm"
+								className="my-auto shrink-0"
+								onClick={() => setShowHelpDialog(true)}
 							>
-								Invite LiveLaunch
+								<Power />
+								Enable LiveLaunch
 							</Button>
-						) : (
-							!guild && (
-								<Button variant="outline" onClick={() => setShowHelpDialog(true)}>
-									Enable LiveLaunch
-								</Button>
-							)
-						))}
-					{links
-						.filter(({ requiresGuildEnabled }) => !requiresGuildEnabled || (requiresGuildEnabled && guild))
-						.map(({ href, label }) => (
-							<RetainQueryLink
-								key={`${href}${label}`}
-								href={href}
-								className={cn(
-									"rounded-md px-3 py-4 text-center font-medium font-monospace text-sm opacity-60 transition-all duration-200 hover:opacity-100",
-									{
-										"font-bold opacity-100": path === href,
-									},
-								)}
-							>
-								{label}
-							</RetainQueryLink>
-						))}
+						)
+					))}
+				<div ref={stripRef} className="ll-scroll relative flex min-w-0 items-stretch overflow-x-auto">
+					{visibleLinks.map(({ href, label }) => (
+						<RetainQueryLink
+							key={`${href}${label}`}
+							href={href}
+							aria-current={path === href ? "page" : undefined}
+							className="inline-flex items-center px-3.5 font-medium font-mono text-[12.5px] text-fg2 hover:text-fg aria-[current=page]:text-fg focus-visible:outline-offset-[-2px]"
+						>
+							{label}
+						</RetainQueryLink>
+					))}
+					<span
+						aria-hidden
+						data-indicator
+						className="pointer-events-none absolute bottom-0 left-0 h-0.5 w-px bg-brand opacity-0"
+					/>
 				</div>
 			</nav>
 			<Credenza open={showHelpDialog} onOpenChange={setShowHelpDialog}>
@@ -131,7 +183,7 @@ export function Navigation({ className, guilds, allGuilds, ...props }: Navigatio
 					</CredenzaHeader>
 					<div className="flex flex-col gap-2 overflow-y-auto px-4">
 						To enable the bot you need to run the following command in your server
-						<code className="relative block w-full rounded bg-muted p-4 font-mono font-semibold text-sm">
+						<code className="relative block w-full border border-line2 bg-bg p-3 font-medium font-mono text-[13px]">
 							{"/enable <feature>"}
 						</code>
 						Where the feature is one of the following

@@ -41,7 +41,7 @@ function compareGuilds(a: GuildsResponse, b: GuildsResponse) {
 
 function GuildAvatar({ guild }: { guild: GuildsResponse }) {
 	return (
-		<Avatar className="mr-2 h-5 w-5">
+		<Avatar className="mr-1 h-5 w-5">
 			{guild.icon ? (
 				<Image
 					width={50}
@@ -116,7 +116,7 @@ export default function GuildSwitcher({ className, guilds, clientId, listenForIn
 							role="combobox"
 							aria-expanded={open}
 							aria-label="Select a Guild"
-							className={cn("w-[200px] justify-between border-0 bg-black/50", className, {
+							className={cn("w-[200px] min-w-0 justify-between font-sans text-sm", className, {
 								"animate-pulse": pending,
 							})}
 						>
@@ -128,10 +128,10 @@ export default function GuildSwitcher({ className, guilds, clientId, listenForIn
 							) : (
 								<span className="animate-pulse truncate">Just a moment...</span>
 							)}
-							<ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
+							<ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 text-fg3" />
 						</Button>
 					</PopoverTrigger>
-					<PopoverContent className="w-[200px] p-0">
+					<PopoverContent align="start" className="w-[260px] max-w-[calc(100vw-2rem)] p-0">
 						<Command>
 							<CommandList>
 								<CommandInput
@@ -167,7 +167,7 @@ export default function GuildSwitcher({ className, guilds, clientId, listenForIn
 											<div className="flex flex-col">
 												<span>{guild.name}</span>
 												{!guild.botAccess && (
-													<span className="text-muted-foreground text-xs">Bot not added</span>
+													<span className="text-fg3 text-xs">Bot not added</span>
 												)}
 											</div>
 											<CheckIcon
@@ -211,7 +211,7 @@ export default function GuildSwitcher({ className, guilds, clientId, listenForIn
 							Is LiveLaunch already in your server?
 							<button
 								type="button"
-								className="cursor-pointer font-medium text-primary underline underline-offset-4 transition-all hover:brightness-125"
+								className="cursor-pointer font-medium text-brand underline underline-offset-4 hover:text-fg"
 								disabled={revalidating || revalidationCooldown}
 								onClick={async (_e) => {
 									try {

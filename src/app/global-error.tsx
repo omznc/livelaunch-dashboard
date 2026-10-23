@@ -1,11 +1,10 @@
 "use client";
+import "./globals.css";
+import { StatusPage } from "@components/status-page";
 import { Button } from "@components/ui/button";
 import { logger } from "@lib/logger";
-import { cn } from "@lib/utils";
-import { Inter } from "next/font/google";
 import { useEffect } from "react";
-
-const inter = Inter({ subsets: ["latin"] });
+import { fontClasses } from "./fonts";
 
 export default function GlobalError({ error, reset }: { error: Error; reset: () => void }) {
 	useEffect(() => {
@@ -16,10 +15,13 @@ export default function GlobalError({ error, reset }: { error: Error; reset: () 
 	}, [error]);
 
 	return (
-		<html lang="en" suppressHydrationWarning>
-			<body className={cn("flex h-screen w-screen flex-col items-center justify-center gap-4", inter.className)}>
-				<h1 className="font-bold text-4xl">Something went wrong!</h1>
-				<Button onClick={() => reset()}>Try again</Button>
+		<html lang="en" className={`dark ${fontClasses}`} suppressHydrationWarning>
+			<body>
+				<main className="mx-auto flex min-h-screen w-full max-w-[1180px] flex-col border-line px-4 min-[1180px]:border-x">
+					<StatusPage title="Something went wrong" description="An unexpected error stopped this page.">
+						<Button onClick={() => reset()}>Try again</Button>
+					</StatusPage>
+				</main>
 			</body>
 		</html>
 	);

@@ -1,5 +1,6 @@
 "use client";
 
+import { StatusPage } from "@components/status-page";
 import { Button } from "@components/ui/button";
 import { logger } from "@lib/logger";
 import { catchError, type ErrorInfo } from "next/error";
@@ -14,11 +15,10 @@ function ErrorView({ error, retry }: ErrorInfo) {
 	}, [error]);
 
 	return (
-		<div className="flex w-full flex-col items-center justify-center gap-4 py-12">
-			<h1 className="font-bold text-4xl">Something went wrong!</h1>
+		<StatusPage title="Something went wrong" description="This section could not load.">
 			{/* retry() fetches the page again. reset() would only re-render stale data. */}
 			<Button onClick={() => retry()}>Try again</Button>
-		</div>
+		</StatusPage>
 	);
 }
 
