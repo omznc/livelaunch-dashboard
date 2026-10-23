@@ -4,14 +4,14 @@ import { getBotGuilds } from "@lib/discord-api";
 import { prisma } from "@lib/prisma";
 import { actionClient, guildActionClient } from "@lib/safe-actions";
 import { isAuthorized } from "@lib/server-utils";
-import { refresh, revalidateTag } from "next/cache";
+import { refresh, updateTag } from "next/cache";
 import { z } from "zod";
 
 export const revalidateGuilds = actionClient.inputSchema(z.object({})).action(async () => {
 	const data = await isAuthorized();
 	if (!data) throw new Error("Unauthorized");
 
-	revalidateTag(`get-user-guilds-${data.user.id}`, "max");
+	updateTag(`get-user-guilds-${data.user.id}`);
 	refresh();
 });
 
