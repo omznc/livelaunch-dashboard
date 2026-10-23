@@ -100,8 +100,8 @@ const loadGuildChannels = async (
 			count: channels.length,
 		});
 		return channels;
-		} catch (error) {
-			unstable_rethrow(error);
+	} catch (error) {
+		unstable_rethrow(error);
 		logger.error("discord-api:getGuildChannels", "Failed to get guild channels", { guildId, error });
 		return [];
 	}

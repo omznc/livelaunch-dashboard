@@ -16,7 +16,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@components/ui
 import { Setting, SettingGroup } from "@components/ui/setting";
 import { Switch } from "@components/ui/switch";
 import type { enabled_guilds, notification_countdown } from "@generated/client";
-import { unwrap } from "@lib/action-result";
+import { errorMessage, unwrap } from "@lib/action-result";
+import { useToggles } from "@lib/use-toggles";
+import { boundedValue } from "@lib/utils";
 import type { RESTGetAPIGuildChannelsResult } from "discord-api-types/v10";
 import { Hash, Megaphone, X } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -66,18 +68,21 @@ export interface NotificationsFilterSettings {
 export default function Client({ guild, countdowns, channels }: ClientProps) {
 	const _router = useRouter();
 
-	const [settings, setSettings] = useState<NotificationsFilterSettings>({
-		notification_end_status: Boolean(guild.notification_end_status),
-		notification_deploy: Boolean(guild.notification_deploy),
-		notification_hold: Boolean(guild.notification_hold),
-		notification_liftoff: Boolean(guild.notification_liftoff),
-		notification_go: Boolean(guild.notification_go),
-		notification_tbc: Boolean(guild.notification_tbc),
-		notification_tbd: Boolean(guild.notification_tbd),
-		notification_t0_change: Boolean(guild.notification_t0_change),
-		notification_launch: Boolean(guild.notification_launch),
-		notification_event: Boolean(guild.notification_event),
-	});
+	const [settings, setToggle] = useToggles<NotificationsFilterSettings>(
+		{
+			notification_end_status: Boolean(guild.notification_end_status),
+			notification_deploy: Boolean(guild.notification_deploy),
+			notification_hold: Boolean(guild.notification_hold),
+			notification_liftoff: Boolean(guild.notification_liftoff),
+			notification_go: Boolean(guild.notification_go),
+			notification_tbc: Boolean(guild.notification_tbc),
+			notification_tbd: Boolean(guild.notification_tbd),
+			notification_t0_change: Boolean(guild.notification_t0_change),
+			notification_launch: Boolean(guild.notification_launch),
+			notification_event: Boolean(guild.notification_event),
+		},
+		(settings) => updateFilters({ guildId: String(guild.guild_id), settings }),
+	);
 
 	const [selectedChannelID, setSelectedChannelID] = useState<string | undefined>(
 		guild.notification_channel_id?.toString(),
@@ -151,18 +156,16 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 				>
 					<Select
 						onValueChange={(value) => {
+							const previous = selectedChannelID;
 							setSelectedChannelID(value);
 							toast.promise(
 								unwrap(updateChannel({ guildId: String(guild.guild_id), channelId: value })),
 								{
 									loading: "Saving...",
-									success: (r) => {
-										if (!r.data?.success) throw new Error(r.serverError);
-										return "Saved";
-									},
-									error: (e?: Error) => {
-										setSelectedChannelID(undefined);
-										return e ? e.message : "Failed to save.";
+									success: "Saved",
+									error: (e: unknown) => {
+										setSelectedChannelID(previous);
+										return errorMessage(e);
 									},
 								},
 							);
@@ -359,20 +362,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					disabledMessage={"Requires a notification channel to be set"}
 				>
 					<Switch
-						onCheckedChange={(checked) => {
-							updateFilters({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_t0_change: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_t0_change: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_t0_change}
+						onCheckedChange={(checked) => setToggle("notification_t0_change", checked)}
+						checked={settings.notification_t0_change}
 					/>
 				</Setting>
 
@@ -384,20 +375,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					disabledMessage={"Requires a notification channel to be set"}
 				>
 					<Switch
-						onCheckedChange={(checked) => {
-							updateFilters({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_launch: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_launch: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_launch}
+						onCheckedChange={(checked) => setToggle("notification_launch", checked)}
+						checked={settings.notification_launch}
 					/>
 				</Setting>
 
@@ -409,20 +388,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					disabledMessage={"Requires a notification channel to be set"}
 				>
 					<Switch
-						onCheckedChange={(checked) => {
-							updateFilters({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_event: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_event: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_event}
+						onCheckedChange={(checked) => setToggle("notification_event", checked)}
+						checked={settings.notification_event}
 					/>
 				</Setting>
 			</SettingGroup>
@@ -439,20 +406,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					disabledMessage={"Requires a notification channel to be set"}
 				>
 					<Switch
-						onCheckedChange={(checked) => {
-							updateFilters({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_end_status: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_end_status: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_end_status}
+						onCheckedChange={(checked) => setToggle("notification_end_status", checked)}
+						checked={settings.notification_end_status}
 					/>
 				</Setting>
 
@@ -464,20 +419,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					disabledMessage={"Requires a notification channel to be set"}
 				>
 					<Switch
-						onCheckedChange={(checked) => {
-							updateFilters({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_deploy: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_deploy: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_deploy}
+						onCheckedChange={(checked) => setToggle("notification_deploy", checked)}
+						checked={settings.notification_deploy}
 					/>
 				</Setting>
 
@@ -489,20 +432,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					disabledMessage={"Requires a notification channel to be set"}
 				>
 					<Switch
-						onCheckedChange={(checked) => {
-							updateFilters({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_hold: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_hold: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_hold}
+						onCheckedChange={(checked) => setToggle("notification_hold", checked)}
+						checked={settings.notification_hold}
 					/>
 				</Setting>
 
@@ -514,20 +445,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					disabledMessage={"Requires a notification channel to be set"}
 				>
 					<Switch
-						onCheckedChange={(checked) => {
-							updateFilters({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_liftoff: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_liftoff: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_liftoff}
+						onCheckedChange={(checked) => setToggle("notification_liftoff", checked)}
+						checked={settings.notification_liftoff}
 					/>
 				</Setting>
 
@@ -539,20 +458,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					disabledMessage={"Requires a notification channel to be set"}
 				>
 					<Switch
-						onCheckedChange={(checked) => {
-							updateFilters({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_go: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_go: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_go}
+						onCheckedChange={(checked) => setToggle("notification_go", checked)}
+						checked={settings.notification_go}
 					/>
 				</Setting>
 
@@ -564,20 +471,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					disabledMessage={"Requires a notification channel to be set"}
 				>
 					<Switch
-						onCheckedChange={(checked) => {
-							updateFilters({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_tbc: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_tbc: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_tbc}
+						onCheckedChange={(checked) => setToggle("notification_tbc", checked)}
+						checked={settings.notification_tbc}
 					/>
 				</Setting>
 
@@ -589,36 +484,11 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					disabledMessage={"Requires a notification channel to be set"}
 				>
 					<Switch
-						onCheckedChange={(checked) => {
-							updateFilters({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_tbd: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_tbd: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_tbd}
+						onCheckedChange={(checked) => setToggle("notification_tbd", checked)}
+						checked={settings.notification_tbd}
 					/>
 				</Setting>
 			</SettingGroup>
 		</div>
 	);
-}
-
-// Clamps the field to 0..max and treats an empty field as 0.
-function boundedValue(input: HTMLInputElement, max: number) {
-	const raw = input.valueAsNumber;
-	if (Number.isNaN(raw)) return 0;
-	const value = clamp(raw, 0, max);
-	if (value !== raw) input.value = String(value);
-	return value;
-}
-
-function clamp(value: number, min: number, max: number) {
-	return Math.min(Math.max(value, min), max);
 }

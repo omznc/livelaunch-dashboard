@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import type { enabled_guilds, ll2_agencies, ll2_agencies_filter } from "@generated/client";
 import { unwrap } from "@lib/action-result";
+import { useToggles } from "@lib/use-toggles";
 import { cn } from "@lib/utils";
 import { FrownIcon } from "lucide-react";
 import Image from "next/image";
@@ -35,9 +36,10 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
 			selected: enabledAgencies.some((e) => e.agency_id === a.agency_id),
 		})),
 	);
-	const [settings, setSettings] = useState<AgenciesSettings>({
-		whitelist: Boolean(guild.agencies_include_exclude),
-	});
+	const [settings, setToggle] = useToggles<AgenciesSettings>(
+		{ whitelist: Boolean(guild.agencies_include_exclude) },
+		(settings) => updateSettings({ guildId: String(guild.guild_id), settings }),
+	);
 	const [searchQuery, setSearchQuery] = useState("");
 	const hydratedRef = useRef(false);
 	const lastGuildIdRef = useRef(guild.guild_id);
@@ -82,20 +84,8 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
 					active={settings.whitelist}
 				>
 					<Tabs
-						defaultValue={guild.agencies_include_exclude ? "include" : "exclude"}
-						onValueChange={(value) => {
-							updateSettings({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									whitelist: value === "include",
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								whitelist: value === "include",
-							}));
-						}}
+						value={settings.whitelist ? "include" : "exclude"}
+						onValueChange={(value) => setToggle("whitelist", value === "include")}
 					>
 						<TabsList>
 							<TabsTrigger value="exclude">Exclude</TabsTrigger>

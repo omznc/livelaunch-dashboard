@@ -8,8 +8,9 @@ import { Setting, SettingGroup } from "@components/ui/setting";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import type { enabled_guilds, news_filter, news_sites } from "@generated/client";
-import { unwrap } from "@lib/action-result";
+import { errorMessage, unwrap } from "@lib/action-result";
 import { useDebounce } from "@lib/hooks";
+import { useToggles } from "@lib/use-toggles";
 import { cn } from "@lib/utils";
 import type { RESTGetAPIGuildChannelsResult } from "discord-api-types/v10";
 import { FrownIcon, Hash, Megaphone } from "lucide-react";
@@ -44,9 +45,10 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
 		})),
 	);
 
-	const [settings, setSettings] = useState<NewsSitesSettings>({
-		whitelist: Boolean(guild.news_include_exclude),
-	});
+	const [settings, setToggle] = useToggles<NewsSitesSettings>(
+		{ whitelist: Boolean(guild.news_include_exclude) },
+		(settings) => updateSettings({ guildId: String(guild.guild_id), settings }),
+	);
 	const [selectedChannelID, setSelectedChannelID] = useState<string | undefined>(guild.news_channel_id?.toString());
 	const [searchQuery, setSearchQuery] = useState("");
 
@@ -121,19 +123,17 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
 				>
 					<Select
 						onValueChange={(value) => {
+							const previous = selectedChannelID;
 							setSelectedChannelID(value);
 							toast.promise(
 								unwrap(updateChannel({ guildId: String(guild.guild_id), channelId: value })),
 								{
 									loading: "Saving...",
-									success: (r) => {
-										if (!r.data?.success) throw new Error(r.serverError);
-										return "Saved";
-									},
-									error: (e?: Error) => {
+									success: "Saved",
+									error: (e: unknown) => {
 										router.refresh();
-										setSelectedChannelID(undefined);
-										return e ? e.message : "Failed to save.";
+										setSelectedChannelID(previous);
+										return errorMessage(e);
 									},
 								},
 							);
@@ -190,20 +190,8 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
 					disabledMessage={"Requires a news channel to be set"}
 				>
 					<Tabs
-						defaultValue={guild.news_include_exclude ? "include" : "exclude"}
-						onValueChange={(value) => {
-							updateSettings({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									whitelist: value === "include",
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								whitelist: value === "include",
-							}));
-						}}
+						value={settings.whitelist ? "include" : "exclude"}
+						onValueChange={(value) => setToggle("whitelist", value === "include")}
 					>
 						<TabsList>
 							<TabsTrigger value="exclude">Exclude</TabsTrigger>
