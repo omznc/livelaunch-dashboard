@@ -9,7 +9,7 @@ import NotEnabled from "@/src/app/(dashboard)/_components/not-enabled";
 // Only the bot writes this list, so no action invalidates the tag.
 async function getNewsSites() {
 	"use cache";
-	cacheLife("hours");
+	cacheLife({ stale: 300, revalidate: 900, expire: 3600 });
 	cacheTag("news-sites");
 	return prisma.news_sites.findMany();
 }

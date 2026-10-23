@@ -8,7 +8,7 @@ import NotEnabled from "@/src/app/(dashboard)/_components/not-enabled";
 // Only the bot writes this list, so no action invalidates the tag.
 async function getAgencies() {
 	"use cache";
-	cacheLife("hours");
+	cacheLife({ stale: 300, revalidate: 900, expire: 3600 });
 	cacheTag("agencies");
 	return prisma.ll2_agencies.findMany();
 }
