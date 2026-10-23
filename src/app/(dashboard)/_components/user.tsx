@@ -1,3 +1,4 @@
+import { ThemeMenu } from "@components/theme";
 import { Avatar, AvatarFallback } from "@components/ui/avatar";
 import { Button } from "@components/ui/button";
 import {
@@ -9,6 +10,8 @@ import {
 	DropdownMenuTrigger,
 } from "@components/ui/dropdown-menu";
 import { auth } from "@lib/auth";
+import { getSession } from "@lib/session";
+import { ChevronsUpDown } from "lucide-react";
 import { headers } from "next/headers";
 import Image from "next/image";
 import { redirect } from "next/navigation";
@@ -17,9 +20,7 @@ import { LaunchControlResetEasterEgg } from "@/src/components/easter-eggs/launch
 import { ScreensaverToggle } from "@/src/components/easter-eggs/screensaver-easter-egg";
 
 export default async function User() {
-	const session = await auth.api.getSession({
-		headers: await headers(),
-	});
+	const session = await getSession();
 
 	if (!session?.session || !session?.user) {
 		return null;
@@ -28,27 +29,32 @@ export default async function User() {
 	const user = session.user;
 
 	return (
-		<DropdownMenu>
+		<DropdownMenu modal={false}>
 			<DropdownMenuTrigger asChild>
-				<Button variant="ghost" className="relative h-9 w-9 md:h-8 md:w-8">
-					<Avatar className="h-9 w-9 rounded-sm md:h-8 md:w-8">
-						{user?.image ? (
-							<Image width={50} height={50} src={user.image} alt={"Profile photo"} />
+				<Button
+					variant="ghost"
+					aria-label="Account menu"
+					className="h-full w-full min-w-0 justify-center border-0 px-0 font-sans text-[15px] hover:bg-raised data-[state=open]:bg-raised focus-visible:outline-offset-[-2px] min-[1100px]:justify-between min-[1100px]:px-4"
+				>
+					<ChevronsUpDown className="mr-auto hidden h-4 w-4 shrink-0 text-fg3 min-[1100px]:block" />
+					<span className="hidden truncate min-[1100px]:block">{user.name}</span>
+					<Avatar className="h-6 w-6 min-[1100px]:ml-2">
+						{user.image ? (
+							<Image width={48} height={48} src={user.image} alt={""} />
 						) : (
-							<AvatarFallback>
-								<p>{user?.name?.[0]}</p>
-							</AvatarFallback>
+							<AvatarFallback>{user.name?.[0]}</AvatarFallback>
 						)}
 					</Avatar>
 				</Button>
 			</DropdownMenuTrigger>
-			<DropdownMenuContent className="w-56" align="end" forceMount>
+			<DropdownMenuContent className="w-60" align="end" sideOffset={0} forceMount>
 				<DropdownMenuLabel className="font-normal">
-					<div className="flex flex-col space-y-1">
-						<p className="font-medium text-sm leading-none">{user.name}</p>
-						<p className="text-muted-foreground text-xs leading-none">{user.email}</p>
-					</div>
+					<p className="truncate font-medium font-sans text-fg text-sm normal-case leading-5 tracking-normal">
+						{user.name}
+					</p>
 				</DropdownMenuLabel>
+				<DropdownMenuSeparator />
+				<ThemeMenu />
 				<DropdownMenuSeparator />
 				<LaunchControlResetEasterEgg />
 				<ScreensaverToggle />
@@ -70,9 +76,7 @@ export default async function User() {
 async function logout() {
 	"use server";
 
-	const session = await auth.api.getSession({
-		headers: await headers(),
-	});
+	const session = await getSession();
 
 	if (!session?.session) {
 		return;

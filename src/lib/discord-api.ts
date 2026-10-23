@@ -1,24 +1,28 @@
 import "server-only";
 
-import { REST } from "@discordjs/rest";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
+import { DiscordAPIError, REST } from "@discordjs/rest";
 import env from "@env";
 import { auth } from "@lib/auth";
 import { logger } from "@lib/logger";
 import { prisma } from "@lib/prisma";
 import { isAuthorized } from "@lib/server-utils";
-import avatar from "@public/LiveLaunch_Webhook_Avatar.png";
+import { createReplaceWebhook, parseWebhookId, SNOWFLAKE } from "@lib/webhook";
 import type {
 	APIApplication,
-	APIGuild,
 	APIGuildMember,
 	RESTAPIPartialCurrentUserGuild,
 	RESTGetAPIGuildChannelsResult,
+	RESTGetAPIGuildRolesResult,
 	RESTPostAPIChannelWebhookResult,
-} from "discord.js";
+} from "discord-api-types/v10";
 import { PermissionFlagsBits, Routes } from "discord-api-types/v10";
-import { headers } from "next/headers";
+import { cacheLife, cacheTag } from "next/cache";
+import { unstable_rethrow } from "next/navigation";
+import { cache } from "react";
 
-const rest = new REST({ version: "10" }).setToken(env.DISCORD_BOT_TOKEN);
+export const rest = new REST({ version: "10" }).setToken(env.DISCORD_BOT_TOKEN);
 rest.on("rateLimited", (info) => {
 	logger.warn("discord-api:handleRateLimit", "Bot token rate limited", {
 		actor: "bot",
@@ -30,68 +34,100 @@ rest.on("rateLimited", (info) => {
 	});
 });
 
-const handleRateLimit = async (response: Response, actor: "user" | "bot"): Promise<boolean> => {
-	if (response.status === 429) {
-		try {
-			const data = await response.json();
-			if (data.retry_after) {
-				logger.warn(
-					"discord-api:handleRateLimit",
-					`${actor} token rate limited, waiting ${data.retry_after * 1000}ms`,
-					{
-						actor,
-						retryAfter: data.retry_after,
-					},
-				);
-				await new Promise((resolve) => setTimeout(resolve, data.retry_after * 1000));
-				return true;
-			}
-			logger.debug("discord-api:handleRateLimit", `${actor} token rate limited but no retry_after provided`, {
+const MAX_RETRY_AFTER_SECONDS = 5;
+
+// Waits and returns true only for a short rate limit. A long one fails fast.
+const handleRateLimit = async (status: number, body: string, actor: "user" | "bot"): Promise<boolean> => {
+	if (status !== 429) return false;
+	try {
+		const data = JSON.parse(body);
+		if (!data.retry_after || data.retry_after > MAX_RETRY_AFTER_SECONDS) {
+			logger.warn("discord-api:handleRateLimit", `${actor} token rate limited, not retrying`, {
 				actor,
-				status: response.status,
+				retryAfter: data.retry_after,
 			});
-		} catch (error) {
-			logger.debug("discord-api:handleRateLimit", `${actor} token rate limit parse failed`, {
-				actor,
-				status: response.status,
-				error,
-			});
+			return false;
 		}
+		logger.warn(
+			"discord-api:handleRateLimit",
+			`${actor} token rate limited, waiting ${data.retry_after * 1000}ms`,
+			{
+				actor,
+				retryAfter: data.retry_after,
+			},
+		);
+		await new Promise((resolve) => setTimeout(resolve, data.retry_after * 1000));
+		return true;
+	} catch (error) {
+		logger.debug("discord-api:handleRateLimit", `${actor} token rate limit parse failed`, {
+			actor,
+			status,
+			error,
+		});
+		return false;
 	}
-	return false;
 };
 
-/**
- * Gets the channels the bot can send messages in
- */
-export const getGuildChannels = async (guildId: string): Promise<RESTGetAPIGuildChannelsResult> => {
+// Throws on a failure.
+const fetchGuildChannels = async (guildId: string): Promise<RESTGetAPIGuildChannelsResult> => {
+	const channels = (await rest.get(Routes.guildChannels(guildId))) as RESTGetAPIGuildChannelsResult;
+	return channels.filter((channel) => channel.type === 0 || channel.type === 5);
+};
+
+// Short cache across requests. Only for a page display, never for a check. It throws on a failure,
+// so a failure is never cached.
+const fetchGuildChannelsCached = async (guildId: string): Promise<RESTGetAPIGuildChannelsResult> => {
+	"use cache";
+	cacheLife({ stale: 30, revalidate: 30, expire: 60 });
+	cacheTag(`channels-${guildId}`);
+	return fetchGuildChannels(guildId);
+};
+
+const loadGuildChannels = async (
+	guildId: string,
+	fetcher: (guildId: string) => Promise<RESTGetAPIGuildChannelsResult>,
+): Promise<RESTGetAPIGuildChannelsResult> => {
 	if (!guildId || typeof guildId !== "string") {
 		logger.debug("discord-api:getGuildChannels", "Invalid guildId provided", { guildId });
 		return [];
 	}
 	try {
-		const channels = (await rest.get(Routes.guildChannels(guildId))) as RESTGetAPIGuildChannelsResult;
-		const filtered = channels.filter((channel) => channel.type === 0 || channel.type === 5);
+		const channels = await fetcher(guildId);
 		logger.debug("discord-api:getGuildChannels", "Successfully retrieved guild channels", {
 			guildId,
-			count: filtered.length,
+			count: channels.length,
 		});
-		return filtered;
+		return channels;
 	} catch (error) {
+		unstable_rethrow(error);
 		logger.error("discord-api:getGuildChannels", "Failed to get guild channels", { guildId, error });
 		return [];
 	}
 };
 
 /**
- * Gets the guilds the bot is in
+ * Gets the channels the bot can send messages in, fresh from Discord (once for each request).
+ * Use this for a check, for example before it creates a webhook.
  */
-export const getBotGuilds = async (): Promise<RESTAPIPartialCurrentUserGuild[]> => {
+export const getGuildChannels = cache((guildId: string) => loadGuildChannels(guildId, fetchGuildChannels));
+
+/**
+ * Gets the same channels, up to 60 s old. Call it only after the guild access check.
+ * Use it only to show a page.
+ */
+export const getDisplayChannels = cache((guildId: string) => loadGuildChannels(guildId, fetchGuildChannelsCached));
+
+/**
+ * Gets the guilds, from the given IDs, that the bot is in
+ */
+export const getBotGuilds = async (guildIds: string[]): Promise<RESTAPIPartialCurrentUserGuild[]> => {
+	if (guildIds.length === 0) return [];
 	try {
 		const guilds = await prisma.guilds.findMany({
 			select: {
 				guild_id: true,
 			},
+			where: { guild_id: { in: guildIds.map((id) => BigInt(id)) } },
 		});
 		const mapped = guilds.map(
 			(guild) =>
@@ -102,16 +138,45 @@ export const getBotGuilds = async (): Promise<RESTAPIPartialCurrentUserGuild[]> 
 		logger.debug("discord-api:getBotGuilds", "Successfully retrieved bot guilds", { count: mapped.length });
 		return mapped;
 	} catch (error) {
+		unstable_rethrow(error);
 		logger.error("discord-api:getBotGuilds", "Failed to get bot guilds", { error });
 		return [];
 	}
 };
 
-/**
- * Gets the guilds the user is in
- */
-export const getUserGuilds = async (retryCount = 0): Promise<RESTAPIPartialCurrentUserGuild[]> => {
-	const MAX_RETRIES = 3;
+// The user's admin guilds, keyed by user and token. A stale entry is at most 60 s old.
+// It throws on a failure, so a failure is never cached.
+// The rate limit retry is in here: an error loses its class and fields when it leaves a cache scope.
+const fetchAdminGuilds = async (userId: string, accessToken: string): Promise<RESTAPIPartialCurrentUserGuild[]> => {
+	"use cache";
+	cacheLife({ stale: 0, revalidate: 15, expire: 60 });
+	cacheTag(`get-user-guilds-${userId}`);
+
+	const request = () =>
+		fetch("https://discord.com/api/users/@me/guilds", { headers: { authorization: `Bearer ${accessToken}` } });
+	let response = await request();
+	if (response.status === 429 && (await handleRateLimit(response.status, await response.clone().text(), "user"))) {
+		response = await request();
+	}
+	if (!response.ok) {
+		const errorBody = await response.text().catch(() => "failed to read error body");
+		logger.error("discord-api:getUserGuilds", "API error when getting user guilds", {
+			status: response.status,
+			userId,
+			errorBody,
+		});
+		throw new Error(`Discord API returned ${response.status}`);
+	}
+	const guilds = await response.json();
+	if (!Array.isArray(guilds)) throw new Error("Discord returned a guild list that is not an array");
+
+	return guilds.filter(
+		(guild) =>
+			(BigInt(guild.permissions) & PermissionFlagsBits.Administrator) === PermissionFlagsBits.Administrator,
+	) as RESTAPIPartialCurrentUserGuild[];
+};
+
+const fetchUserGuilds = async (): Promise<RESTAPIPartialCurrentUserGuild[]> => {
 	try {
 		const data = await isAuthorized();
 		if (!data) {
@@ -120,10 +185,20 @@ export const getUserGuilds = async (retryCount = 0): Promise<RESTAPIPartialCurre
 		}
 		const { user } = data;
 
+		const account = await prisma.account.findFirst({
+			where: { userId: user.id, providerId: "discord" },
+			select: { id: true },
+		});
+		if (!account) {
+			logger.debug("discord-api:getUserGuilds", "Early return: no discord account", { userId: user.id });
+			return [];
+		}
+
 		const { accessToken } = await auth.api.getAccessToken({
-			headers: await headers(),
+			// No headers: better-auth then skips a second session read and uses the userId. The userId comes from our session.
 			body: {
-				providerId: "discord",
+				accountId: account.id,
+				userId: user.id,
 			},
 		});
 
@@ -132,79 +207,56 @@ export const getUserGuilds = async (retryCount = 0): Promise<RESTAPIPartialCurre
 			return [];
 		}
 
-		logger.debug("discord-api:getUserGuilds", "Got access token", {
-			userId: user.id,
-			tokenPrefix: accessToken.substring(0, 20),
-			tokenLength: accessToken.length,
-		});
-
-		const response = await fetch("https://discord.com/api/users/@me/guilds", {
-			cache: "force-cache",
-			headers: { authorization: `Bearer ${accessToken}` },
-			next: {
-				revalidate: 30,
-				tags: [`get-user-guilds-${user.id}`],
-			},
-		});
-
-		if (!response.ok) {
-			if (await handleRateLimit(response, "user")) {
-				if (retryCount >= MAX_RETRIES) {
-					logger.error("discord-api:getUserGuilds", "Max retries reached for rate limit", {
-						userId: user.id,
-						retryCount,
-					});
-					return [];
-				}
-				logger.debug("discord-api:getUserGuilds", "Rate limited, retrying", {
-					userId: user.id,
-					retryCount: retryCount + 1,
-				});
-				return getUserGuilds(retryCount + 1);
-			}
-			const errorBody = await response.text().catch(() => "failed to read error body");
-			logger.error("discord-api:getUserGuilds", "API error when getting user guilds", {
-				status: response.status,
-				userId: user.id,
-				errorBody,
-				tokenPrefix: accessToken.substring(0, 20),
-			});
-			return [];
-		}
-
-		const guilds = await response.json();
-		if (!Array.isArray(guilds)) {
-			logger.debug("discord-api:getUserGuilds", "Early return: response is not an array", {
-				userId: user.id,
-				type: typeof guilds,
-			});
-			return [];
-		}
-
-		const filtered = guilds.filter(
-			(guild) =>
-				(BigInt(guild.permissions) & PermissionFlagsBits.Administrator) === PermissionFlagsBits.Administrator,
-		) as RESTAPIPartialCurrentUserGuild[];
+		const guilds = await fetchAdminGuilds(user.id, accessToken);
 
 		logger.debug("discord-api:getUserGuilds", "Successfully retrieved user guilds", {
 			userId: user.id,
-			total: guilds.length,
-			admin: filtered.length,
+			admin: guilds.length,
 		});
-		return filtered;
+		return guilds;
 	} catch (error) {
+		unstable_rethrow(error);
 		logger.error("discord-api:getUserGuilds", "Failed to get user guilds", { error });
 		return [];
 	}
 };
 
 /**
+ * Gets the guilds the user is in (once for each request)
+ */
+export const getUserGuilds = cache(fetchUserGuilds);
+
+/**
+ * Gets the user's guilds, each marked with whether the bot is in it (once for each request)
+ */
+export const getGuildsWithBotAccess = cache(async () => {
+	const userGuilds = await getUserGuilds();
+	const botGuilds = await getBotGuilds(userGuilds.map((guild) => guild.id));
+	const botIds = new Set(botGuilds.map((guild) => guild.id));
+	return userGuilds.map((guild) => ({ ...guild, botAccess: botIds.has(guild.id) }));
+});
+
+let avatarPromise: Promise<string> | null = null;
+
+// Reads from disk. The Dockerfile copies public/ into the standalone image.
+const getAvatarDataUri = () => {
+	avatarPromise ??= readFile(path.join(process.cwd(), "public", "LiveLaunch_Webhook_Avatar.png"))
+		.then((file) => `data:image/png;base64,${file.toString("base64")}`)
+		.catch((error) => {
+			avatarPromise = null;
+			throw error;
+		});
+	return avatarPromise;
+};
+
+/**
  * Creates a webhook in the specified channel
+ * @param guildId Guild ID that must own the channel
  * @param channelId Channel ID
  * @param category Category name
  */
-export const createWebhook = async (channelId: string, category: string): Promise<string | null> => {
-	if (!channelId || typeof channelId !== "string") {
+export const createWebhook = async (guildId: string, channelId: string, category: string): Promise<string | null> => {
+	if (!SNOWFLAKE.test(channelId ?? "")) {
 		logger.debug("discord-api:createWebhook", "Invalid channelId provided", { channelId, category });
 		return null;
 	}
@@ -213,20 +265,16 @@ export const createWebhook = async (channelId: string, category: string): Promis
 		return null;
 	}
 	try {
-		const avatarResponse = await fetch(`${env.BETTER_AUTH_URL}${avatar.src}`);
-		if (!avatarResponse.ok) {
-			logger.error("discord-api:createWebhook", "Failed to fetch avatar", {
-				channelId,
-				category,
-				status: avatarResponse.status,
-			});
-			throw new Error(`Failed to fetch avatar: ${avatarResponse.status}`);
+		const channels = await getGuildChannels(guildId);
+		if (!channels.some((channel) => channel.id === channelId)) {
+			logger.warn("discord-api:createWebhook", "Channel is not in the guild", { guildId, channelId });
+			return null;
 		}
 
 		const webhook = (await rest.post(Routes.channelWebhooks(channelId), {
 			body: {
 				name: `LiveLaunch ${category}`,
-				avatar: `data:image/png;base64,${Buffer.from(await avatarResponse.arrayBuffer()).toString("base64")}`,
+				avatar: await getAvatarDataUri(),
 			},
 		})) as RESTPostAPIChannelWebhookResult;
 
@@ -246,37 +294,72 @@ export const createWebhook = async (channelId: string, category: string): Promis
 		});
 		return webhook.url;
 	} catch (error) {
+		unstable_rethrow(error);
 		logger.error("discord-api:createWebhook", "Failed to create webhook", { channelId, category, error });
 		return null;
 	}
 };
 
 /**
- * Gets the bot's permissions in a guild
+ * Deletes a webhook by URL. Never throws. A missing webhook (404) counts as success.
  */
-export const getBotPermissions = async (guildId: string): Promise<string | null> => {
+export const deleteWebhook = async (url: string): Promise<boolean> => {
+	const id = parseWebhookId(url);
+	if (!id) {
+		logger.error("discord-api:deleteWebhook", "Unexpected webhook URL shape");
+		return false;
+	}
+	try {
+		await rest.delete(Routes.webhook(id));
+		return true;
+	} catch (error) {
+		if (error instanceof DiscordAPIError && error.status === 404) return true;
+		logger.error("discord-api:deleteWebhook", "Failed to delete webhook", {
+			webhookId: id,
+			error: error instanceof Error ? error.message : String(error),
+		});
+		return false;
+	}
+};
+
+export const replaceWebhook = createReplaceWebhook(deleteWebhook);
+
+let botUserIdPromise: Promise<string | undefined> | null = null;
+
+const getBotUserId = () => {
+	botUserIdPromise ??= (rest.get(Routes.oauth2CurrentApplication()) as Promise<APIApplication>)
+		.then((app) => app.bot?.id)
+		.catch((error) => {
+			botUserIdPromise = null;
+			throw error;
+		});
+	return botUserIdPromise;
+};
+
+/**
+ * Gets the bot's permissions in a guild (once for each request)
+ */
+export const getBotPermissions = cache(async (guildId: string): Promise<string | null> => {
 	if (!guildId || typeof guildId !== "string") {
 		logger.debug("discord-api:getBotPermissions", "Invalid guildId provided", { guildId });
 		return null;
 	}
 	try {
-		const [guild, app] = await Promise.all([
-			rest.get(Routes.guild(guildId)) as Promise<APIGuild>,
-			rest.get(Routes.oauth2CurrentApplication()) as Promise<APIApplication>,
-		]);
-
-		const botUserId = app.bot?.id;
+		const botUserId = await getBotUserId();
 		if (!botUserId) {
 			logger.debug("discord-api:getBotPermissions", "Early return: could not get bot user ID", { guildId });
 			return null;
 		}
 
-		const member = (await rest.get(Routes.guildMember(guildId, botUserId))) as APIGuildMember;
+		const [roles, member] = await Promise.all([
+			rest.get(Routes.guildRoles(guildId)) as Promise<RESTGetAPIGuildRolesResult>,
+			rest.get(Routes.guildMember(guildId, botUserId)) as Promise<APIGuildMember>,
+		]);
 
-		let permissions = BigInt(guild.roles.find((r) => r.id === guildId)?.permissions || "0");
+		let permissions = BigInt(roles.find((r) => r.id === guildId)?.permissions || "0");
 
 		for (const roleId of member.roles) {
-			const role = guild.roles.find((r) => r.id === roleId);
+			const role = roles.find((r) => r.id === roleId);
 			if (role) {
 				permissions |= BigInt(role.permissions);
 			}
@@ -289,10 +372,11 @@ export const getBotPermissions = async (guildId: string): Promise<string | null>
 		});
 		return permissions.toString();
 	} catch (error) {
+		unstable_rethrow(error);
 		logger.error("discord-api:getBotPermissions", "Failed to get bot permissions", { guildId, error });
 		return null;
 	}
-};
+});
 
 export interface PermissionStatus {
 	name: string;
@@ -302,7 +386,28 @@ export interface PermissionStatus {
 
 export interface BotPermissionCheck {
 	hasAll: boolean;
+	// True when the Discord lookup failed. Then `permissions` says nothing about the real state.
+	lookupFailed: boolean;
 	permissions: PermissionStatus[];
+}
+
+// A failed lookup is not a missing permission. hasAll stays false, so access is still denied.
+function lookupFailedResult(): BotPermissionCheck {
+	return {
+		hasAll: false,
+		lookupFailed: true,
+		permissions: [
+			{ name: "Manage Webhooks", description: "Required to create webhooks for messages", hasPermission: false },
+			{
+				name: "Manage Events",
+				description: "Required to edit and cancel Discord scheduled events",
+				hasPermission: false,
+			},
+			{ name: "Create Events", description: "Required to create Discord scheduled events", hasPermission: false },
+			{ name: "Send Messages", description: "Required to send messages to channels", hasPermission: false },
+			{ name: "Embed Links", description: "Required to send rich embeds with links", hasPermission: false },
+		],
+	};
 }
 
 /**
@@ -311,54 +416,12 @@ export interface BotPermissionCheck {
 export const checkBotPermissions = async (guildId: string): Promise<BotPermissionCheck> => {
 	if (!guildId || typeof guildId !== "string") {
 		logger.debug("discord-api:checkBotPermissions", "Invalid guildId provided", { guildId });
-		return {
-			hasAll: false,
-			permissions: [
-				{
-					name: "Manage Webhooks",
-					description: "Required to create webhooks for messages",
-					hasPermission: false,
-				},
-				{
-					name: "Manage Events",
-					description: "Required to edit and cancel Discord scheduled events",
-					hasPermission: false,
-				},
-				{
-					name: "Create Events",
-					description: "Required to create Discord scheduled events",
-					hasPermission: false,
-				},
-				{ name: "Send Messages", description: "Required to send messages to channels", hasPermission: false },
-				{ name: "Embed Links", description: "Required to send rich embeds with links", hasPermission: false },
-			],
-		};
+		return lookupFailedResult();
 	}
 	const permissions = await getBotPermissions(guildId);
 	if (!permissions) {
 		logger.debug("discord-api:checkBotPermissions", "Early return: could not get bot permissions", { guildId });
-		return {
-			hasAll: false,
-			permissions: [
-				{
-					name: "Manage Webhooks",
-					description: "Required to create webhooks for messages",
-					hasPermission: false,
-				},
-				{
-					name: "Manage Events",
-					description: "Required to edit and cancel Discord scheduled events",
-					hasPermission: false,
-				},
-				{
-					name: "Create Events",
-					description: "Required to create Discord scheduled events",
-					hasPermission: false,
-				},
-				{ name: "Send Messages", description: "Required to send messages to channels", hasPermission: false },
-				{ name: "Embed Links", description: "Required to send rich embeds with links", hasPermission: false },
-			],
-		};
+		return lookupFailedResult();
 	}
 
 	const permissionBits = BigInt(permissions);
@@ -414,6 +477,7 @@ export const checkBotPermissions = async (guildId: string): Promise<BotPermissio
 
 	return {
 		hasAll,
+		lookupFailed: false,
 		permissions: permissionChecks,
 	};
 };

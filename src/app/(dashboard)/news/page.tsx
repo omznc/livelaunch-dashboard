@@ -1,11 +1,18 @@
 import Client from "@app/(dashboard)/news/client";
-import { getGuildChannels } from "@lib/discord-api";
+import { getDisplayChannels } from "@lib/discord-api";
 import { prisma } from "@lib/prisma";
-import { checkGuildPermissions } from "@lib/server-utils";
-import { unstable_cache as cache } from "next/cache";
+import { checkGuildPermissions, redirectToDefaultGuild } from "@lib/server-utils";
+import { cacheLife, cacheTag } from "next/cache";
+import { notFound } from "next/navigation";
 import NotEnabled from "@/src/app/(dashboard)/_components/not-enabled";
 
-export const dynamic = "force-dynamic";
+// Only the bot writes this list, so no action invalidates the tag.
+async function getNewsSites() {
+	"use cache";
+	cacheLife({ stale: 300, revalidate: 900, expire: 3600 });
+	cacheTag("news-sites");
+	return prisma.news_sites.findMany();
+}
 
 export default async function NewsSites(props: {
 	searchParams: Promise<{
@@ -14,34 +21,31 @@ export default async function NewsSites(props: {
 }) {
 	const searchParams = await props.searchParams;
 	const guildId = searchParams?.g;
-	if (!guildId) return null;
+	if (!guildId) return redirectToDefaultGuild("/news");
 
 	const authorized = await checkGuildPermissions(guildId);
 	if (!authorized) {
-		return null;
+		notFound();
 	}
 
-	const guild = await prisma.enabled_guilds.findFirst({
-		where: {
-			guild_id: BigInt(guildId),
-		},
-	});
-
-	if (!guild) return <NotEnabled />;
-
-	const newsSites = await cache(async () => prisma.news_sites.findMany(), ["news-sites"], {
-		tags: ["news-sites"],
-		revalidate: 60 * 60,
-	})();
-
-	const [enabledNewsSites, channels] = await Promise.all([
+	const [guild, newsSites, enabledNewsSites, channels] = await Promise.all([
+		prisma.enabled_guilds.findFirst({
+			where: {
+				guild_id: BigInt(guildId),
+			},
+			select: { guild_id: true, news_channel_id: true, news_include_exclude: true },
+		}),
+		getNewsSites(),
 		prisma.news_filter.findMany({
 			where: {
 				guild_id: BigInt(guildId),
 			},
+			select: { news_site_id: true },
 		}),
-		getGuildChannels(guildId),
+		getDisplayChannels(guildId),
 	]);
+
+	if (!guild) return <NotEnabled />;
 
 	return (
 		<Client

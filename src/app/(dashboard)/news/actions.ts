@@ -1,16 +1,10 @@
 "use server";
 
-import { REST } from "@discordjs/rest";
-import env from "@env";
-import { createWebhook } from "@lib/discord-api";
-import { logger } from "@lib/logger";
+import { createWebhook, deleteWebhook, replaceWebhook } from "@lib/discord-api";
 import { prisma } from "@lib/prisma";
-import { guildActionClient, guildIdSchema } from "@lib/safe-actions";
-import { Routes } from "discord-api-types/v10";
-import { revalidatePath } from "next/cache";
+import { guildActionClient, guildIdSchema, snowflakeSchema } from "@lib/safe-actions";
+import { refresh, updateTag } from "next/cache";
 import { z } from "zod";
-
-const rest = new REST({ version: "9" }).setToken(env.DISCORD_BOT_TOKEN);
 
 const newsSettingsSchema = z.object({
 	guildId: z.string(),
@@ -30,59 +24,48 @@ export const updateSettings = guildActionClient
 				news_include_exclude: Number(settings.whitelist),
 			},
 		});
+
+		refresh();
 	});
 
 const updateChannelSchema = z.object({
 	guildId: z.string(),
-	channelId: z.string(),
+	channelId: snowflakeSchema,
 });
 
 export const updateChannel = guildActionClient
 	.inputSchema(updateChannelSchema)
 	.action(async ({ parsedInput: { guildId, channelId } }) => {
 		const [newWebhookURL, guild] = await Promise.all([
-			createWebhook(channelId, "News"),
+			createWebhook(guildId, channelId, "News"),
 			prisma.enabled_guilds.findFirst({
 				where: {
 					guild_id: BigInt(guildId),
 				},
+				select: { news_webhook_url: true },
 			}),
 		]);
 
 		if (!newWebhookURL) {
-			return { error: "Missing permission: Manage Webhooks" };
+			return {
+				error: "Could not create a webhook. Check that the channel exists and that the bot has the Manage Webhooks permission.",
+			};
 		}
 
-		await prisma.enabled_guilds.update({
-			where: {
-				guild_id: BigInt(guildId),
-			},
-			data: {
-				news_channel_id: BigInt(channelId),
-				news_webhook_url: newWebhookURL,
-			},
-		});
+		await replaceWebhook(newWebhookURL, guild?.news_webhook_url, () =>
+			prisma.enabled_guilds.update({
+				where: {
+					guild_id: BigInt(guildId),
+				},
+				data: {
+					news_channel_id: BigInt(channelId),
+					news_webhook_url: newWebhookURL,
+				},
+			}),
+		);
 
-		if (guild?.news_webhook_url) {
-			await rest.delete(Routes.webhook(guild.news_webhook_url.split("/")[5])).catch(async (e) => {
-				await prisma.enabled_guilds.update({
-					where: {
-						guild_id: BigInt(guildId),
-					},
-					data: {
-						news_channel_id: null,
-						news_webhook_url: null,
-					},
-				});
-				await rest.delete(Routes.webhook(newWebhookURL.split("/")[5]));
-
-				revalidatePath(`/news?g=${guildId}`);
-				throw e;
-			});
-		} else {
-			revalidatePath(`/news?g=${guildId}`);
-		}
-
+		updateTag(`channels-${guildId}`);
+		refresh();
 		return { success: true };
 	});
 
@@ -99,13 +82,7 @@ export const disableFeature = guildActionClient
 		});
 
 		if (resp?.news_webhook_url) {
-			await rest.delete(Routes.webhook(resp.news_webhook_url.split("/")[5])).catch((e) => {
-				logger.error("news:actions:disableFeature", "Failed to delete news webhook during disable", {
-					guildId,
-					error: e.message,
-					webhookUrl: resp.news_webhook_url,
-				});
-			});
+			await deleteWebhook(resp.news_webhook_url);
 		}
 
 		await prisma.enabled_guilds.update({
@@ -118,23 +95,26 @@ export const disableFeature = guildActionClient
 			},
 		});
 
-		revalidatePath(`/news?g=${guildId}`);
+		refresh();
 	});
 
 const setNewsSitesSchema = z.object({
 	guildId: z.string(),
-	newsSites: z.array(
-		z.object({
-			news_site_id: z.number(),
-			selected: z.boolean(),
-		}),
-	),
+	newsSites: z
+		.array(
+			z.object({
+				news_site_id: z.number().int().min(0).max(65535),
+				selected: z.boolean(),
+			}),
+		)
+		// The client sends every news site, so the cap must stay above the real count
+		.max(2000),
 });
 
 export const setNewsSites = guildActionClient
 	.inputSchema(setNewsSitesSchema)
 	.action(async ({ parsedInput: { guildId, newsSites } }) => {
-		return Promise.all([
+		const result = await prisma.$transaction([
 			prisma.news_filter.deleteMany({
 				where: {
 					guild_id: BigInt(guildId),
@@ -153,4 +133,7 @@ export const setNewsSites = guildActionClient
 				skipDuplicates: true,
 			}),
 		]);
+
+		refresh();
+		return result;
 	});

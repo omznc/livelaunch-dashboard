@@ -16,7 +16,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@components/ui
 import { Setting, SettingGroup } from "@components/ui/setting";
 import { Switch } from "@components/ui/switch";
 import type { enabled_guilds, notification_countdown } from "@generated/client";
-import type { RESTGetAPIGuildChannelsResult } from "discord.js";
+import { errorMessage, unwrap } from "@lib/action-result";
+import { useToggles } from "@lib/use-toggles";
+import { boundedValue } from "@lib/utils";
+import type { RESTGetAPIGuildChannelsResult } from "discord-api-types/v10";
 import { Hash, Megaphone, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -24,7 +27,21 @@ import toast from "react-hot-toast";
 import { addCountdown, disableFeature, removeCountdown, updateChannel, updateFilters } from "./actions";
 
 interface ClientProps {
-	guild: enabled_guilds;
+	guild: Pick<
+		enabled_guilds,
+		| "guild_id"
+		| "notification_channel_id"
+		| "notification_end_status"
+		| "notification_deploy"
+		| "notification_hold"
+		| "notification_go"
+		| "notification_liftoff"
+		| "notification_tbc"
+		| "notification_tbd"
+		| "notification_t0_change"
+		| "notification_launch"
+		| "notification_event"
+	>;
 	countdowns: notification_countdown[];
 	channels: RESTGetAPIGuildChannelsResult;
 }
@@ -51,18 +68,21 @@ export interface NotificationsFilterSettings {
 export default function Client({ guild, countdowns, channels }: ClientProps) {
 	const _router = useRouter();
 
-	const [settings, setSettings] = useState<NotificationsFilterSettings>({
-		notification_end_status: Boolean(guild.notification_end_status),
-		notification_deploy: Boolean(guild.notification_deploy),
-		notification_hold: Boolean(guild.notification_hold),
-		notification_liftoff: Boolean(guild.notification_liftoff),
-		notification_go: Boolean(guild.notification_go),
-		notification_tbc: Boolean(guild.notification_tbc),
-		notification_tbd: Boolean(guild.notification_tbd),
-		notification_t0_change: Boolean(guild.notification_t0_change),
-		notification_launch: Boolean(guild.notification_launch),
-		notification_event: Boolean(guild.notification_event),
-	});
+	const [settings, setToggle] = useToggles<NotificationsFilterSettings>(
+		{
+			notification_end_status: Boolean(guild.notification_end_status),
+			notification_deploy: Boolean(guild.notification_deploy),
+			notification_hold: Boolean(guild.notification_hold),
+			notification_liftoff: Boolean(guild.notification_liftoff),
+			notification_go: Boolean(guild.notification_go),
+			notification_tbc: Boolean(guild.notification_tbc),
+			notification_tbd: Boolean(guild.notification_tbd),
+			notification_t0_change: Boolean(guild.notification_t0_change),
+			notification_launch: Boolean(guild.notification_launch),
+			notification_event: Boolean(guild.notification_event),
+		},
+		(settings) => updateFilters({ guildId: String(guild.guild_id), settings }),
+	);
 
 	const [selectedChannelID, setSelectedChannelID] = useState<string | undefined>(
 		guild.notification_channel_id?.toString(),
@@ -83,20 +103,35 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 	};
 
 	const [addCountdownDialogOpen, setAddCountdownDialogOpen] = useState(false);
+	const [addingCountdown, setAddingCountdown] = useState(false);
+	const totalMinutes = newCountdown.days * 24 * 60 + newCountdown.hours * 60 + newCountdown.minutes;
+
+	// The dialog stays open on a failure, so the user can fix the input.
+	const submitCountdown = async () => {
+		setAddingCountdown(true);
+		try {
+			await unwrap(addCountdown({ guildId: String(guild.guild_id), settings: newCountdown }));
+			toast.success("Countdown added.");
+			setAddCountdownDialogOpen(false);
+		} catch (error) {
+			toast.error(error instanceof Error && error.message ? error.message : "Failed to add countdown.");
+		} finally {
+			setAddingCountdown(false);
+		}
+	};
 
 	return (
-		<div className="flex flex-col gap-4">
+		<div className="flex flex-col">
 			<SettingGroup title={"Notifications"} description={"Settings for the notification feature."}>
 				{guild.notification_channel_id !== null && (
 					<Setting
 						label={"Disable Feature"}
 						description={"Disable this feature for your server."}
 						active={false}
-						className="flex flex-col gap-4"
 					>
 						<Button
 							onClick={() => {
-								toast.promise(disableFeature({ guildId: String(guild.guild_id) }), {
+								toast.promise(unwrap(disableFeature({ guildId: String(guild.guild_id) })), {
 									loading: "Disabling...",
 									success: () => {
 										setSelectedChannelID(undefined);
@@ -121,18 +156,19 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 				>
 					<Select
 						onValueChange={(value) => {
+							const previous = selectedChannelID;
 							setSelectedChannelID(value);
-							toast.promise(updateChannel({ guildId: String(guild.guild_id), channelId: value }), {
-								loading: "Saving...",
-								success: (r) => {
-									if (!r.data?.success) throw new Error(r.serverError);
-									return "Saved";
+							toast.promise(
+								unwrap(updateChannel({ guildId: String(guild.guild_id), channelId: value })),
+								{
+									loading: "Saving...",
+									success: "Saved",
+									error: (e: unknown) => {
+										setSelectedChannelID(previous);
+										return errorMessage(e);
+									},
 								},
-								error: (e?: Error) => {
-									setSelectedChannelID(undefined);
-									return e ? e.message : "Failed to save.";
-								},
-							});
+							);
 						}}
 						key={selectedChannelID}
 					>
@@ -143,9 +179,9 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 									return (
 										<span>
 											{chan.type === 0 ? (
-												<Hash className="mr-2 inline-block" />
+												<Hash className="mr-2 inline-block h-[18px] w-[18px]" />
 											) : (
-												<Megaphone className="mr-2 inline-block" />
+												<Megaphone className="mr-2 inline-block h-[18px] w-[18px]" />
 											)}
 											{chan.name}
 										</span>
@@ -158,9 +194,9 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 							{channels.map((channel) => (
 								<SelectItem key={channel.id} value={channel.id}>
 									{channel.type === 0 ? (
-										<Hash className="mr-2 inline-block" />
+										<Hash className="mr-2 inline-block h-[18px] w-[18px]" />
 									) : (
-										<Megaphone className="mr-2 inline-block" />
+										<Megaphone className="mr-2 inline-block h-[18px] w-[18px]" />
 									)}
 									{channel.name}
 								</SelectItem>
@@ -172,7 +208,6 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					label={"Notification Countdown"}
 					description={"Set how long before a launch the bot should send a notification."}
 					active={false}
-					className="flex flex-col gap-4"
 					disabled={guild.notification_channel_id === null}
 					disabledMessage={"Requires a notification channel to be set"}
 				>
@@ -206,11 +241,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 											min={0}
 											max={31}
 											onChange={(e) => {
-												e.target.value = clamp(e.target.valueAsNumber, 0, 31).toString();
-												setNewCountdown((prev) => ({
-													...prev,
-													days: e.target.valueAsNumber,
-												}));
+												const days = boundedValue(e.target, 31);
+												setNewCountdown((prev) => ({ ...prev, days }));
 											}}
 										/>
 									</div>
@@ -224,11 +256,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 											min={0}
 											max={24}
 											onChange={(e) => {
-												e.target.value = clamp(e.target.valueAsNumber, 0, 24).toString();
-												setNewCountdown((prev) => ({
-													...prev,
-													hours: e.target.valueAsNumber,
-												}));
+												const hours = boundedValue(e.target, 24);
+												setNewCountdown((prev) => ({ ...prev, hours }));
 											}}
 										/>
 									</div>
@@ -242,88 +271,82 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 											min={0}
 											max={60}
 											onChange={(e) => {
-												e.target.value = clamp(e.target.valueAsNumber, 0, 60).toString();
-												setNewCountdown((prev) => ({
-													...prev,
-													minutes: e.target.valueAsNumber,
-												}));
+												const minutes = boundedValue(e.target, 60);
+												setNewCountdown((prev) => ({ ...prev, minutes }));
 											}}
 										/>
 									</div>
 								</div>
-								{`That would be ${
-									newCountdown.days * 24 * 60 + newCountdown.hours * 60 + newCountdown.minutes
-								} minutes beforehand.`}
+								{`That would be ${totalMinutes} minutes beforehand.`}
 							</div>
 							<CredenzaFooter>
 								<Button variant="outline" onClick={() => setAddCountdownDialogOpen(false)}>
 									Cancel
 								</Button>
-								<Button
-									onClick={() => {
-										addCountdown({ guildId: String(guild.guild_id), settings: newCountdown }).catch(
-											() => {
-												toast.error("Failed to add countdown.");
-											},
-										);
-										setAddCountdownDialogOpen(false);
-									}}
-								>
+								<Button disabled={totalMinutes === 0 || addingCountdown} onClick={submitCountdown}>
 									Add
 								</Button>
 							</CredenzaFooter>
 						</CredenzaContent>
 					</Credenza>
 				</Setting>
-				<h2 className="text-sm">
-					{countdowns.length > 0
-						? "Current Countdowns"
-						: "This is where you'd see your countdowns, if you had any."}
-				</h2>
-				<div className="flex flex-wrap gap-2">
-					{countdowns.map((countdown) => (
-						<Badge key={`${countdown.guild_id}-${countdown.minutes}`} className="group hover:gap-2">
-							{(() => {
-								const days = Math.floor(countdown.minutes / 60 / 24);
-								const hours = Math.floor(countdown.minutes / 60) % 24;
-								const minutes = countdown.minutes % 60;
+				<div className="flex flex-col gap-3 px-4 py-4 sm:px-6 sm:py-5">
+					<h2 className="font-medium text-[15px]">
+						{countdowns.length > 0
+							? "Current Countdowns"
+							: "This is where you'd see your countdowns, if you had any."}
+					</h2>
+					<div className="flex flex-wrap gap-2 empty:hidden">
+						{countdowns.map((countdown) => (
+							<Badge key={`${countdown.guild_id}-${countdown.minutes}`} className="gap-2 pr-1">
+								{(() => {
+									const days = Math.floor(countdown.minutes / 60 / 24);
+									const hours = Math.floor(countdown.minutes / 60) % 24;
+									const minutes = countdown.minutes % 60;
 
-								return (
-									<div className="flex items-center gap-1">
-										{days > 0 && (
-											<span className="text-sm">
-												{days} day
-												{days > 1 ? "s" : ""}
-											</span>
-										)}
-										{hours > 0 && (
-											<span className="text-sm">
-												{hours} hour
-												{hours > 1 ? "s" : ""}
-											</span>
-										)}
-										{minutes > 0 && (
-											<span className="text-sm">
-												{minutes} minute
-												{minutes > 1 ? "s" : ""}
-											</span>
-										)}
-									</div>
-								);
-							})()}
-							<X
-								onClick={() => {
-									removeCountdown({
-										guildId: String(guild.guild_id),
-										minutes: countdown.minutes,
-									}).catch(() => {
-										toast.error("Failed to remove countdown.");
-									});
-								}}
-								className="invisible w-0 cursor-pointer transition-all group-hover:visible group-hover:w-2"
-							/>
-						</Badge>
-					))}
+									return (
+										<div className="flex items-center gap-1">
+											{days > 0 && (
+												<span>
+													{days} day
+													{days > 1 ? "s" : ""}
+												</span>
+											)}
+											{hours > 0 && (
+												<span>
+													{hours} hour
+													{hours > 1 ? "s" : ""}
+												</span>
+											)}
+											{minutes > 0 && (
+												<span>
+													{minutes} minute
+													{minutes > 1 ? "s" : ""}
+												</span>
+											)}
+										</div>
+									);
+								})()}
+								<button
+									type="button"
+									aria-label="Remove countdown"
+									className="grid h-5 w-5 place-items-center text-fg2 hover:text-fg"
+									onClick={() => {
+										unwrap(
+											removeCountdown({
+												guildId: String(guild.guild_id),
+												minutes: countdown.minutes,
+											}),
+										).catch((e: Error) => {
+											toast.error(e.message || "Failed to remove countdown.");
+										});
+									}}
+								>
+									<X className="h-4 w-4" />
+								</button>
+							</Badge>
+						))}
+					</div>
 				</div>
 			</SettingGroup>
 
@@ -339,20 +362,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					disabledMessage={"Requires a notification channel to be set"}
 				>
 					<Switch
-						onCheckedChange={(checked) => {
-							updateFilters({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_t0_change: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_t0_change: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_t0_change}
+						onCheckedChange={(checked) => setToggle("notification_t0_change", checked)}
+						checked={settings.notification_t0_change}
 					/>
 				</Setting>
 
@@ -364,20 +375,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					disabledMessage={"Requires a notification channel to be set"}
 				>
 					<Switch
-						onCheckedChange={(checked) => {
-							updateFilters({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_launch: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_launch: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_launch}
+						onCheckedChange={(checked) => setToggle("notification_launch", checked)}
+						checked={settings.notification_launch}
 					/>
 				</Setting>
 
@@ -389,20 +388,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					disabledMessage={"Requires a notification channel to be set"}
 				>
 					<Switch
-						onCheckedChange={(checked) => {
-							updateFilters({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_event: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_event: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_event}
+						onCheckedChange={(checked) => setToggle("notification_event", checked)}
+						checked={settings.notification_event}
 					/>
 				</Setting>
 			</SettingGroup>
@@ -419,20 +406,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					disabledMessage={"Requires a notification channel to be set"}
 				>
 					<Switch
-						onCheckedChange={(checked) => {
-							updateFilters({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_end_status: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_end_status: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_end_status}
+						onCheckedChange={(checked) => setToggle("notification_end_status", checked)}
+						checked={settings.notification_end_status}
 					/>
 				</Setting>
 
@@ -444,20 +419,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					disabledMessage={"Requires a notification channel to be set"}
 				>
 					<Switch
-						onCheckedChange={(checked) => {
-							updateFilters({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_deploy: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_deploy: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_deploy}
+						onCheckedChange={(checked) => setToggle("notification_deploy", checked)}
+						checked={settings.notification_deploy}
 					/>
 				</Setting>
 
@@ -469,20 +432,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					disabledMessage={"Requires a notification channel to be set"}
 				>
 					<Switch
-						onCheckedChange={(checked) => {
-							updateFilters({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_hold: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_hold: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_hold}
+						onCheckedChange={(checked) => setToggle("notification_hold", checked)}
+						checked={settings.notification_hold}
 					/>
 				</Setting>
 
@@ -494,20 +445,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					disabledMessage={"Requires a notification channel to be set"}
 				>
 					<Switch
-						onCheckedChange={(checked) => {
-							updateFilters({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_liftoff: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_liftoff: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_liftoff}
+						onCheckedChange={(checked) => setToggle("notification_liftoff", checked)}
+						checked={settings.notification_liftoff}
 					/>
 				</Setting>
 
@@ -519,20 +458,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					disabledMessage={"Requires a notification channel to be set"}
 				>
 					<Switch
-						onCheckedChange={(checked) => {
-							updateFilters({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_go: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_go: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_go}
+						onCheckedChange={(checked) => setToggle("notification_go", checked)}
+						checked={settings.notification_go}
 					/>
 				</Setting>
 
@@ -544,20 +471,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					disabledMessage={"Requires a notification channel to be set"}
 				>
 					<Switch
-						onCheckedChange={(checked) => {
-							updateFilters({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_tbc: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_tbc: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_tbc}
+						onCheckedChange={(checked) => setToggle("notification_tbc", checked)}
+						checked={settings.notification_tbc}
 					/>
 				</Setting>
 
@@ -569,27 +484,11 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					disabledMessage={"Requires a notification channel to be set"}
 				>
 					<Switch
-						onCheckedChange={(checked) => {
-							updateFilters({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_tbd: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_tbd: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_tbd}
+						onCheckedChange={(checked) => setToggle("notification_tbd", checked)}
+						checked={settings.notification_tbd}
 					/>
 				</Setting>
 			</SettingGroup>
 		</div>
 	);
-}
-
-function clamp(value: number, min: number, max: number) {
-	return Math.min(Math.max(value, min), max);
 }

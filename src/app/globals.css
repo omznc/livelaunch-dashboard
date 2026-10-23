@@ -2,77 +2,147 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
+/* Dark tokens are the default. The raw tokens come first. The shadcn names
+   below point at them, so every existing component gets the same look. */
 :root {
-	--radius: 0.75rem;
-	--background: #0a0a0b;
-	--foreground: #fafafa;
-	--card: #111113;
-	--card-foreground: #fafafa;
-	--popover: #111113;
-	--popover-foreground: #fafafa;
-	--primary: #7927f5;
+	color-scheme: light dark;
+
+	--bg: #0b0c0a;
+	--panel: #10110f;
+	--raised: #181a16;
+	--hover: #151613;
+	--line: #232520;
+	--line2: #34372f;
+	--fg: #f0f0ea;
+	--fg2: #a9aba2;
+	--fg3: #8d8f86;
+
+	/* Purple. --primary fills a button. --brand is the light tint for text,
+	   links and focus rings on a dark background. */
+	--primary: oklch(0.52 0.26 293);
 	--primary-foreground: #ffffff;
-	--secondary: #1a1a1d;
-	--secondary-foreground: #a1a1aa;
-	--muted: #1a1a1d;
-	--muted-foreground: #71717a;
-	--accent: #1a1a1d;
-	--accent-foreground: #fafafa;
-	--destructive: #ef4444;
-	--destructive-foreground: #ffffff;
-	--border: #27272a;
-	--input: #18181b;
-	--ring: #7927f5;
-	--chart-1: #7927f5;
-	--chart-2: #10b981;
-	--chart-3: #f59e0b;
-	--chart-4: #ec4899;
-	--chart-5: #ef4444;
-	--sidebar: #111113;
-	--sidebar-foreground: #fafafa;
-	--sidebar-primary: #7927f5;
-	--sidebar-primary-foreground: #ffffff;
-	--sidebar-accent: #1a1a1d;
-	--sidebar-accent-foreground: #fafafa;
-	--sidebar-border: #27272a;
-	--sidebar-ring: #7927f5;
+	--brand: oklch(0.74 0.16 293);
+
+	--green: oklch(0.8 0.15 152);
+	--amber: oklch(0.83 0.14 82);
+	--red: oklch(0.72 0.18 25);
+
+	--radius: 0px;
+	--background: var(--bg);
+	--foreground: var(--fg);
+	--card: var(--panel);
+	--card-foreground: var(--fg);
+	--popover: var(--panel);
+	--popover-foreground: var(--fg);
+	--secondary: var(--raised);
+	--secondary-foreground: var(--fg);
+	--muted: var(--raised);
+	--muted-foreground: var(--fg2);
+	--accent: var(--raised);
+	--accent-foreground: var(--fg);
+	--destructive: var(--red);
+	--destructive-foreground: var(--bg);
+	--border: var(--line);
+	--input: var(--line2);
+	--ring: var(--brand);
+	--chart-1: var(--brand);
+	--chart-2: var(--green);
+	--chart-3: var(--amber);
+	--chart-4: var(--red);
+	--chart-5: var(--fg2);
+	--sidebar: var(--panel);
+	--sidebar-foreground: var(--fg);
+	--sidebar-primary: var(--primary);
+	--sidebar-primary-foreground: var(--primary-foreground);
+	--sidebar-accent: var(--raised);
+	--sidebar-accent-foreground: var(--fg);
+	--sidebar-border: var(--line);
+	--sidebar-ring: var(--brand);
+
+	/* Motion: one spring with no overshoot, short exits. */
+	--spring: linear(
+		0 0%,
+		0.002 0.6%,
+		0.013 1.9%,
+		0.044 3.6%,
+		0.097 5.7%,
+		0.173 8.1%,
+		0.265 10.9%,
+		0.366 13.9%,
+		0.471 17.2%,
+		0.571 20.8%,
+		0.661 24.6%,
+		0.74 28.7%,
+		0.806 33%,
+		0.859 37.5%,
+		0.9 42.2%,
+		0.93 47.1%,
+		0.953 52.3%,
+		0.969 57.6%,
+		0.98 63.1%,
+		0.987 68.8%,
+		0.992 74.7%,
+		0.995 80.8%,
+		0.997 87%,
+		0.998 93.4%,
+		1 100%
+	);
+	--ease-out: cubic-bezier(0.2, 0, 0, 1);
+	--ease-in: cubic-bezier(0.4, 0, 1, 1);
+	--dur-press: 90ms;
+	--dur-fast: 150ms;
+	--dur-exit: 180ms;
+	--dur-spring: 450ms;
 }
 
-.launch-control {
-	--background: #040511;
-	--foreground: #e9ecff;
-	--card: #080a16;
-	--card-foreground: #e9ecff;
-	--popover: #080a16;
-	--popover-foreground: #e9ecff;
+/* Light theme. The inline script in the root layout sets data-theme
+   on <html> before the first paint. */
+:root[data-theme="light"] {
+	color-scheme: light;
+
+	--bg: #f4f3ee;
+	--panel: #ecebe4;
+	--raised: #e3e1d8;
+	--hover: #ebe9e2;
+	--line: #d9d6cc;
+	--line2: #c4c0b3;
+	--fg: #161614;
+	--fg2: #4f4e48;
+	--fg3: #64625a;
+
+	--brand: oklch(0.48 0.2 293);
+
+	--green: oklch(0.48 0.12 152);
+	--amber: oklch(0.5 0.12 70);
+	--red: oklch(0.52 0.18 28);
+	--destructive-foreground: #ffffff;
+}
+
+:root[data-theme="dark"] {
+	color-scheme: dark;
+}
+
+/* The easter egg theme. It only sets the raw tokens, the rest follows.
+   The :root prefix makes it win over data-theme in both modes. */
+:root.launch-control {
+	color-scheme: dark;
+	--bg: #040511;
+	--panel: #080a16;
+	--raised: #0c1227;
+	--hover: #0a0f20;
+	--line: #1d2646;
+	--line2: #2c3868;
+	--fg: #e9ecff;
+	--fg2: #9fb2ff;
+	--fg3: #8ea2d7;
 	--primary: #00ffe1;
 	--primary-foreground: #021016;
-	--secondary: #0c1227;
-	--secondary-foreground: #9fb2ff;
-	--muted: #0c1227;
-	--muted-foreground: #8ea2d7;
-	--accent: #0c1227;
-	--accent-foreground: #e9ecff;
-	--destructive: #ef4444;
-	--destructive-foreground: #ffffff;
-	--border: #1d2646;
-	--input: #0c1227;
-	--ring: #00ffe1;
-	--chart-1: #00ffe1;
+	--brand: #00ffe1;
 	--chart-2: #8b5cf6;
-	--chart-3: #f59e0b;
-	--chart-4: #22d3ee;
-	--chart-5: #ef4444;
-	--sidebar: #080a16;
-	--sidebar-foreground: #e9ecff;
-	--sidebar-primary: #00ffe1;
-	--sidebar-primary-foreground: #021016;
-	--sidebar-accent: #0c1227;
-	--sidebar-accent-foreground: #e9ecff;
-	--sidebar-border: #1d2646;
-	--sidebar-ring: #00ffe1;
+	--green: oklch(0.8 0.15 152);
+	--amber: oklch(0.83 0.14 82);
+	--red: oklch(0.72 0.18 25);
+	--destructive-foreground: var(--bg);
 	--font-sans:
 		"IBM Plex Mono", "SFMono-Regular", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
@@ -97,14 +167,42 @@
 	--color-border: var(--border);
 	--color-input: var(--input);
 	--color-ring: var(--ring);
-	--radius: var(--radius);
-	--radius-sm: calc(var(--radius) - 4px);
-	--radius-md: calc(var(--radius) - 2px);
-	--radius-lg: var(--radius);
-	--radius-xl: calc(var(--radius) + 4px);
-	--font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-	--animate-accordion-down: accordion-down 0.2s ease-out;
-	--animate-accordion-up: accordion-up 0.2s ease-out;
+
+	--color-bg: var(--bg);
+	--color-panel: var(--panel);
+	--color-raised: var(--raised);
+	--color-hover: var(--hover);
+	--color-line: var(--line);
+	--color-line2: var(--line2);
+	--color-fg: var(--fg);
+	--color-fg2: var(--fg2);
+	--color-fg3: var(--fg3);
+	--color-brand: var(--brand);
+	--color-green: var(--green);
+	--color-amber: var(--amber);
+	--color-red: var(--red);
+
+	--radius-xs: 0px;
+	--radius-sm: 0px;
+	--radius-md: 0px;
+	--radius-lg: 0px;
+	--radius-xl: 0px;
+	--radius-2xl: 0px;
+	--radius-3xl: 0px;
+	--radius-4xl: 0px;
+
+	--font-sans: var(--font-instrument-sans), system-ui, sans-serif;
+	--font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
+
+	/* Tracking depends on size: tight when large, open when small and uppercase. */
+	--tracking-display: -0.032em;
+	--tracking-title: -0.022em;
+	--tracking-head: -0.012em;
+	--tracking-label: 0.06em;
+	--tracking-caps: 0.08em;
+
+	--animate-accordion-down: accordion-down 0.2s var(--ease-out);
+	--animate-accordion-up: accordion-up 0.2s var(--ease-out);
 	--animate-spin-reverse: spin-reverse 1s linear infinite;
 }
 
@@ -212,24 +310,84 @@
 
 @layer base {
 	* {
-		@apply border-border outline-ring/50;
+		@apply border-border;
 	}
 
 	html {
-		background: var(--color-background);
+		background-color: var(--bg);
 		min-height: 100vh;
+		/* Keeps the page from shifting when a modal locks the scroll. */
+		scrollbar-gutter: stable;
+		/* The track has the page color, so the gutter looks like the page. */
+		scrollbar-color: var(--line2) var(--bg);
+		-webkit-text-size-adjust: 100%;
+		text-size-adjust: 100%;
+	}
+
+	/* Inner scroll areas get the same gutter. The track has the color of the surface. */
+	[data-radix-scroll-area-viewport],
+	[role="dialog"],
+	[role="listbox"],
+	[cmdk-list],
+	[vaul-drawer] {
+		scrollbar-gutter: stable;
+		scrollbar-color: var(--line2) var(--panel);
+	}
+
+	.ll-scroll {
+		scrollbar-gutter: stable;
+		scrollbar-color: var(--line2) var(--bg);
 	}
 
 	body {
 		@apply bg-background text-foreground;
 		font-family: var(--font-sans);
-		background: radial-gradient(ellipse at center, rgba(121, 39, 245, 0.15) 15%, transparent 70%);
-		background-attachment: fixed;
+		font-size: 15px;
+		line-height: 23px;
 		min-height: 100vh;
+		-webkit-font-smoothing: antialiased;
+	}
+
+	:focus-visible {
+		outline: 2px solid var(--brand);
+		outline-offset: 2px;
+	}
+
+	::selection {
+		background: color-mix(in oklch, var(--primary) 55%, transparent);
+		color: var(--fg);
+	}
+
+	::placeholder {
+		color: var(--fg3);
+	}
+
+	code,
+	pre,
+	kbd {
+		font-family: var(--font-mono);
 	}
 
 	button,
-	[role="button"] {
+	input,
+	select,
+	textarea {
+		font: inherit;
+	}
+
+	/* State colors ease in. A press (see `press`) is instant. */
+	a,
+	button,
+	input,
+	[role="option"],
+	[role="menuitem"] {
+		transition-property: color, background-color, border-color, opacity, scale;
+		transition-duration: var(--dur-fast), var(--dur-fast), var(--dur-fast), var(--dur-fast), var(--dur-spring);
+		transition-timing-function: var(--ease-out), var(--ease-out), var(--ease-out), var(--ease-out), var(--spring);
+	}
+
+	button:not(:disabled),
+	[role="button"]:not([aria-disabled="true"]) {
 		cursor: pointer;
 	}
 	input[type="number"] {
@@ -239,6 +397,156 @@
 	input[type="number"]::-webkit-outer-spin-button {
 		-webkit-appearance: none;
 		margin: 0;
+	}
+}
+
+/* Status tint: 13% of the color as a background, the color as text. */
+@utility tint-* {
+	background: color-mix(in oklch, --value(--color-*) 13%, transparent);
+	color: --value(--color-*);
+}
+
+/* Press feedback on pointer down. The release springs back. */
+@utility press {
+	&:active:not(:disabled) {
+		scale: 0.97;
+		transition: scale var(--dur-press) var(--ease-out);
+	}
+}
+
+@utility press-icon {
+	&:active:not(:disabled) {
+		scale: 0.86;
+		transition: scale var(--dur-press) var(--ease-out);
+	}
+}
+
+/* A bar that floats over content that scrolls under it. */
+@utility material {
+	background: color-mix(in oklch, var(--bg) 84%, transparent);
+	backdrop-filter: blur(14px) saturate(160%);
+}
+
+@utility tabular {
+	font-variant-numeric: tabular-nums;
+}
+
+/* Enter and exit. Radix keeps an element mounted while a keyframe
+   animation runs, so the exit is a keyframe. The enter starts from
+   @starting-style. */
+.ll-pop,
+.ll-dialog,
+.ll-overlay {
+	--pop-scale: 0.96;
+	--pop-y: -4px;
+}
+
+@keyframes ll-pop-out {
+	to {
+		opacity: 0;
+		scale: var(--pop-scale);
+		translate: 0 var(--pop-y);
+	}
+}
+
+@keyframes ll-dialog-out {
+	to {
+		opacity: 0;
+		scale: var(--pop-scale);
+	}
+}
+
+@keyframes ll-fade-out {
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes ll-toast-in {
+	from {
+		opacity: 0;
+		translate: var(--toast-x, 24px) 0;
+	}
+}
+
+@keyframes ll-toast-out {
+	to {
+		opacity: 0;
+		translate: var(--toast-x, 24px) 0;
+	}
+}
+
+/* A popover, dropdown, select or tooltip. It grows from its trigger. */
+.ll-pop {
+	transition:
+		opacity var(--dur-fast) var(--ease-out),
+		scale var(--dur-spring) var(--spring),
+		translate var(--dur-spring) var(--spring);
+
+	@starting-style {
+		opacity: 0;
+		scale: var(--pop-scale);
+		translate: 0 var(--pop-y);
+	}
+
+	&[data-state="closed"] {
+		animation: ll-pop-out var(--dur-exit) var(--ease-in) forwards;
+		pointer-events: none;
+	}
+}
+
+/* A dialog is centered with translate, so it only scales and fades. */
+.ll-dialog {
+	--pop-scale: 0.98;
+	transition:
+		opacity 200ms var(--ease-out),
+		scale var(--dur-spring) var(--spring);
+
+	@starting-style {
+		opacity: 0;
+		scale: var(--pop-scale);
+	}
+
+	&[data-state="closed"] {
+		animation: ll-dialog-out var(--dur-exit) var(--ease-in) forwards;
+	}
+}
+
+.ll-overlay {
+	transition: opacity 220ms var(--ease-out);
+
+	@starting-style {
+		opacity: 0;
+	}
+
+	&[data-state="closed"] {
+		animation: ll-fade-out var(--dur-exit) var(--ease-in) forwards;
+	}
+}
+
+/* Reduced motion: no slide, no scale. The fades stay. */
+@media (prefers-reduced-motion: reduce) {
+	.ll-pop,
+	.ll-dialog,
+	.ll-overlay {
+		--pop-scale: 1;
+		--pop-y: 0px;
+	}
+
+	:root {
+		--toast-x: 0px;
+	}
+
+	.press:active:not(:disabled),
+	.press-icon:active:not(:disabled) {
+		scale: none;
+	}
+}
+
+@media (prefers-reduced-transparency: reduce) {
+	.material {
+		background: var(--bg);
+		backdrop-filter: none;
 	}
 }
 
@@ -358,4 +666,29 @@
 	.border-thin {
 		border-width: 0.5px;
 	}
+}
+
+/* A scroll strip fades at the edge that has more content. The state is set by script. */
+.ll-fade {
+	--fs: 0px;
+	--fe: 0px;
+	mask-image: linear-gradient(to right, transparent, #000 var(--fs), #000 calc(100% - var(--fe)), transparent);
+
+	&[data-fade-start] {
+		--fs: 28px;
+	}
+
+	&[data-fade-end] {
+		--fe: 28px;
+	}
+}
+
+/* Radix adds a margin to the body for the scrollbar width when a layer locks
+   scroll. The html scrollbar-gutter already keeps that space, so cancel it.
+   The html prefix beats the rule that Radix injects later. */
+html body[data-scroll-locked] {
+	/* biome-ignore lint/complexity/noImportantStyles: must beat the rule that Radix injects */
+	margin-right: 0 !important;
+	/* biome-ignore lint/complexity/noImportantStyles: same as above */
+	padding-right: 0 !important;
 }

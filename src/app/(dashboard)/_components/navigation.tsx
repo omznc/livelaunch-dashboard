@@ -14,14 +14,16 @@ import {
 	CredenzaTitle,
 } from "@components/ui/credenza";
 import type { enabled_guilds } from "@generated/client";
+import { unwrap } from "@lib/action-result";
 import { cn } from "@lib/utils";
+import { Power, UserPlus } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import type * as React from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
-const links = [
+export const links = [
 	{
 		href: "/",
 		label: "Home",
@@ -29,6 +31,11 @@ const links = [
 	{
 		href: "/general",
 		label: "General",
+		requiresGuildEnabled: true,
+	},
+	{
+		href: "/notifications",
+		label: "Notifications",
 		requiresGuildEnabled: true,
 	},
 	{
@@ -41,16 +48,56 @@ const links = [
 		label: "News",
 		requiresGuildEnabled: true,
 	},
-	{
-		href: "/notifications",
-		label: "Notifications",
-		requiresGuildEnabled: true,
-	},
 ];
 
+// The header skeleton uses the same classes, so the tabs keep their size when the header loads.
+export const tabClass =
+	"inline-flex shrink-0 snap-start items-center justify-center border-line border-r px-5 font-medium font-mono text-[13.5px] text-fg2 hover:bg-raised hover:text-fg focus-visible:outline-offset-[-2px] motion-reduce:transition-none aria-[current=page]:bg-primary/[0.13] aria-[current=page]:text-brand aria-[current=page]:hover:bg-primary/[0.18]";
+export const tabStripClass =
+	"ll-scroll ll-fade flex min-w-0 flex-1 snap-x items-stretch overflow-x-auto [scrollbar-width:none]";
+
 interface NavigationProps extends React.HTMLAttributes<HTMLElement> {
-	guilds?: enabled_guilds[];
+	guilds?: Pick<enabled_guilds, "guild_id">[];
 	allGuilds?: GuildsResponse[];
+}
+
+// The fade at an edge tells that more tabs are out of view.
+function updateFades(strip: HTMLElement) {
+	const max = strip.scrollWidth - strip.clientWidth;
+	strip.toggleAttribute("data-fade-start", strip.scrollLeft > 1);
+	strip.toggleAttribute("data-fade-end", strip.scrollLeft < max - 1);
+}
+
+function scrollCurrentIntoView(strip: HTMLElement) {
+	const current = strip.querySelector<HTMLElement>('[aria-current="page"]');
+	if (!current) return;
+	strip.scrollLeft = current.offsetLeft - (strip.clientWidth - current.offsetWidth) / 2;
+}
+
+function useTabStrip(path: string, count: number) {
+	const ref = useRef<HTMLDivElement>(null);
+
+	useLayoutEffect(() => {
+		const strip = ref.current;
+		if (!strip) return;
+		const update = () => updateFades(strip);
+		update();
+		strip.addEventListener("scroll", update, { passive: true });
+		const watch = new ResizeObserver(update);
+		watch.observe(strip);
+		for (const child of strip.children) watch.observe(child);
+		return () => {
+			watch.disconnect();
+			strip.removeEventListener("scroll", update);
+		};
+	}, []);
+
+	// The current tab scrolls into view on load and on each change.
+	useLayoutEffect(() => {
+		if (ref.current) scrollCurrentIntoView(ref.current);
+	}, [path, count]);
+
+	return ref;
 }
 
 export function Navigation({ className, guilds, allGuilds, ...props }: NavigationProps) {
@@ -58,7 +105,6 @@ export function Navigation({ className, guilds, allGuilds, ...props }: Navigatio
 	const params = useSearchParams();
 	const guildId = params.get("g") ?? "";
 	const [showHelpDialog, setShowHelpDialog] = useState(false);
-	const router = useRouter();
 
 	const guild = useMemo(() => {
 		if (!guilds) return null;
@@ -69,6 +115,9 @@ export function Navigation({ className, guilds, allGuilds, ...props }: Navigatio
 		if (!allGuilds) return null;
 		return allGuilds.find((guild) => guild.id === guildId) ?? null;
 	}, [allGuilds, guildId]);
+
+	const visibleLinks = links.filter(({ requiresGuildEnabled }) => !requiresGuildEnabled || guild);
+	const stripRef = useTabStrip(path, visibleLinks.length);
 
 	useEffect(() => {
 		const handleShowHelpDialog = (e: Event) => {
@@ -84,41 +133,42 @@ export function Navigation({ className, guilds, allGuilds, ...props }: Navigatio
 
 	return (
 		<>
-			<nav className={cn("flex animate-fade-in items-center justify-start transition-all", className)} {...props}>
-				<div className="flex w-full items-center justify-start gap-4 overflow-x-auto border-b px-4 transition-all md:border-b-0">
-					{guildId &&
-						(selectedFullGuild && !selectedFullGuild.botAccess ? (
+			<nav aria-label="Sections" className={cn("flex items-stretch", className)} {...props}>
+				{guildId &&
+					(selectedFullGuild && !selectedFullGuild.botAccess ? (
+						<div className="flex shrink-0 items-center border-line border-r px-4">
 							<Button
-								variant="outline"
+								variant="secondary"
+								size="sm"
 								onClick={() => {
 									window.dispatchEvent(new Event("openInviteGuildDialog"));
 								}}
 							>
+								<UserPlus />
 								Invite LiveLaunch
 							</Button>
-						) : (
-							!guild && (
-								<Button variant="outline" onClick={() => setShowHelpDialog(true)}>
+						</div>
+					) : (
+						!guild && (
+							<div className="flex shrink-0 items-center border-line border-r px-4">
+								<Button variant="secondary" size="sm" onClick={() => setShowHelpDialog(true)}>
+									<Power />
 									Enable LiveLaunch
 								</Button>
-							)
-						))}
-					{links
-						.filter(({ requiresGuildEnabled }) => !requiresGuildEnabled || (requiresGuildEnabled && guild))
-						.map(({ href, label }) => (
-							<RetainQueryLink
-								key={`${href}${label}`}
-								href={href}
-								className={cn(
-									"rounded-md px-3 py-4 text-center font-medium font-monospace text-sm opacity-60 transition-all duration-200 hover:opacity-100",
-									{
-										"font-bold opacity-100": path === href,
-									},
-								)}
-							>
-								{label}
-							</RetainQueryLink>
-						))}
+							</div>
+						)
+					))}
+				<div ref={stripRef} className={tabStripClass}>
+					{visibleLinks.map(({ href, label }) => (
+						<RetainQueryLink
+							key={`${href}${label}`}
+							href={href}
+							aria-current={path === href ? "page" : undefined}
+							className={tabClass}
+						>
+							{label}
+						</RetainQueryLink>
+					))}
 				</div>
 			</nav>
 			<Credenza open={showHelpDialog} onOpenChange={setShowHelpDialog}>
@@ -132,7 +182,7 @@ export function Navigation({ className, guilds, allGuilds, ...props }: Navigatio
 					</CredenzaHeader>
 					<div className="flex flex-col gap-2 overflow-y-auto px-4">
 						To enable the bot you need to run the following command in your server
-						<code className="relative block w-full rounded bg-muted p-4 font-mono font-semibold text-sm">
+						<code className="relative block w-full border border-line2 bg-bg p-3 font-medium font-mono text-[13px]">
 							{"/enable <feature>"}
 						</code>
 						Where the feature is one of the following
@@ -169,10 +219,9 @@ export function Navigation({ className, guilds, allGuilds, ...props }: Navigatio
 						<Button
 							variant="secondary"
 							onClick={() => {
-								toast.promise(enableGuild({ guildId: String(guildId) }), {
+								toast.promise(unwrap(enableGuild({ guildId: String(guildId) })), {
 									loading: "Enabling...",
 									success: () => {
-										router.refresh();
 										setShowHelpDialog(false);
 										return "Enabled!";
 									},

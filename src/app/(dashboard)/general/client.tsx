@@ -7,16 +7,30 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@components/ui
 import { Setting, SettingGroup } from "@components/ui/setting";
 import { Switch } from "@components/ui/switch";
 import type { enabled_guilds } from "@generated/client";
+import { errorMessage, unwrap } from "@lib/action-result";
 import { useDebounce } from "@lib/hooks";
-import type { RESTGetAPIGuildChannelsResult } from "discord.js";
-import { ArrowUp, Hash, Megaphone } from "lucide-react";
+import { useToggles } from "@lib/use-toggles";
+import { boundedValue } from "@lib/utils";
+import type { RESTGetAPIGuildChannelsResult } from "discord-api-types/v10";
+import { ArrowUpRight, Hash, Megaphone } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { disableFeature, updateChannel, updateNumberOfEvents, updateSettings } from "./actions";
 
 interface ClientProps {
-	guild: enabled_guilds;
+	guild: Pick<
+		enabled_guilds,
+		| "guild_id"
+		| "channel_id"
+		| "scheduled_events"
+		| "notification_button_fc"
+		| "notification_button_g4l"
+		| "notification_button_sln"
+		| "se_launch"
+		| "se_event"
+		| "se_no_url"
+	>;
 	channels: RESTGetAPIGuildChannelsResult;
 }
 
@@ -30,14 +44,17 @@ export interface GeneralSettings {
 }
 
 export default function Client({ guild, channels }: ClientProps) {
-	const [settings, setSettings] = useState<GeneralSettings>({
-		notification_button_fc: Boolean(guild.notification_button_fc),
-		notification_button_g4l: Boolean(guild.notification_button_g4l),
-		notification_button_sln: Boolean(guild.notification_button_sln),
-		se_launch: Boolean(guild.se_launch),
-		se_event: Boolean(guild.se_event),
-		se_no_url: Boolean(guild.se_no_url),
-	});
+	const [settings, setToggle] = useToggles<GeneralSettings>(
+		{
+			notification_button_fc: Boolean(guild.notification_button_fc),
+			notification_button_g4l: Boolean(guild.notification_button_g4l),
+			notification_button_sln: Boolean(guild.notification_button_sln),
+			se_launch: Boolean(guild.se_launch),
+			se_event: Boolean(guild.se_event),
+			se_no_url: Boolean(guild.se_no_url),
+		},
+		(settings) => updateSettings({ guildId: String(guild.guild_id), settings }),
+	);
 	const [numberOfEvents, setNumberOfEvents] = useState<number>(guild.scheduled_events ?? 0);
 	const [selectedChannelID, setSelectedChannelID] = useState<string | undefined>(guild.channel_id?.toString());
 	const hydratedRef = useRef(false);
@@ -56,7 +73,7 @@ export default function Client({ guild, channels }: ClientProps) {
 		}
 		if (debounced === lastSavedRef.current) return;
 
-		updateNumberOfEvents({ guildId: String(guild.guild_id), num: debounced })
+		unwrap(updateNumberOfEvents({ guildId: String(guild.guild_id), num: debounced }))
 			.then(() => {
 				lastSavedRef.current = debounced;
 			})
@@ -66,20 +83,19 @@ export default function Client({ guild, channels }: ClientProps) {
 	}, [debounced, guild.guild_id]);
 
 	return (
-		<div className="flex flex-col gap-4">
+		<div className="flex flex-col">
 			<SettingGroup title={"Videos"}>
 				{guild.channel_id !== null ? (
 					<Setting
 						label={"Disable Feature"}
 						description={"Disable this feature for your server."}
 						active={false}
-						className="flex flex-col gap-4"
 						disabled={guild.channel_id === null}
 						disabledMessage={"You can't disable this feature if it's not enabled"}
 					>
 						<Button
 							onClick={() => {
-								toast.promise(disableFeature({ guildId: String(guild.guild_id) }), {
+								toast.promise(unwrap(disableFeature({ guildId: String(guild.guild_id) })), {
 									loading: "Disabling...",
 									success: () => {
 										setSelectedChannelID(undefined);
@@ -102,18 +118,19 @@ export default function Client({ guild, channels }: ClientProps) {
 				>
 					<Select
 						onValueChange={(value) => {
+							const previous = selectedChannelID;
 							setSelectedChannelID(value);
-							toast.promise(updateChannel({ guildId: String(guild.guild_id), channelId: value }), {
-								loading: "Saving...",
-								success: (r) => {
-									if (!r.data?.success) throw new Error(r.serverError);
-									return "Saved";
+							toast.promise(
+								unwrap(updateChannel({ guildId: String(guild.guild_id), channelId: value })),
+								{
+									loading: "Saving...",
+									success: "Saved",
+									error: (e: unknown) => {
+										setSelectedChannelID(previous);
+										return errorMessage(e);
+									},
 								},
-								error: (e?: Error) => {
-									setSelectedChannelID(undefined);
-									return e ? e.message : "Failed to save.";
-								},
-							});
+							);
 						}}
 						key={selectedChannelID}
 					>
@@ -124,9 +141,9 @@ export default function Client({ guild, channels }: ClientProps) {
 									return (
 										<span>
 											{chan.type === 0 ? (
-												<Hash className="mr-2 inline-block" />
+												<Hash className="mr-2 inline-block h-[18px] w-[18px]" />
 											) : (
-												<Megaphone className="mr-2 inline-block" />
+												<Megaphone className="mr-2 inline-block h-[18px] w-[18px]" />
 											)}
 											{chan.name}
 										</span>
@@ -139,9 +156,9 @@ export default function Client({ guild, channels }: ClientProps) {
 							{channels.map((channel) => (
 								<SelectItem key={channel.id} value={channel.id}>
 									{channel.type === 0 ? (
-										<Hash className="mr-2 inline-block" />
+										<Hash className="mr-2 inline-block h-[18px] w-[18px]" />
 									) : (
-										<Megaphone className="mr-2 inline-block" />
+										<Megaphone className="mr-2 inline-block h-[18px] w-[18px]" />
 									)}
 									{channel.name}
 								</SelectItem>
@@ -159,9 +176,10 @@ export default function Client({ guild, channels }: ClientProps) {
 						<Link
 							href={"https://i.imgur.com/ZFi4hEt.png"}
 							target={"_blank"}
-							className="inline-flex items-center gap-1 brightness-125 hover:underline"
+							rel="noreferrer"
+							className="inline-flex items-center gap-0.5 text-brand hover:underline"
 						>
-							Example <ArrowUp className="rotate-45" />
+							Example <ArrowUpRight className="h-[18px] w-[18px]" />
 						</Link>
 					</>
 				}
@@ -174,20 +192,8 @@ export default function Client({ guild, channels }: ClientProps) {
 				>
 					<Switch
 						id={"toggle-fc"}
-						onCheckedChange={(checked) => {
-							updateSettings({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_button_fc: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_button_fc: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_button_fc}
+						onCheckedChange={(checked) => setToggle("notification_button_fc", checked)}
+						checked={settings.notification_button_fc}
 					/>
 				</Setting>
 				<Setting
@@ -198,20 +204,8 @@ export default function Client({ guild, channels }: ClientProps) {
 				>
 					<Switch
 						id={"toggle-g4l"}
-						onCheckedChange={(checked) => {
-							updateSettings({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_button_g4l: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_button_g4l: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_button_g4l}
+						onCheckedChange={(checked) => setToggle("notification_button_g4l", checked)}
+						checked={settings.notification_button_g4l}
 					/>
 				</Setting>
 				<Setting
@@ -222,20 +216,8 @@ export default function Client({ guild, channels }: ClientProps) {
 				>
 					<Switch
 						id={"toggle-sln"}
-						onCheckedChange={(checked) => {
-							updateSettings({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									notification_button_sln: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								notification_button_sln: checked,
-							}));
-						}}
-						defaultChecked={settings.notification_button_sln}
+						onCheckedChange={(checked) => setToggle("notification_button_sln", checked)}
+						checked={settings.notification_button_sln}
 					/>
 				</Setting>
 			</SettingGroup>
@@ -247,10 +229,11 @@ export default function Client({ guild, channels }: ClientProps) {
 						{"What kinds of events will the bot create?"}
 						<Link
 							href={"https://support.discord.com/hc/en-us/articles/4409494125719-Scheduled-Events"}
+							rel="noreferrer"
 							target={"_blank"}
-							className="inline-flex items-center gap-1 brightness-125 hover:underline"
+							className="inline-flex items-center gap-0.5 text-brand hover:underline"
 						>
-							Learn more <ArrowUp className="rotate-45" />
+							Learn more <ArrowUpRight className="h-[18px] w-[18px]" />
 						</Link>
 					</>
 				}
@@ -258,24 +241,24 @@ export default function Client({ guild, channels }: ClientProps) {
 				<Setting
 					label={"Number of Events"}
 					description={
-						"How many events should the bot schedule at a time? Setting this to 0 will disable this feature, and accompanying settings."
+						"How many events should the bot schedule at a time? Setting this to 0 will disable this feature, and accompanying settings. The range is 0 to 50."
 					}
 					active={false}
 				>
-					<div className="grid max-w-sm items-center gap-1.5">
-						<Label htmlFor="events" className="whitespace-nowrap">
+					<div>
+						<Label htmlFor="events" className="sr-only">
 							Events (0-50)
 						</Label>
 						<Input
 							type="number"
 							id="events"
 							placeholder="Events"
+							className="w-32"
 							defaultValue={numberOfEvents}
 							min={0}
 							max={50}
 							onChange={(e) => {
-								e.target.value = clamp(e.target.valueAsNumber, 0, 50).toString();
-								setNumberOfEvents(clamp(e.target.valueAsNumber, 0, 50));
+								setNumberOfEvents(boundedValue(e.target, 50));
 							}}
 						/>
 					</div>
@@ -289,20 +272,8 @@ export default function Client({ guild, channels }: ClientProps) {
 				>
 					<Switch
 						id={"toggle-se-launch"}
-						onCheckedChange={(checked) => {
-							updateSettings({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									se_launch: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								se_launch: checked,
-							}));
-						}}
-						defaultChecked={settings.se_launch}
+						onCheckedChange={(checked) => setToggle("se_launch", checked)}
+						checked={settings.se_launch}
 					/>
 				</Setting>
 				<Setting
@@ -314,20 +285,8 @@ export default function Client({ guild, channels }: ClientProps) {
 				>
 					<Switch
 						id={"toggle-se-event"}
-						onCheckedChange={(checked) => {
-							updateSettings({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									se_event: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								se_event: checked,
-							}));
-						}}
-						defaultChecked={settings.se_event}
+						onCheckedChange={(checked) => setToggle("se_event", checked)}
+						checked={settings.se_event}
 					/>
 				</Setting>
 				<Setting
@@ -339,27 +298,11 @@ export default function Client({ guild, channels }: ClientProps) {
 				>
 					<Switch
 						id={"toggle-se-no-url"}
-						onCheckedChange={(checked) => {
-							updateSettings({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									se_no_url: checked,
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								se_no_url: checked,
-							}));
-						}}
-						defaultChecked={settings.se_no_url}
+						onCheckedChange={(checked) => setToggle("se_no_url", checked)}
+						checked={settings.se_no_url}
 					/>
 				</Setting>
 			</SettingGroup>
 		</div>
 	);
-}
-
-function clamp(value: number, min: number, max: number) {
-	return Math.min(Math.max(value, min), max);
 }

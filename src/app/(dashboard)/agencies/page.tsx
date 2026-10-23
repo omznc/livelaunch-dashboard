@@ -1,10 +1,17 @@
 import Client from "@app/(dashboard)/agencies/client";
 import { prisma } from "@lib/prisma";
-import { checkGuildPermissions } from "@lib/server-utils";
-import { unstable_cache as cache } from "next/dist/server/web/spec-extension/unstable-cache";
+import { checkGuildPermissions, redirectToDefaultGuild } from "@lib/server-utils";
+import { cacheLife, cacheTag } from "next/cache";
+import { notFound } from "next/navigation";
 import NotEnabled from "@/src/app/(dashboard)/_components/not-enabled";
 
-export const dynamic = "force-dynamic";
+// Only the bot writes this list, so no action invalidates the tag.
+async function getAgencies() {
+	"use cache";
+	cacheLife({ stale: 300, revalidate: 900, expire: 3600 });
+	cacheTag("agencies");
+	return prisma.ll2_agencies.findMany();
+}
 
 export default async function Agencies(props: {
 	searchParams: Promise<{
@@ -13,31 +20,30 @@ export default async function Agencies(props: {
 }) {
 	const searchParams = await props.searchParams;
 	const guildId = searchParams?.g;
-	if (!guildId) return null;
+	if (!guildId) return redirectToDefaultGuild("/agencies");
 
 	const authorized = await checkGuildPermissions(guildId);
 	if (!authorized) {
-		return null;
+		notFound();
 	}
 
-	const agencies = await cache(async () => prisma.ll2_agencies.findMany(), ["agencies"], {
-		tags: ["agencies"],
-		revalidate: 60 * 60,
-	})();
-
-	const guild = await prisma.enabled_guilds.findFirst({
-		where: {
-			guild_id: BigInt(guildId),
-		},
-	});
+	const [agencies, guild, enabledAgencies] = await Promise.all([
+		getAgencies(),
+		prisma.enabled_guilds.findFirst({
+			where: {
+				guild_id: BigInt(guildId),
+			},
+			select: { guild_id: true, agencies_include_exclude: true },
+		}),
+		prisma.ll2_agencies_filter.findMany({
+			where: {
+				guild_id: BigInt(guildId),
+			},
+			select: { agency_id: true },
+		}),
+	]);
 
 	if (!guild) return <NotEnabled />;
-
-	const enabledAgencies = await prisma.ll2_agencies_filter.findMany({
-		where: {
-			guild_id: BigInt(guildId),
-		},
-	});
 
 	return <Client agencies={agencies} enabledAgencies={enabledAgencies} guild={guild} key={guildId} />;
 }

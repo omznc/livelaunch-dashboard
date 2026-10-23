@@ -14,7 +14,8 @@ import {
 	CredenzaTitle,
 } from "@components/ui/credenza";
 import { Popover, PopoverContent, PopoverTrigger } from "@components/ui/popover";
-import env from "@env";
+import { unwrap } from "@lib/action-result";
+import { compareGuilds } from "@lib/guild-order";
 import { cn } from "@lib/utils";
 import { CheckIcon, ChevronsUpDown, RefreshCw } from "lucide-react";
 import type { Route } from "next";
@@ -31,41 +32,53 @@ type PopoverTriggerProps = React.ComponentPropsWithoutRef<typeof PopoverTrigger>
 
 interface GuildSwitcherProps extends PopoverTriggerProps {
 	guilds: GuildsResponse[];
+	clientId: string;
 	listenForInviteEvent?: boolean;
 }
 
-export default function GuildSwitcher({ className, guilds, listenForInviteEvent }: GuildSwitcherProps) {
+function GuildAvatar({ guild }: { guild: GuildsResponse }) {
+	return (
+		<Avatar className="mr-1 h-6 w-6">
+			{guild.icon ? (
+				<Image
+					width={50}
+					height={50}
+					src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
+					alt={guild.name}
+				/>
+			) : (
+				<AvatarFallback>{guild.name[0] || "LL"}</AvatarFallback>
+			)}
+		</Avatar>
+	);
+}
+
+function RocketPortal({ show }: { show: boolean }) {
+	const [mounted, setMounted] = React.useState(false);
+
+	useEffect(() => {
+		setMounted(true);
+	}, []);
+
+	if (!show || !mounted) return null;
+	return createPortal(<div className="rocket-fly">🚀</div>, document.body);
+}
+
+export default function GuildSwitcher({ className, guilds, clientId, listenForInviteEvent }: GuildSwitcherProps) {
 	const [open, setOpen] = React.useState(false);
 	const [showNewGuildDialog, setShowNewGuildDialog] = React.useState(false);
 	const [revalidating, setRevalidating] = React.useState(false);
 	const [revalidationCooldown, setRevalidationCooldown] = React.useState(false);
 	const [search, setSearch] = React.useState("");
 	const [showRocket, setShowRocket] = React.useState(false);
-	const [mounted, setMounted] = React.useState(false);
 	const cooldownTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 	const params = useSearchParams();
 	const router = useRouter();
 	const selectedGuild = guilds.find((guild) => guild.id === params.get("g"));
 	const [pending, startTransition] = useTransition();
-	const inviteUrl = `https://discord.com/api/oauth2/authorize?client_id=${env.NEXT_PUBLIC_DISCORD_CLIENT_ID}&permissions=17601312868352&scope=bot%20applications.commands`;
-	const discordDeepLink = `discord://-/application-directory/${env.NEXT_PUBLIC_DISCORD_CLIENT_ID}`;
-	const sortedGuilds = useMemo(
-		() =>
-			[...guilds].sort((a, b) => {
-				if (a.botAccess && !b.botAccess) return -1;
-				if (!a.botAccess && b.botAccess) return 1;
-				return a.name.localeCompare(b.name);
-			}),
-		[guilds],
-	);
-
-	useEffect(() => {
-		if (!selectedGuild && sortedGuilds.length !== 0) {
-			const firstGuildWithBot = sortedGuilds.find((guild) => guild.botAccess);
-			const targetGuild = firstGuildWithBot ?? sortedGuilds[0];
-			router.replace(`?g=${targetGuild.id}`);
-		}
-	}, [router, selectedGuild, sortedGuilds]);
+	const inviteUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&permissions=17601312868352&scope=bot%20applications.commands`;
+	const discordDeepLink = `discord://-/application-directory/${clientId}`;
+	const sortedGuilds = useMemo(() => [...guilds].sort(compareGuilds), [guilds]);
 
 	useEffect(() => {
 		return () => {
@@ -82,10 +95,6 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 		};
 	}, [listenForInviteEvent]);
 
-	useEffect(() => {
-		setMounted(true);
-	}, []);
-
 	return (
 		<Credenza open={showNewGuildDialog} onOpenChange={setShowNewGuildDialog}>
 			{sortedGuilds.length !== 0 && (
@@ -96,33 +105,26 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 							role="combobox"
 							aria-expanded={open}
 							aria-label="Select a Guild"
-							className={cn("w-[200px] justify-between border-0 bg-black/50", className, {
-								"animate-pulse": pending,
-							})}
+							className={cn(
+								"h-full w-full min-w-0 justify-between border-0 px-4 font-sans text-[15px] data-[state=open]:bg-raised focus-visible:outline-offset-[-2px]",
+								className,
+								{
+									"animate-pulse": pending,
+								},
+							)}
 						>
 							{selectedGuild ? (
 								<>
-									<Avatar className="mr-2 h-5 w-5">
-										{selectedGuild.icon ? (
-											<Image
-												width={50}
-												height={50}
-												src={`https://cdn.discordapp.com/icons/${selectedGuild.id}/${selectedGuild.icon}.png`}
-												alt={selectedGuild.name}
-											/>
-										) : (
-											<AvatarFallback>{selectedGuild.name[0] || "LL"}</AvatarFallback>
-										)}
-									</Avatar>
+									<GuildAvatar guild={selectedGuild} />
 									<span className="truncate">{selectedGuild.name}</span>
 								</>
 							) : (
 								<span className="animate-pulse truncate">Just a moment...</span>
 							)}
-							<ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 opacity-50" />
+							<ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 text-fg3" />
 						</Button>
 					</PopoverTrigger>
-					<PopoverContent className="w-[200px] p-0">
+					<PopoverContent align="start" sideOffset={0} className="w-[280px] max-w-[calc(100vw-2rem)] p-0">
 						<Command>
 							<CommandList>
 								<CommandInput
@@ -154,22 +156,11 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 											}
 											className="text-sm"
 										>
-											<Avatar className="mr-2 h-5 w-5">
-												{guild.icon ? (
-													<Image
-														width={50}
-														height={50}
-														src={`https://cdn.discordapp.com/icons/${guild.id}/${guild.icon}.png`}
-														alt={guild.name}
-													/>
-												) : (
-													<AvatarFallback>{guild.name[0] || "LL"}</AvatarFallback>
-												)}
-											</Avatar>
+											<GuildAvatar guild={guild} />
 											<div className="flex flex-col">
 												<span>{guild.name}</span>
 												{!guild.botAccess && (
-													<span className="text-muted-foreground text-xs">Bot not added</span>
+													<span className="text-fg3 text-[13px]">Bot not added</span>
 												)}
 											</div>
 											<CheckIcon
@@ -188,6 +179,11 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 			)}
 			{sortedGuilds.length === 0 && (
 				<Button
+					variant="outline"
+					className={cn(
+						"h-full w-full min-w-0 border-0 px-4 font-sans text-[15px] focus-visible:outline-offset-[-2px]",
+						className,
+					)}
 					onClick={() => {
 						setShowNewGuildDialog(true);
 					}}
@@ -195,9 +191,7 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 					Add a Guild
 				</Button>
 			)}
-			{showRocket && mounted && typeof document !== "undefined"
-				? createPortal(<div className="rocket-fly">🚀</div>, document.body)
-				: null}
+			<RocketPortal show={showRocket} />
 			<CredenzaContent>
 				<CredenzaHeader>
 					<CredenzaTitle>Invite LiveLaunch</CredenzaTitle>
@@ -215,7 +209,7 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 							Is LiveLaunch already in your server?
 							<button
 								type="button"
-								className="cursor-pointer font-medium text-primary underline underline-offset-4 transition-all hover:brightness-125"
+								className="cursor-pointer font-medium text-brand underline underline-offset-4 hover:text-fg"
 								disabled={revalidating || revalidationCooldown}
 								onClick={async (_e) => {
 									try {
@@ -223,8 +217,7 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 											clearTimeout(cooldownTimer.current);
 										}
 										setRevalidating(true);
-										await revalidateGuilds({});
-										router.refresh();
+										await unwrap(revalidateGuilds({}));
 										setRevalidationCooldown(true);
 										cooldownTimer.current = setTimeout(() => {
 											setRevalidationCooldown(false);

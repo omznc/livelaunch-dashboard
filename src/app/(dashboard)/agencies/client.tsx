@@ -7,16 +7,18 @@ import { Setting, SettingGroup } from "@components/ui/setting";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import type { enabled_guilds, ll2_agencies, ll2_agencies_filter } from "@generated/client";
+import { unwrap } from "@lib/action-result";
+import { useToggles } from "@lib/use-toggles";
 import { cn } from "@lib/utils";
 import { FrownIcon } from "lucide-react";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { type MouseEvent, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 
 interface ClientProps {
 	agencies: ll2_agencies[];
-	enabledAgencies: ll2_agencies_filter[];
-	guild: enabled_guilds;
+	enabledAgencies: Pick<ll2_agencies_filter, "agency_id">[];
+	guild: Pick<enabled_guilds, "guild_id" | "agencies_include_exclude">;
 }
 
 export interface Agency extends ll2_agencies {
@@ -34,9 +36,10 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
 			selected: enabledAgencies.some((e) => e.agency_id === a.agency_id),
 		})),
 	);
-	const [settings, setSettings] = useState<AgenciesSettings>({
-		whitelist: Boolean(guild.agencies_include_exclude),
-	});
+	const [settings, setToggle] = useToggles<AgenciesSettings>(
+		{ whitelist: Boolean(guild.agencies_include_exclude) },
+		(settings) => updateSettings({ guildId: String(guild.guild_id), settings }),
+	);
 	const [searchQuery, setSearchQuery] = useState("");
 	const hydratedRef = useRef(false);
 	const lastGuildIdRef = useRef(guild.guild_id);
@@ -54,7 +57,7 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
 		if (snapshot === lastSavedSnapshotRef.current) return;
 		lastSavedSnapshotRef.current = snapshot;
 
-		toast.promise(SetAgencies({ guildId: String(guild.guild_id), agencies: selectedAgencies }), {
+		toast.promise(unwrap(SetAgencies({ guildId: String(guild.guild_id), agencies: selectedAgencies })), {
 			loading: "Saving...",
 			success: "Saved!",
 			error: "Failed to save!",
@@ -68,8 +71,10 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
 			return a.name.localeCompare(b.name);
 		});
 
+	const allSelected = selectedAgencies.length > 0 && selectedAgencies.every((a) => a.selected);
+
 	return (
-		<div className="flex flex-col gap-4">
+		<div className="flex flex-col">
 			<SettingGroup title={"Exclusions"} description="Whether to show or hide agencies">
 				<Setting
 					label={"Exclusion Mode"}
@@ -79,20 +84,8 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
 					active={settings.whitelist}
 				>
 					<Tabs
-						defaultValue={guild.agencies_include_exclude ? "include" : "exclude"}
-						onValueChange={(value) => {
-							updateSettings({
-								guildId: String(guild.guild_id),
-								settings: {
-									...settings,
-									whitelist: value === "include",
-								},
-							});
-							setSettings((prev) => ({
-								...prev,
-								whitelist: value === "include",
-							}));
-						}}
+						value={settings.whitelist ? "include" : "exclude"}
+						onValueChange={(value) => setToggle("whitelist", value === "include")}
 					>
 						<TabsList>
 							<TabsTrigger value="exclude">Exclude</TabsTrigger>
@@ -108,31 +101,29 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
 			>
 				<Input
 					placeholder={"Search..."}
+					aria-label="Search"
+					className="h-12 border-x-0 border-t-0 border-line bg-transparent px-4 sm:px-6"
 					onChange={(e) => {
 						setSearchQuery(e.target.value.trim());
 					}}
 				/>
-				<div className="flex flex-col overflow-hidden rounded-md border">
+				<div className="flex flex-col">
 					{filtered.length > 0 ? (
 						<Table className="w-full overflow-scroll">
-							<TableHeader className="h-14 border-b bg-background font-medium">
-								<TableRow className="snap-start bg-muted/50 align-right">
+							<TableHeader className="border-b border-line">
+								<TableRow>
 									<TableHead>Name</TableHead>
 									<TableHead>
 										<Checkbox
-											className="m-2 grid h-6 w-6 place-items-center rounded-[5px]"
-											checked={
-												selectedAgencies.every((a) => a.selected) && selectedAgencies.length > 0
-											}
-											onClick={(e) => {
+											className="m-2 h-5 w-5"
+											checked={allSelected}
+											onClick={(e: MouseEvent<HTMLButtonElement>) => {
 												e.preventDefault();
 												e.stopPropagation();
-												const checkbox = e.currentTarget as HTMLInputElement;
-												checkbox.checked = !checkbox.checked;
 												setSelectedAgencies((prev) =>
 													prev.map((p) => ({
 														...p,
-														selected: checkbox.checked,
+														selected: !allSelected,
 													})),
 												);
 											}}
@@ -144,12 +135,7 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
 								{filtered.map((a) => (
 									<TableRow
 										key={a.agency_id}
-										className={cn(
-											"h-18 h-8 w-full align-middle hover:bg-foreground hover:bg-muted/50",
-											{
-												"bg-muted/30": a.selected,
-											},
-										)}
+										className={cn("w-full select-none align-middle", {})}
 										onMouseDown={(e) => {
 											if (e.button === 0) {
 												e.preventDefault();
@@ -181,30 +167,32 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
 											}
 										}}
 									>
-										<TableCell className="inline-flex h-full items-center gap-2">
-											{a.logo_url ? (
-												<Image
-													src={a.logo_url}
-													alt="Agency Logo"
-													width={42}
-													height={42}
-													className="rounded-full bg-black"
-												/>
-											) : (
-												<div
-													className="flex h-[42px] w-[42px] items-center justify-center rounded-full bg-[#1e1f22] text-white"
-													title={a.name ?? "Unknown"}
-												>
-													{a.name?.[0]}
-												</div>
-											)}
-											{a.name}
+										<TableCell>
+											<div className="flex items-center gap-3">
+												{a.logo_url ? (
+													<Image
+														src={a.logo_url}
+														alt="Agency Logo"
+														width={32}
+														height={32}
+														className="h-8 w-8 shrink-0 border border-line bg-bg object-contain"
+													/>
+												) : (
+													<div
+														className="flex h-8 w-8 shrink-0 items-center justify-center border border-line bg-raised font-mono text-fg2 text-xs uppercase"
+														title={a.name ?? "Unknown"}
+													>
+														{a.name?.[0]}
+													</div>
+												)}
+												{a.name}
+											</div>
 										</TableCell>
-										<TableCell className="relative right-0 ml-auto text-right align-bottom">
+										<TableCell className="w-12 text-right align-middle">
 											<Checkbox
 												name={`Checked ${a.name}? ${a.selected}`}
 												checked={a.selected}
-												className="m-2 grid h-6 w-6 place-items-center rounded-[5px]"
+												className="m-2 h-5 w-5"
 												onClick={(e) => {
 													e.preventDefault();
 													e.stopPropagation();
@@ -228,9 +216,9 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
 							</TableBody>
 						</Table>
 					) : (
-						<div className="flex h-full flex-col items-center justify-center gap-4 bg-background p-8">
-							<FrownIcon className="h-10 w-10" />
-							<p className="text-sm opacity-50">No agencies matched your search query</p>
+						<div className="flex flex-col items-center justify-center gap-3 p-8">
+							<FrownIcon className="h-5 w-5 text-fg3" />
+							<p className="text-fg2 text-sm">No agencies matched your search query</p>
 						</div>
 					)}
 				</div>

@@ -3,8 +3,6 @@ import { isAuthorizedForGuild } from "@lib/server-utils";
 import { redirect } from "next/navigation";
 import Client from "./client";
 
-export const dynamic = "force-dynamic";
-
 export default async function AlmostThere(props: {
 	searchParams: Promise<{
 		g: string | undefined;
@@ -27,5 +25,11 @@ export default async function AlmostThere(props: {
 		redirect(`/?g=${guildId}`);
 	}
 
-	return <Client guildName={authorized.name} permissions={permissionCheck.permissions} />;
+	return (
+		<Client
+			guildName={authorized.name}
+			permissions={permissionCheck.permissions}
+			lookupFailed={permissionCheck.lookupFailed}
+		/>
+	);
 }

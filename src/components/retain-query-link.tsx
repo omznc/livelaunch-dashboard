@@ -7,6 +7,7 @@ import type { PropsWithChildren } from "react";
 
 interface RetainQueryLinkProps extends Omit<LinkProps<string>, "href">, PropsWithChildren {
 	className?: string;
+	"aria-current"?: "page";
 	href: string | { pathname: string; query?: Record<string, string>; hash?: string };
 }
 

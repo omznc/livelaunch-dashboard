@@ -17,17 +17,10 @@ export default function Posthog() {
 
 		if (user && alreadyIdentifiedId !== user.id) {
 			posthog.identify(user.id, {
-				email: user.email,
 				name: user.name,
 			});
 			posthog.alias(user.id, alreadyIdentifiedId);
 		}
-
-		if (alreadyIdentifiedId) {
-			return;
-		}
-
-		posthog.identify();
 	}, [session, isPending]);
 
 	return null;

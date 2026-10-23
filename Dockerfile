@@ -15,16 +15,20 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN bunx prisma generate && bun run build
+ENV SKIP_ENV_VALIDATION=1
+
+# Placeholder URLs for the build only. Modules parse them while Next collects page data.
+RUN bunx prisma generate && \
+	BETTER_AUTH_URL=http://localhost:3000 DATABASE_URL=mysql://u:p@localhost:3306/db bun run build
 
 # Production image, copy all the files and run next
 FROM base AS runner
 WORKDIR /app
 
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # Install OpenSSL for Prisma
 RUN apk add --no-cache openssl
@@ -50,7 +54,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 USER nextjs
 
 EXPOSE 3000
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+# In this image, "node" is only a symlink to bun
+CMD ["bun", "server.js"]

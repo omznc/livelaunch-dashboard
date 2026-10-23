@@ -13,20 +13,27 @@ export default function AuthenticationPage() {
 	};
 
 	return (
-		<div className="flex h-[100dvh] w-full flex-col items-center justify-center gap-8">
-			<div className="flex w-full flex-col items-center justify-center gap-2 p-2">
-				<h1 className="inline-flex items-center gap-2 text-center font-bold text-6xl">LiveLaunch Dashboard</h1>
-				<p className="w-full text-center font-medium text-xl">
-					{"Creates space related events and sends news, notifications and live streams!"}
+		<main className="mx-auto flex min-h-[100dvh] w-full max-w-[1180px] flex-col justify-center border-line min-[1180px]:border-x">
+			<div className="flex flex-col gap-4 border-line border-y px-4 py-10 sm:px-6 sm:py-14">
+				<h1 className="max-w-xl font-semibold text-4xl leading-[1.08] tracking-display sm:text-5xl">
+					LiveLaunch Dashboard
+				</h1>
+				<p className="max-w-xl text-fg2 text-lg leading-7">
+					{"Creates space related events and sends news, notifications and live streams."}
 				</p>
 			</div>
-			<Button className="mt-6" onClick={handleDiscordSignIn}>
-				<svg className="mr-2 inline-block h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-					<title>Discord</title>
-					<path d={siDiscord.path} />
-				</svg>
-				Sign in with Discord
-			</Button>
-		</div>
+			<div className="flex flex-wrap items-center justify-between gap-x-8 gap-y-3 border-line border-b px-4 py-4 sm:px-6 sm:py-5">
+				<p className="min-w-0 flex-1 basis-60 text-fg2 text-sm leading-[22px]">
+					The dashboard reads your server list to show the servers you manage.
+				</p>
+				<Button size="lg" className="w-full sm:w-auto" onClick={handleDiscordSignIn}>
+					<svg className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" role="img">
+						<title>Discord</title>
+						<path d={siDiscord.path} />
+					</svg>
+					Sign in with Discord
+				</Button>
+			</div>
+		</main>
 	);
 }

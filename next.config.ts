@@ -4,10 +4,19 @@ const nextConfig: NextConfig = {
 	reactStrictMode: true,
 	typedRoutes: true,
 	reactCompiler: true,
+	cacheComponents: true,
+	// true renders each page twice per request (double DB reads); staleTimes covers fast returns
+	partialPrefetching: false,
 	experimental: {
 		serverActions: {
-			allowedOrigins: ["localhost:3000", "livelaunch.juststephen.com"],
+			allowedOrigins: [
+				...(process.env.NODE_ENV !== "production" ? ["localhost:3000"] : []),
+				"livelaunch.juststephen.com",
+			],
 		},
+		// A page that reads searchParams is dynamic. Keep it in the client cache for 30 s,
+		// so a return visit shows at once. Every mutating action calls refresh(), which clears it.
+		staleTimes: { dynamic: 30 },
 		serverComponentsHmrCache: true,
 		webpackMemoryOptimizations: true,
 	},
