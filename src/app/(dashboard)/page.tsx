@@ -1,12 +1,13 @@
 import { buttonVariants } from "@components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@components/ui/tooltip";
 import env from "@env";
+import { redirectToDefaultGuild } from "@lib/server-utils";
 import PartnerOmznc from "@public/Partner_omznc.jpg";
 import PartnerTheSpaceDevs from "@public/Partner_TheSpaceDevs.png";
 import { ArrowUpRight, Hash, ThumbsUp } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { type ReactNode, Suspense } from "react";
 import { siDiscord, siGithub } from "simple-icons";
 
 function BrandIcon({ title, path }: { title: string; path: string }) {
@@ -43,12 +44,20 @@ function LinkRow({ title, description, children }: { title: string; description:
 	);
 }
 
-export default async function Home() {
+// Reads the query behind its own boundary, so the rest of the page stays static.
+async function GuildRedirect({ searchParams }: { searchParams: Promise<{ g?: string }> }) {
+	return redirectToDefaultGuild("/", (await searchParams).g);
+}
+
+export default function Home(props: { searchParams: Promise<{ g?: string }> }) {
 	const secondary = buttonVariants({ variant: "secondary" });
 	const primary = buttonVariants({ variant: "default" });
 
 	return (
 		<div className="flex flex-col">
+			<Suspense fallback={null}>
+				<GuildRedirect searchParams={props.searchParams} />
+			</Suspense>
 			<section className="relative isolate flex flex-col gap-4 px-4 py-12 sm:px-6 sm:py-16">
 				{/* The only accent glow on the page. */}
 				<div

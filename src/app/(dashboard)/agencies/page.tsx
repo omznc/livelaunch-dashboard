@@ -1,6 +1,6 @@
 import Client from "@app/(dashboard)/agencies/client";
 import { prisma } from "@lib/prisma";
-import { checkGuildPermissions } from "@lib/server-utils";
+import { checkGuildPermissions, redirectToDefaultGuild } from "@lib/server-utils";
 import { cacheLife, cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
 import NotEnabled from "@/src/app/(dashboard)/_components/not-enabled";
@@ -20,7 +20,7 @@ export default async function Agencies(props: {
 }) {
 	const searchParams = await props.searchParams;
 	const guildId = searchParams?.g;
-	if (!guildId) return null;
+	if (!guildId) return redirectToDefaultGuild("/agencies");
 
 	const authorized = await checkGuildPermissions(guildId);
 	if (!authorized) {

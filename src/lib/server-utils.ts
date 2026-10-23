@@ -1,8 +1,10 @@
 import "server-only";
 
-import { checkBotPermissions, getUserGuilds } from "@lib/discord-api";
+import { checkBotPermissions, getGuildsWithBotAccess, getUserGuilds } from "@lib/discord-api";
+import { compareGuilds } from "@lib/guild-order";
 import { getSession } from "@lib/session";
 import type { RESTAPIPartialCurrentUserGuild } from "discord-api-types/v10";
+import type { Route } from "next";
 import { redirect } from "next/navigation";
 
 export async function isAuthorizedForGuild(guildId: string): Promise<RESTAPIPartialCurrentUserGuild | false> {
@@ -23,6 +25,16 @@ export async function checkGuildPermissions(guildId: string): Promise<RESTAPIPar
 	}
 
 	return authorized;
+}
+
+// Sends a request without a valid ?g= to the first guild. Returns null if the user has no guild.
+export async function redirectToDefaultGuild(path: string, current?: string): Promise<null> {
+	const guilds = await getGuildsWithBotAccess();
+	if (current && guilds.some((guild) => guild.id === current)) return null;
+
+	const target = [...guilds].sort(compareGuilds)[0];
+	if (target) redirect(`${path}?g=${target.id}` as Route);
+	return null;
 }
 
 // Turns boolean settings into the 0/1 columns of the database. Skips missing keys.

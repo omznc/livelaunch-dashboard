@@ -1,7 +1,7 @@
 import Client from "@app/(dashboard)/news/client";
 import { getDisplayChannels } from "@lib/discord-api";
 import { prisma } from "@lib/prisma";
-import { checkGuildPermissions } from "@lib/server-utils";
+import { checkGuildPermissions, redirectToDefaultGuild } from "@lib/server-utils";
 import { cacheLife, cacheTag } from "next/cache";
 import { notFound } from "next/navigation";
 import NotEnabled from "@/src/app/(dashboard)/_components/not-enabled";
@@ -21,7 +21,7 @@ export default async function NewsSites(props: {
 }) {
 	const searchParams = await props.searchParams;
 	const guildId = searchParams?.g;
-	if (!guildId) return null;
+	if (!guildId) return redirectToDefaultGuild("/news");
 
 	const authorized = await checkGuildPermissions(guildId);
 	if (!authorized) {

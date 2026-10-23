@@ -15,6 +15,7 @@ import {
 } from "@components/ui/credenza";
 import { Popover, PopoverContent, PopoverTrigger } from "@components/ui/popover";
 import { unwrap } from "@lib/action-result";
+import { compareGuilds } from "@lib/guild-order";
 import { cn } from "@lib/utils";
 import { CheckIcon, ChevronsUpDown, RefreshCw } from "lucide-react";
 import type { Route } from "next";
@@ -33,11 +34,6 @@ interface GuildSwitcherProps extends PopoverTriggerProps {
 	guilds: GuildsResponse[];
 	clientId: string;
 	listenForInviteEvent?: boolean;
-}
-
-function compareGuilds(a: GuildsResponse, b: GuildsResponse) {
-	if (a.botAccess !== b.botAccess) return a.botAccess ? -1 : 1;
-	return a.name.localeCompare(b.name);
 }
 
 function GuildAvatar({ guild }: { guild: GuildsResponse }) {
@@ -83,14 +79,6 @@ export default function GuildSwitcher({ className, guilds, clientId, listenForIn
 	const inviteUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&permissions=17601312868352&scope=bot%20applications.commands`;
 	const discordDeepLink = `discord://-/application-directory/${clientId}`;
 	const sortedGuilds = useMemo(() => [...guilds].sort(compareGuilds), [guilds]);
-
-	useEffect(() => {
-		if (!selectedGuild && sortedGuilds.length !== 0) {
-			const firstGuildWithBot = sortedGuilds.find((guild) => guild.botAccess);
-			const targetGuild = firstGuildWithBot ?? sortedGuilds[0];
-			router.replace(`?g=${targetGuild.id}`);
-		}
-	}, [router, selectedGuild, sortedGuilds]);
 
 	useEffect(() => {
 		return () => {
