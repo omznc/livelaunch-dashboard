@@ -86,8 +86,6 @@ export const updateNumberOfEvents = guildActionClient
 				scheduled_events: num,
 			},
 		});
-
-		refresh();
 	});
 
 export const disableFeature = guildActionClient
