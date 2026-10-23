@@ -100,18 +100,21 @@ export const disableFeature = guildActionClient
 
 const setNewsSitesSchema = z.object({
 	guildId: z.string(),
-	newsSites: z.array(
-		z.object({
-			news_site_id: z.number(),
-			selected: z.boolean(),
-		}),
-	),
+	newsSites: z
+		.array(
+			z.object({
+				news_site_id: z.number().int().min(0).max(65535),
+				selected: z.boolean(),
+			}),
+		)
+		// The client sends every news site, so the cap must stay above the real count
+		.max(2000),
 });
 
 export const setNewsSites = guildActionClient
 	.inputSchema(setNewsSitesSchema)
 	.action(async ({ parsedInput: { guildId, newsSites } }) => {
-		const result = await Promise.all([
+		const result = await prisma.$transaction([
 			prisma.news_filter.deleteMany({
 				where: {
 					guild_id: BigInt(guildId),
