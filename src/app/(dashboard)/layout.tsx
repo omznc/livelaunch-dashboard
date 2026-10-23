@@ -1,15 +1,14 @@
 import env from "@env";
 import { getBotGuilds, getUserGuilds } from "@lib/discord-api";
 import { prisma } from "@lib/prisma";
+import { getSession } from "@lib/session";
 import type { RESTAPIPartialCurrentUserGuild } from "discord-api-types/v10";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { type ReactNode, Suspense } from "react";
 import GuildSwitcher from "@/src/app/(dashboard)/_components/guild-switcher";
 import { Navigation } from "@/src/app/(dashboard)/_components/navigation";
 import SectionError from "@/src/app/(dashboard)/_components/section-error";
 import User from "@/src/app/(dashboard)/_components/user";
-import { auth } from "@/src/lib/auth";
 
 // The session and guild reads are per request, so they stream behind a Suspense boundary.
 export default function Layout({ children }: { children: ReactNode }) {
@@ -29,9 +28,7 @@ export default function Layout({ children }: { children: ReactNode }) {
 }
 
 async function Header() {
-	const session = await auth.api.getSession({
-		headers: await headers(),
-	});
+	const session = await getSession();
 	if (!session) {
 		redirect("/login");
 	}

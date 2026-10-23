@@ -10,6 +10,7 @@ import {
 	DropdownMenuTrigger,
 } from "@components/ui/dropdown-menu";
 import { auth } from "@lib/auth";
+import { getSession } from "@lib/session";
 import { ChevronsUpDown } from "lucide-react";
 import { headers } from "next/headers";
 import Image from "next/image";
@@ -19,9 +20,7 @@ import { LaunchControlResetEasterEgg } from "@/src/components/easter-eggs/launch
 import { ScreensaverToggle } from "@/src/components/easter-eggs/screensaver-easter-egg";
 
 export default async function User() {
-	const session = await auth.api.getSession({
-		headers: await headers(),
-	});
+	const session = await getSession();
 
 	if (!session?.session || !session?.user) {
 		return null;
@@ -77,9 +76,7 @@ export default async function User() {
 async function logout() {
 	"use server";
 
-	const session = await auth.api.getSession({
-		headers: await headers(),
-	});
+	const session = await getSession();
 
 	if (!session?.session) {
 		return;
