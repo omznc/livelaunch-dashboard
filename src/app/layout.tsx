@@ -1,5 +1,7 @@
 import "./globals.css";
 import Posthog from "@components/posthog";
+import { ThemeSync } from "@components/theme";
+import { themeScript } from "@components/theme-script";
 import Toast from "@components/toast";
 import type { Metadata, Viewport } from "next";
 import type { ReactNode } from "react";
@@ -13,21 +15,26 @@ export const metadata: Metadata = {
 	description: "The dashboard for LiveLaunch, a Discord bot.",
 };
 
-// The app is dark only. This sets the canvas and the scrollbars before the CSS loads.
+// Both color schemes are allowed. The theme script picks one before the first paint.
 export const viewport: Viewport = {
-	colorScheme: "dark",
+	colorScheme: "light dark",
 	themeColor: "#0b0c0a",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
 	return (
-		<html lang="en" className={`dark ${fontClasses}`}>
+		<html lang="en" className={fontClasses} suppressHydrationWarning>
+			<head>
+				{/* biome-ignore lint/security/noDangerouslySetInnerHtml: static string from our own file */}
+				<script dangerouslySetInnerHTML={{ __html: themeScript }} />
+			</head>
 			<body>
 				<LaunchControlEasterEgg />
 				<ScreensaverEasterEgg />
 				<ConsoleEasterEgg />
 				<Toast />
 				<Posthog />
+				<ThemeSync />
 				{children}
 			</body>
 		</html>
