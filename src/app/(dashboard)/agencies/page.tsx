@@ -2,6 +2,7 @@ import Client from "@app/(dashboard)/agencies/client";
 import { prisma } from "@lib/prisma";
 import { checkGuildPermissions } from "@lib/server-utils";
 import { unstable_cache as cache } from "next/cache";
+import { notFound } from "next/navigation";
 import NotEnabled from "@/src/app/(dashboard)/_components/not-enabled";
 
 export const dynamic = "force-dynamic";
@@ -17,7 +18,7 @@ export default async function Agencies(props: {
 
 	const authorized = await checkGuildPermissions(guildId);
 	if (!authorized) {
-		return null;
+		notFound();
 	}
 
 	const agencies = await cache(async () => prisma.ll2_agencies.findMany(), ["agencies"], {

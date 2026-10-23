@@ -3,6 +3,7 @@ import { getGuildChannels } from "@lib/discord-api";
 import { prisma } from "@lib/prisma";
 import { checkGuildPermissions } from "@lib/server-utils";
 import { unstable_cache as cache } from "next/cache";
+import { notFound } from "next/navigation";
 import NotEnabled from "@/src/app/(dashboard)/_components/not-enabled";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +19,7 @@ export default async function NewsSites(props: {
 
 	const authorized = await checkGuildPermissions(guildId);
 	if (!authorized) {
-		return null;
+		notFound();
 	}
 
 	const guild = await prisma.enabled_guilds.findFirst({
