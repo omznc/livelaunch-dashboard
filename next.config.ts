@@ -6,7 +6,10 @@ const nextConfig: NextConfig = {
 	reactCompiler: true,
 	experimental: {
 		serverActions: {
-			allowedOrigins: ["localhost:3000", "livelaunch.juststephen.com"],
+			allowedOrigins: [
+				...(process.env.NODE_ENV !== "production" ? ["localhost:3000"] : []),
+				"livelaunch.juststephen.com",
+			],
 		},
 		serverComponentsHmrCache: true,
 		webpackMemoryOptimizations: true,

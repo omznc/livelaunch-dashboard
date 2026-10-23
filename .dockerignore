@@ -6,4 +6,6 @@ README.md
 .next
 .git
 .idea
+.env*
+!.env.example
 nginx.conf

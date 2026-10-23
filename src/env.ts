@@ -9,11 +9,13 @@ const env = createEnv({
 		DISCORD_CLIENT_SECRET: z.string(),
 		DISCORD_BOT_TOKEN: z.string(),
 		BETTER_AUTH_SECRET: z.string(),
-		BETTER_AUTH_URL: z.url().default("http://localhost:3000"),
+		BETTER_AUTH_URL: z.url(),
 	},
 	client: {
 		NEXT_PUBLIC_DISCORD_CLIENT_ID: z.string(),
 	},
+	// Docker build has no secrets, so it skips validation
+	skipValidation: !!process.env.SKIP_ENV_VALIDATION,
 	experimental__runtimeEnv: {
 		NEXT_PUBLIC_DISCORD_CLIENT_ID: process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID,
 	},
