@@ -34,6 +34,8 @@ export const updateFilters = guildActionClient
 			},
 			data: toFlags(settings),
 		});
+
+		refresh();
 	});
 
 const addCountdownSchema = z.object({

@@ -24,6 +24,8 @@ export const updateSettings = guildActionClient
 				news_include_exclude: Number(settings.whitelist),
 			},
 		});
+
+		refresh();
 	});
 
 const updateChannelSchema = z.object({
@@ -109,7 +111,7 @@ const setNewsSitesSchema = z.object({
 export const setNewsSites = guildActionClient
 	.inputSchema(setNewsSitesSchema)
 	.action(async ({ parsedInput: { guildId, newsSites } }) => {
-		return Promise.all([
+		const result = await Promise.all([
 			prisma.news_filter.deleteMany({
 				where: {
 					guild_id: BigInt(guildId),
@@ -128,4 +130,7 @@ export const setNewsSites = guildActionClient
 				skipDuplicates: true,
 			}),
 		]);
+
+		refresh();
+		return result;
 	});

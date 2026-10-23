@@ -28,6 +28,8 @@ export const updateSettings = guildActionClient
 			},
 			data: toFlags(settings),
 		});
+
+		refresh();
 	});
 
 const updateChannelSchema = z.object({
@@ -87,6 +89,8 @@ export const updateNumberOfEvents = guildActionClient
 				scheduled_events: num,
 			},
 		});
+
+		refresh();
 	});
 
 export const disableFeature = guildActionClient

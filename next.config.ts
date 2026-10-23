@@ -13,6 +13,9 @@ const nextConfig: NextConfig = {
 				"livelaunch.juststephen.com",
 			],
 		},
+		// A page that reads searchParams is dynamic. Keep it in the client cache for 30 s,
+		// so a return visit shows at once. Every mutating action calls refresh(), which clears it.
+		staleTimes: { dynamic: 30 },
 		serverComponentsHmrCache: true,
 		webpackMemoryOptimizations: true,
 	},
