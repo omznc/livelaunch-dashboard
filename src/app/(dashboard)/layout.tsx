@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { type ReactNode, Suspense } from "react";
 import GuildSwitcher from "@/src/app/(dashboard)/_components/guild-switcher";
 import { Navigation } from "@/src/app/(dashboard)/_components/navigation";
+import SectionError from "@/src/app/(dashboard)/_components/section-error";
 import User from "@/src/app/(dashboard)/_components/user";
 import { auth } from "@/src/lib/auth";
 
@@ -19,7 +20,9 @@ export default function Layout({ children }: { children: ReactNode }) {
 				<Header />
 			</Suspense>
 			<div className="flex w-full justify-center p-4 md:p-8">
-				<div className="flex w-full max-w-[1200px] flex-col gap-8 py-12">{children}</div>
+				<div className="flex w-full max-w-[1200px] flex-col gap-8 py-12">
+					<SectionError>{children}</SectionError>
+				</div>
 			</div>
 		</div>
 	);
