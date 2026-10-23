@@ -220,7 +220,6 @@ export default function GuildSwitcher({ className, guilds, listenForInviteEvent 
 										}
 										setRevalidating(true);
 										await revalidateGuilds({});
-										router.refresh();
 										setRevalidationCooldown(true);
 										cooldownTimer.current = setTimeout(() => {
 											setRevalidationCooldown(false);

@@ -4,7 +4,7 @@ import { createWebhook, deleteWebhook, replaceWebhook } from "@lib/discord-api";
 import { prisma } from "@lib/prisma";
 import { guildActionClient, guildIdSchema, snowflakeSchema } from "@lib/safe-actions";
 import { toFlags } from "@lib/server-utils";
-import { revalidatePath } from "next/cache";
+import { refresh } from "next/cache";
 import { z } from "zod";
 
 const MAX_COUNTDOWNS = 64;
@@ -75,7 +75,7 @@ export const addCountdown = guildActionClient
 			{ isolationLevel: "Serializable" },
 		);
 
-		revalidatePath("/notifications");
+		refresh();
 	});
 
 const removeCountdownSchema = z.object({
@@ -93,7 +93,7 @@ export const removeCountdown = guildActionClient
 			},
 		});
 
-		revalidatePath("/notifications");
+		refresh();
 	});
 
 const updateChannelSchema = z.object({
@@ -131,7 +131,7 @@ export const updateChannel = guildActionClient
 			}),
 		);
 
-		revalidatePath("/notifications");
+		refresh();
 		return { success: true };
 	});
 
@@ -161,5 +161,5 @@ export const disableFeature = guildActionClient
 			},
 		});
 
-		revalidatePath("/notifications");
+		refresh();
 	});

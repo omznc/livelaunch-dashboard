@@ -3,7 +3,7 @@
 import { createWebhook, deleteWebhook, replaceWebhook } from "@lib/discord-api";
 import { prisma } from "@lib/prisma";
 import { guildActionClient, guildIdSchema, snowflakeSchema } from "@lib/safe-actions";
-import { revalidatePath } from "next/cache";
+import { refresh } from "next/cache";
 import { z } from "zod";
 
 const newsSettingsSchema = z.object({
@@ -61,7 +61,7 @@ export const updateChannel = guildActionClient
 			}),
 		);
 
-		revalidatePath("/news");
+		refresh();
 		return { success: true };
 	});
 
@@ -91,7 +91,7 @@ export const disableFeature = guildActionClient
 			},
 		});
 
-		revalidatePath("/news");
+		refresh();
 	});
 
 const setNewsSitesSchema = z.object({

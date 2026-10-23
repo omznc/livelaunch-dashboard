@@ -4,7 +4,7 @@ import { createWebhook, deleteWebhook, replaceWebhook } from "@lib/discord-api";
 import { prisma } from "@lib/prisma";
 import { guildActionClient, guildIdSchema, snowflakeSchema } from "@lib/safe-actions";
 import { toFlags } from "@lib/server-utils";
-import { revalidatePath } from "next/cache";
+import { refresh } from "next/cache";
 import { z } from "zod";
 
 const generalSettingsSchema = z.object({
@@ -65,7 +65,7 @@ export const updateChannel = guildActionClient
 			}),
 		);
 
-		revalidatePath("/general");
+		refresh();
 		return { success: true };
 	});
 
@@ -86,7 +86,7 @@ export const updateNumberOfEvents = guildActionClient
 			},
 		});
 
-		revalidatePath("/general");
+		refresh();
 	});
 
 export const disableFeature = guildActionClient
@@ -115,5 +115,5 @@ export const disableFeature = guildActionClient
 			},
 		});
 
-		revalidatePath("/general");
+		refresh();
 	});

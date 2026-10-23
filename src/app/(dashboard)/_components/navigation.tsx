@@ -16,7 +16,7 @@ import {
 import type { enabled_guilds } from "@generated/client";
 import { cn } from "@lib/utils";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import type * as React from "react";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
@@ -58,7 +58,6 @@ export function Navigation({ className, guilds, allGuilds, ...props }: Navigatio
 	const params = useSearchParams();
 	const guildId = params.get("g") ?? "";
 	const [showHelpDialog, setShowHelpDialog] = useState(false);
-	const router = useRouter();
 
 	const guild = useMemo(() => {
 		if (!guilds) return null;
@@ -172,7 +171,6 @@ export function Navigation({ className, guilds, allGuilds, ...props }: Navigatio
 								toast.promise(enableGuild({ guildId: String(guildId) }), {
 									loading: "Enabling...",
 									success: () => {
-										router.refresh();
 										setShowHelpDialog(false);
 										return "Enabled!";
 									},

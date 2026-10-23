@@ -4,7 +4,7 @@ import { getBotGuilds } from "@lib/discord-api";
 import { prisma } from "@lib/prisma";
 import { actionClient, guildActionClient } from "@lib/safe-actions";
 import { isAuthorized } from "@lib/server-utils";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { refresh, revalidateTag } from "next/cache";
 import { z } from "zod";
 
 export const revalidateGuilds = actionClient.inputSchema(z.object({})).action(async () => {
@@ -12,15 +12,13 @@ export const revalidateGuilds = actionClient.inputSchema(z.object({})).action(as
 	if (!data) throw new Error("Unauthorized");
 
 	revalidateTag(`get-user-guilds-${data.user.id}`, "max");
+	refresh();
 });
 
 export const revalidateAll = actionClient.inputSchema(z.object({})).action(async () => {
 	if (!(await isAuthorized())) throw new Error("Unauthorized");
 
-	revalidatePath("/agencies", "page");
-	revalidatePath("/news", "page");
-	revalidatePath("/notifications", "page");
-	revalidatePath("/general", "page");
+	refresh();
 });
 
 export const getGuild = guildActionClient
@@ -56,4 +54,6 @@ export const enableGuild = guildActionClient
 			},
 			update: {},
 		});
+
+		refresh();
 	});
