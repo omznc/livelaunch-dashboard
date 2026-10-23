@@ -8,6 +8,7 @@ import { auth } from "@lib/auth";
 import { logger } from "@lib/logger";
 import { prisma } from "@lib/prisma";
 import { isAuthorized } from "@lib/server-utils";
+import { createReplaceWebhook, parseWebhookId, SNOWFLAKE } from "@lib/webhook";
 import type {
 	APIApplication,
 	APIGuildMember,
@@ -66,8 +67,6 @@ const handleRateLimit = async (status: number, body: string, actor: "user" | "bo
 		return false;
 	}
 };
-
-const SNOWFLAKE = /^\d{17,20}$/;
 
 // Throws on a failure.
 const fetchGuildChannels = async (guildId: string): Promise<RESTGetAPIGuildChannelsResult> => {
@@ -301,18 +300,6 @@ export const createWebhook = async (guildId: string, channelId: string, category
 	}
 };
 
-// Webhook URL shape: https://discord.com/api/webhooks/{id}/{token}
-const parseWebhookId = (url: string): string | null => {
-	try {
-		const parts = new URL(url).pathname.split("/").filter(Boolean);
-		const index = parts.indexOf("webhooks");
-		const id = index === -1 ? undefined : parts[index + 1];
-		return id && SNOWFLAKE.test(id) ? id : null;
-	} catch {
-		return null;
-	}
-};
-
 /**
  * Deletes a webhook by URL. Never throws. A missing webhook (404) counts as success.
  */
@@ -335,24 +322,7 @@ export const deleteWebhook = async (url: string): Promise<boolean> => {
 	}
 };
 
-/**
- * Saves the new webhook, then deletes the old one.
- * If the save fails, the new webhook is deleted and the error is thrown again.
- * If the old webhook cannot be deleted, the new webhook stays.
- */
-export const replaceWebhook = async (
-	newUrl: string,
-	oldUrl: string | null | undefined,
-	save: () => Promise<unknown>,
-) => {
-	try {
-		await save();
-	} catch (error) {
-		await deleteWebhook(newUrl);
-		throw error;
-	}
-	if (oldUrl) await deleteWebhook(oldUrl);
-};
+export const replaceWebhook = createReplaceWebhook(deleteWebhook);
 
 let botUserIdPromise: Promise<string | undefined> | null = null;
 

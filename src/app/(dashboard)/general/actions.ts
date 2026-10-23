@@ -6,18 +6,7 @@ import { guildActionClient, guildIdSchema, snowflakeSchema } from "@lib/safe-act
 import { toFlags } from "@lib/server-utils";
 import { refresh, updateTag } from "next/cache";
 import { z } from "zod";
-
-const generalSettingsSchema = z.object({
-	guildId: z.string(),
-	settings: z.object({
-		notification_button_fc: z.boolean().optional(),
-		notification_button_g4l: z.boolean().optional(),
-		notification_button_sln: z.boolean().optional(),
-		se_launch: z.boolean().optional(),
-		se_event: z.boolean().optional(),
-		se_no_url: z.boolean().optional(),
-	}),
-});
+import { generalSettingsSchema } from "./schemas";
 
 export const updateSettings = guildActionClient
 	.inputSchema(generalSettingsSchema)
