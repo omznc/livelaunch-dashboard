@@ -8,6 +8,7 @@ import { Setting, SettingGroup } from "@components/ui/setting";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import type { enabled_guilds, news_filter, news_sites } from "@generated/client";
+import { unwrap } from "@lib/action-result";
 import { useDebounce } from "@lib/hooks";
 import { cn } from "@lib/utils";
 import type { RESTGetAPIGuildChannelsResult } from "discord-api-types/v10";
@@ -68,7 +69,7 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
 		if (snapshot === lastSavedSnapshotRef.current) return;
 		lastSavedSnapshotRef.current = snapshot;
 
-		toast.promise(setNewsSites({ guildId: String(guild.guild_id), newsSites: debouncedNewsSites }), {
+		toast.promise(unwrap(setNewsSites({ guildId: String(guild.guild_id), newsSites: debouncedNewsSites })), {
 			loading: "Saving...",
 			success: "Saved!",
 			error: "Failed to save!",
@@ -86,7 +87,7 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
 		});
 
 	return (
-		<div className="flex flex-col gap-10">
+		<div className="flex flex-col">
 			<SettingGroup title={"News"}>
 				{guild.news_channel_id !== null && (
 					<Setting
@@ -97,7 +98,7 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
 					>
 						<Button
 							onClick={() => {
-								toast.promise(disableFeature({ guildId: String(guild.guild_id) }), {
+								toast.promise(unwrap(disableFeature({ guildId: String(guild.guild_id) })), {
 									loading: "Disabling...",
 									success: () => {
 										setSelectedChannelID(undefined);
@@ -121,18 +122,21 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
 					<Select
 						onValueChange={(value) => {
 							setSelectedChannelID(value);
-							toast.promise(updateChannel({ guildId: String(guild.guild_id), channelId: value }), {
-								loading: "Saving...",
-								success: (r) => {
-									if (!r.data?.success) throw new Error(r.serverError);
-									return "Saved";
+							toast.promise(
+								unwrap(updateChannel({ guildId: String(guild.guild_id), channelId: value })),
+								{
+									loading: "Saving...",
+									success: (r) => {
+										if (!r.data?.success) throw new Error(r.serverError);
+										return "Saved";
+									},
+									error: (e?: Error) => {
+										router.refresh();
+										setSelectedChannelID(undefined);
+										return e ? e.message : "Failed to save.";
+									},
 								},
-								error: (e?: Error) => {
-									router.refresh();
-									setSelectedChannelID(undefined);
-									return e ? e.message : "Failed to save.";
-								},
-							});
+							);
 						}}
 						key={selectedChannelID}
 					>
@@ -143,9 +147,9 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
 									return (
 										<span>
 											{chan.type === 0 ? (
-												<Hash className="mr-2 inline-block h-4 w-4" />
+												<Hash className="mr-2 inline-block h-[18px] w-[18px]" />
 											) : (
-												<Megaphone className="mr-2 inline-block h-4 w-4" />
+												<Megaphone className="mr-2 inline-block h-[18px] w-[18px]" />
 											)}
 											{chan.name}
 										</span>
@@ -163,9 +167,9 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
 							{channels.map((channel) => (
 								<SelectItem key={channel.id} value={channel.id}>
 									{channel.type === 0 ? (
-										<Hash className="mr-2 inline-block h-4 w-4" />
+										<Hash className="mr-2 inline-block h-[18px] w-[18px]" />
 									) : (
-										<Megaphone className="mr-2 inline-block h-4 w-4" />
+										<Megaphone className="mr-2 inline-block h-[18px] w-[18px]" />
 									)}
 									{channel.name}
 								</SelectItem>
@@ -222,7 +226,7 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
 				<Input
 					placeholder={"Search..."}
 					aria-label="Search"
-					className="h-11 border-x-0 border-t-0 border-line bg-transparent px-4"
+					className="h-12 border-x-0 border-t-0 border-line bg-transparent px-4 sm:px-6"
 					onChange={(e) => {
 						setSearchQuery(e.target.value.trim());
 					}}
@@ -255,9 +259,7 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
 								{filtered.map((a) => (
 									<TableRow
 										key={a.news_site_id}
-										className={cn("w-full select-none align-middle", {
-											"bg-primary/[0.07]": a.selected,
-										})}
+										className={cn("w-full select-none align-middle", {})}
 										onMouseDown={(e) => {
 											if (e.button === 0) {
 												e.preventDefault();
@@ -295,13 +297,13 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
 													<Image
 														src={a.logo_url}
 														alt="Agency Logo"
-														width={28}
-														height={28}
-														className="h-7 w-7 shrink-0 border border-line bg-bg object-contain"
+														width={32}
+														height={32}
+														className="h-8 w-8 shrink-0 border border-line bg-bg object-contain"
 													/>
 												) : (
 													<div
-														className="flex h-7 w-7 shrink-0 items-center justify-center border border-line bg-raised font-mono text-fg2 text-xs uppercase"
+														className="flex h-8 w-8 shrink-0 items-center justify-center border border-line bg-raised font-mono text-fg2 text-xs uppercase"
 														title={a.news_site_name ?? "Unknown"}
 													>
 														{a.news_site_name?.[0]}

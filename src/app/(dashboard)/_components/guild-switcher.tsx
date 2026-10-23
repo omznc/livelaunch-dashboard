@@ -14,6 +14,7 @@ import {
 	CredenzaTitle,
 } from "@components/ui/credenza";
 import { Popover, PopoverContent, PopoverTrigger } from "@components/ui/popover";
+import { unwrap } from "@lib/action-result";
 import { cn } from "@lib/utils";
 import { CheckIcon, ChevronsUpDown, RefreshCw } from "lucide-react";
 import type { Route } from "next";
@@ -41,7 +42,7 @@ function compareGuilds(a: GuildsResponse, b: GuildsResponse) {
 
 function GuildAvatar({ guild }: { guild: GuildsResponse }) {
 	return (
-		<Avatar className="mr-1 h-5 w-5">
+		<Avatar className="mr-1 h-6 w-6">
 			{guild.icon ? (
 				<Image
 					width={50}
@@ -116,9 +117,13 @@ export default function GuildSwitcher({ className, guilds, clientId, listenForIn
 							role="combobox"
 							aria-expanded={open}
 							aria-label="Select a Guild"
-							className={cn("w-[200px] min-w-0 justify-between font-sans text-sm", className, {
-								"animate-pulse": pending,
-							})}
+							className={cn(
+								"h-full w-full min-w-0 justify-between border-0 px-4 font-sans text-[15px] data-[state=open]:bg-raised focus-visible:outline-offset-[-2px]",
+								className,
+								{
+									"animate-pulse": pending,
+								},
+							)}
 						>
 							{selectedGuild ? (
 								<>
@@ -131,7 +136,7 @@ export default function GuildSwitcher({ className, guilds, clientId, listenForIn
 							<ChevronsUpDown className="ml-auto h-4 w-4 shrink-0 text-fg3" />
 						</Button>
 					</PopoverTrigger>
-					<PopoverContent align="start" className="w-[260px] max-w-[calc(100vw-2rem)] p-0">
+					<PopoverContent align="start" sideOffset={0} className="w-[280px] max-w-[calc(100vw-2rem)] p-0">
 						<Command>
 							<CommandList>
 								<CommandInput
@@ -167,7 +172,7 @@ export default function GuildSwitcher({ className, guilds, clientId, listenForIn
 											<div className="flex flex-col">
 												<span>{guild.name}</span>
 												{!guild.botAccess && (
-													<span className="text-fg3 text-xs">Bot not added</span>
+													<span className="text-fg3 text-[13px]">Bot not added</span>
 												)}
 											</div>
 											<CheckIcon
@@ -219,7 +224,7 @@ export default function GuildSwitcher({ className, guilds, clientId, listenForIn
 											clearTimeout(cooldownTimer.current);
 										}
 										setRevalidating(true);
-										await revalidateGuilds({});
+										await unwrap(revalidateGuilds({}));
 										setRevalidationCooldown(true);
 										cooldownTimer.current = setTimeout(() => {
 											setRevalidationCooldown(false);

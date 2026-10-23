@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@components/ui
 import { Setting, SettingGroup } from "@components/ui/setting";
 import { Switch } from "@components/ui/switch";
 import type { enabled_guilds, notification_countdown } from "@generated/client";
+import { unwrap } from "@lib/action-result";
 import type { RESTGetAPIGuildChannelsResult } from "discord-api-types/v10";
 import { Hash, Megaphone, X } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -97,9 +98,25 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 	};
 
 	const [addCountdownDialogOpen, setAddCountdownDialogOpen] = useState(false);
+	const [addingCountdown, setAddingCountdown] = useState(false);
+	const totalMinutes = newCountdown.days * 24 * 60 + newCountdown.hours * 60 + newCountdown.minutes;
+
+	// The dialog stays open on a failure, so the user can fix the input.
+	const submitCountdown = async () => {
+		setAddingCountdown(true);
+		try {
+			await unwrap(addCountdown({ guildId: String(guild.guild_id), settings: newCountdown }));
+			toast.success("Countdown added.");
+			setAddCountdownDialogOpen(false);
+		} catch (error) {
+			toast.error(error instanceof Error && error.message ? error.message : "Failed to add countdown.");
+		} finally {
+			setAddingCountdown(false);
+		}
+	};
 
 	return (
-		<div className="flex flex-col gap-10">
+		<div className="flex flex-col">
 			<SettingGroup title={"Notifications"} description={"Settings for the notification feature."}>
 				{guild.notification_channel_id !== null && (
 					<Setting
@@ -109,7 +126,7 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					>
 						<Button
 							onClick={() => {
-								toast.promise(disableFeature({ guildId: String(guild.guild_id) }), {
+								toast.promise(unwrap(disableFeature({ guildId: String(guild.guild_id) })), {
 									loading: "Disabling...",
 									success: () => {
 										setSelectedChannelID(undefined);
@@ -135,17 +152,20 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 					<Select
 						onValueChange={(value) => {
 							setSelectedChannelID(value);
-							toast.promise(updateChannel({ guildId: String(guild.guild_id), channelId: value }), {
-								loading: "Saving...",
-								success: (r) => {
-									if (!r.data?.success) throw new Error(r.serverError);
-									return "Saved";
+							toast.promise(
+								unwrap(updateChannel({ guildId: String(guild.guild_id), channelId: value })),
+								{
+									loading: "Saving...",
+									success: (r) => {
+										if (!r.data?.success) throw new Error(r.serverError);
+										return "Saved";
+									},
+									error: (e?: Error) => {
+										setSelectedChannelID(undefined);
+										return e ? e.message : "Failed to save.";
+									},
 								},
-								error: (e?: Error) => {
-									setSelectedChannelID(undefined);
-									return e ? e.message : "Failed to save.";
-								},
-							});
+							);
 						}}
 						key={selectedChannelID}
 					>
@@ -156,9 +176,9 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 									return (
 										<span>
 											{chan.type === 0 ? (
-												<Hash className="mr-2 inline-block h-4 w-4" />
+												<Hash className="mr-2 inline-block h-[18px] w-[18px]" />
 											) : (
-												<Megaphone className="mr-2 inline-block h-4 w-4" />
+												<Megaphone className="mr-2 inline-block h-[18px] w-[18px]" />
 											)}
 											{chan.name}
 										</span>
@@ -171,9 +191,9 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 							{channels.map((channel) => (
 								<SelectItem key={channel.id} value={channel.id}>
 									{channel.type === 0 ? (
-										<Hash className="mr-2 inline-block h-4 w-4" />
+										<Hash className="mr-2 inline-block h-[18px] w-[18px]" />
 									) : (
-										<Megaphone className="mr-2 inline-block h-4 w-4" />
+										<Megaphone className="mr-2 inline-block h-[18px] w-[18px]" />
 									)}
 									{channel.name}
 								</SelectItem>
@@ -218,11 +238,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 											min={0}
 											max={31}
 											onChange={(e) => {
-												e.target.value = clamp(e.target.valueAsNumber, 0, 31).toString();
-												setNewCountdown((prev) => ({
-													...prev,
-													days: e.target.valueAsNumber,
-												}));
+												const days = boundedValue(e.target, 31);
+												setNewCountdown((prev) => ({ ...prev, days }));
 											}}
 										/>
 									</div>
@@ -236,11 +253,8 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 											min={0}
 											max={24}
 											onChange={(e) => {
-												e.target.value = clamp(e.target.valueAsNumber, 0, 24).toString();
-												setNewCountdown((prev) => ({
-													...prev,
-													hours: e.target.valueAsNumber,
-												}));
+												const hours = boundedValue(e.target, 24);
+												setNewCountdown((prev) => ({ ...prev, hours }));
 											}}
 										/>
 									</div>
@@ -254,41 +268,27 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 											min={0}
 											max={60}
 											onChange={(e) => {
-												e.target.value = clamp(e.target.valueAsNumber, 0, 60).toString();
-												setNewCountdown((prev) => ({
-													...prev,
-													minutes: e.target.valueAsNumber,
-												}));
+												const minutes = boundedValue(e.target, 60);
+												setNewCountdown((prev) => ({ ...prev, minutes }));
 											}}
 										/>
 									</div>
 								</div>
-								{`That would be ${
-									newCountdown.days * 24 * 60 + newCountdown.hours * 60 + newCountdown.minutes
-								} minutes beforehand.`}
+								{`That would be ${totalMinutes} minutes beforehand.`}
 							</div>
 							<CredenzaFooter>
 								<Button variant="outline" onClick={() => setAddCountdownDialogOpen(false)}>
 									Cancel
 								</Button>
-								<Button
-									onClick={() => {
-										addCountdown({ guildId: String(guild.guild_id), settings: newCountdown }).catch(
-											() => {
-												toast.error("Failed to add countdown.");
-											},
-										);
-										setAddCountdownDialogOpen(false);
-									}}
-								>
+								<Button disabled={totalMinutes === 0 || addingCountdown} onClick={submitCountdown}>
 									Add
 								</Button>
 							</CredenzaFooter>
 						</CredenzaContent>
 					</Credenza>
 				</Setting>
-				<div className="flex flex-col gap-2 px-4 py-3.5">
-					<h2 className="font-medium text-sm">
+				<div className="flex flex-col gap-3 px-4 py-4 sm:px-6 sm:py-5">
+					<h2 className="font-medium text-[15px]">
 						{countdowns.length > 0
 							? "Current Countdowns"
 							: "This is where you'd see your countdowns, if you had any."}
@@ -329,11 +329,13 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 									aria-label="Remove countdown"
 									className="grid h-5 w-5 place-items-center text-fg2 hover:text-fg"
 									onClick={() => {
-										removeCountdown({
-											guildId: String(guild.guild_id),
-											minutes: countdown.minutes,
-										}).catch(() => {
-											toast.error("Failed to remove countdown.");
+										unwrap(
+											removeCountdown({
+												guildId: String(guild.guild_id),
+												minutes: countdown.minutes,
+											}),
+										).catch((e: Error) => {
+											toast.error(e.message || "Failed to remove countdown.");
 										});
 									}}
 								>
@@ -606,6 +608,15 @@ export default function Client({ guild, countdowns, channels }: ClientProps) {
 			</SettingGroup>
 		</div>
 	);
+}
+
+// Clamps the field to 0..max and treats an empty field as 0.
+function boundedValue(input: HTMLInputElement, max: number) {
+	const raw = input.valueAsNumber;
+	if (Number.isNaN(raw)) return 0;
+	const value = clamp(raw, 0, max);
+	if (value !== raw) input.value = String(value);
+	return value;
 }
 
 function clamp(value: number, min: number, max: number) {

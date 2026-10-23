@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger } from "@components/ui
 import { Setting, SettingGroup } from "@components/ui/setting";
 import { Switch } from "@components/ui/switch";
 import type { enabled_guilds } from "@generated/client";
+import { unwrap } from "@lib/action-result";
 import { useDebounce } from "@lib/hooks";
 import type { RESTGetAPIGuildChannelsResult } from "discord-api-types/v10";
 import { ArrowUpRight, Hash, Megaphone } from "lucide-react";
@@ -67,7 +68,7 @@ export default function Client({ guild, channels }: ClientProps) {
 		}
 		if (debounced === lastSavedRef.current) return;
 
-		updateNumberOfEvents({ guildId: String(guild.guild_id), num: debounced })
+		unwrap(updateNumberOfEvents({ guildId: String(guild.guild_id), num: debounced }))
 			.then(() => {
 				lastSavedRef.current = debounced;
 			})
@@ -77,7 +78,7 @@ export default function Client({ guild, channels }: ClientProps) {
 	}, [debounced, guild.guild_id]);
 
 	return (
-		<div className="flex flex-col gap-10">
+		<div className="flex flex-col">
 			<SettingGroup title={"Videos"}>
 				{guild.channel_id !== null ? (
 					<Setting
@@ -89,7 +90,7 @@ export default function Client({ guild, channels }: ClientProps) {
 					>
 						<Button
 							onClick={() => {
-								toast.promise(disableFeature({ guildId: String(guild.guild_id) }), {
+								toast.promise(unwrap(disableFeature({ guildId: String(guild.guild_id) })), {
 									loading: "Disabling...",
 									success: () => {
 										setSelectedChannelID(undefined);
@@ -113,17 +114,20 @@ export default function Client({ guild, channels }: ClientProps) {
 					<Select
 						onValueChange={(value) => {
 							setSelectedChannelID(value);
-							toast.promise(updateChannel({ guildId: String(guild.guild_id), channelId: value }), {
-								loading: "Saving...",
-								success: (r) => {
-									if (!r.data?.success) throw new Error(r.serverError);
-									return "Saved";
+							toast.promise(
+								unwrap(updateChannel({ guildId: String(guild.guild_id), channelId: value })),
+								{
+									loading: "Saving...",
+									success: (r) => {
+										if (!r.data?.success) throw new Error(r.serverError);
+										return "Saved";
+									},
+									error: (e?: Error) => {
+										setSelectedChannelID(undefined);
+										return e ? e.message : "Failed to save.";
+									},
 								},
-								error: (e?: Error) => {
-									setSelectedChannelID(undefined);
-									return e ? e.message : "Failed to save.";
-								},
-							});
+							);
 						}}
 						key={selectedChannelID}
 					>
@@ -134,9 +138,9 @@ export default function Client({ guild, channels }: ClientProps) {
 									return (
 										<span>
 											{chan.type === 0 ? (
-												<Hash className="mr-2 inline-block h-4 w-4" />
+												<Hash className="mr-2 inline-block h-[18px] w-[18px]" />
 											) : (
-												<Megaphone className="mr-2 inline-block h-4 w-4" />
+												<Megaphone className="mr-2 inline-block h-[18px] w-[18px]" />
 											)}
 											{chan.name}
 										</span>
@@ -149,9 +153,9 @@ export default function Client({ guild, channels }: ClientProps) {
 							{channels.map((channel) => (
 								<SelectItem key={channel.id} value={channel.id}>
 									{channel.type === 0 ? (
-										<Hash className="mr-2 inline-block h-4 w-4" />
+										<Hash className="mr-2 inline-block h-[18px] w-[18px]" />
 									) : (
-										<Megaphone className="mr-2 inline-block h-4 w-4" />
+										<Megaphone className="mr-2 inline-block h-[18px] w-[18px]" />
 									)}
 									{channel.name}
 								</SelectItem>
@@ -169,9 +173,10 @@ export default function Client({ guild, channels }: ClientProps) {
 						<Link
 							href={"https://i.imgur.com/ZFi4hEt.png"}
 							target={"_blank"}
+							rel="noreferrer"
 							className="inline-flex items-center gap-0.5 text-brand hover:underline"
 						>
-							Example <ArrowUpRight className="h-4 w-4" />
+							Example <ArrowUpRight className="h-[18px] w-[18px]" />
 						</Link>
 					</>
 				}
@@ -257,10 +262,11 @@ export default function Client({ guild, channels }: ClientProps) {
 						{"What kinds of events will the bot create?"}
 						<Link
 							href={"https://support.discord.com/hc/en-us/articles/4409494125719-Scheduled-Events"}
+							rel="noreferrer"
 							target={"_blank"}
 							className="inline-flex items-center gap-0.5 text-brand hover:underline"
 						>
-							Learn more <ArrowUpRight className="h-4 w-4" />
+							Learn more <ArrowUpRight className="h-[18px] w-[18px]" />
 						</Link>
 					</>
 				}
@@ -268,18 +274,19 @@ export default function Client({ guild, channels }: ClientProps) {
 				<Setting
 					label={"Number of Events"}
 					description={
-						"How many events should the bot schedule at a time? Setting this to 0 will disable this feature, and accompanying settings."
+						"How many events should the bot schedule at a time? Setting this to 0 will disable this feature, and accompanying settings. The range is 0 to 50."
 					}
 					active={false}
 				>
-					<div className="grid max-w-sm items-center gap-1.5">
-						<Label htmlFor="events" className="whitespace-nowrap">
+					<div>
+						<Label htmlFor="events" className="sr-only">
 							Events (0-50)
 						</Label>
 						<Input
 							type="number"
 							id="events"
 							placeholder="Events"
+							className="w-32"
 							defaultValue={numberOfEvents}
 							min={0}
 							max={50}

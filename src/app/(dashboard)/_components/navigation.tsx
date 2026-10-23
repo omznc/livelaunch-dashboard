@@ -14,6 +14,7 @@ import {
 	CredenzaTitle,
 } from "@components/ui/credenza";
 import type { enabled_guilds } from "@generated/client";
+import { unwrap } from "@lib/action-result";
 import { cn } from "@lib/utils";
 import { Power, UserPlus } from "lucide-react";
 import Link from "next/link";
@@ -54,41 +55,40 @@ interface NavigationProps extends React.HTMLAttributes<HTMLElement> {
 	allGuilds?: GuildsResponse[];
 }
 
-// Moves the underline to the current tab with transform only.
-function placeIndicator(strip: HTMLElement) {
-	const bar = strip.querySelector<HTMLElement>("[data-indicator]");
-	if (!bar) return;
-	const current = strip.querySelector<HTMLElement>('[aria-current="page"]');
-	if (!current) {
-		bar.style.opacity = "0";
-		return;
-	}
-	bar.style.opacity = "1";
-	bar.style.transform = `translateX(${current.offsetLeft}px) scaleX(${current.offsetWidth})`;
+// The fade at an edge tells that more tabs are out of view.
+function updateFades(strip: HTMLElement) {
+	const max = strip.scrollWidth - strip.clientWidth;
+	strip.toggleAttribute("data-fade-start", strip.scrollLeft > 1);
+	strip.toggleAttribute("data-fade-end", strip.scrollLeft < max - 1);
 }
 
-function useIndicator(path: string, count: number) {
+function scrollCurrentIntoView(strip: HTMLElement) {
+	const current = strip.querySelector<HTMLElement>('[aria-current="page"]');
+	if (!current) return;
+	strip.scrollLeft = current.offsetLeft - (strip.clientWidth - current.offsetWidth) / 2;
+}
+
+function useTabStrip(path: string, count: number) {
 	const ref = useRef<HTMLDivElement>(null);
 
-	// The first placement does not slide. The bar follows a resize.
 	useLayoutEffect(() => {
 		const strip = ref.current;
 		if (!strip) return;
-		placeIndicator(strip);
-		const frame = requestAnimationFrame(() => {
-			strip.querySelector<HTMLElement>("[data-indicator]")?.setAttribute("data-ready", "");
-		});
-		const watch = new ResizeObserver(() => placeIndicator(strip));
+		const update = () => updateFades(strip);
+		update();
+		strip.addEventListener("scroll", update, { passive: true });
+		const watch = new ResizeObserver(update);
 		watch.observe(strip);
 		for (const child of strip.children) watch.observe(child);
 		return () => {
-			cancelAnimationFrame(frame);
 			watch.disconnect();
+			strip.removeEventListener("scroll", update);
 		};
 	}, []);
 
+	// The current tab scrolls into view on load and on each change.
 	useLayoutEffect(() => {
-		if (ref.current) placeIndicator(ref.current);
+		if (ref.current) scrollCurrentIntoView(ref.current);
 	}, [path, count]);
 
 	return ref;
@@ -111,7 +111,7 @@ export function Navigation({ className, guilds, allGuilds, ...props }: Navigatio
 	}, [allGuilds, guildId]);
 
 	const visibleLinks = links.filter(({ requiresGuildEnabled }) => !requiresGuildEnabled || guild);
-	const stripRef = useIndicator(path, visibleLinks.length);
+	const stripRef = useTabStrip(path, visibleLinks.length);
 
 	useEffect(() => {
 		const handleShowHelpDialog = (e: Event) => {
@@ -127,49 +127,45 @@ export function Navigation({ className, guilds, allGuilds, ...props }: Navigatio
 
 	return (
 		<>
-			<nav aria-label="Sections" className={cn("flex items-stretch gap-3", className)} {...props}>
+			<nav aria-label="Sections" className={cn("flex items-stretch", className)} {...props}>
 				{guildId &&
 					(selectedFullGuild && !selectedFullGuild.botAccess ? (
-						<Button
-							variant="secondary"
-							size="sm"
-							className="my-auto shrink-0"
-							onClick={() => {
-								window.dispatchEvent(new Event("openInviteGuildDialog"));
-							}}
-						>
-							<UserPlus />
-							Invite LiveLaunch
-						</Button>
-					) : (
-						!guild && (
+						<div className="flex shrink-0 items-center border-line border-r px-4">
 							<Button
 								variant="secondary"
 								size="sm"
-								className="my-auto shrink-0"
-								onClick={() => setShowHelpDialog(true)}
+								onClick={() => {
+									window.dispatchEvent(new Event("openInviteGuildDialog"));
+								}}
 							>
-								<Power />
-								Enable LiveLaunch
+								<UserPlus />
+								Invite LiveLaunch
 							</Button>
+						</div>
+					) : (
+						!guild && (
+							<div className="flex shrink-0 items-center border-line border-r px-4">
+								<Button variant="secondary" size="sm" onClick={() => setShowHelpDialog(true)}>
+									<Power />
+									Enable LiveLaunch
+								</Button>
+							</div>
 						)
 					))}
-				<div ref={stripRef} className="ll-scroll relative flex min-w-0 items-stretch overflow-x-auto">
+				<div
+					ref={stripRef}
+					className="ll-scroll ll-fade flex min-w-0 flex-1 snap-x items-stretch overflow-x-auto [scrollbar-width:none]"
+				>
 					{visibleLinks.map(({ href, label }) => (
 						<RetainQueryLink
 							key={`${href}${label}`}
 							href={href}
 							aria-current={path === href ? "page" : undefined}
-							className="inline-flex items-center px-3.5 font-medium font-mono text-[12.5px] text-fg2 hover:text-fg aria-[current=page]:text-fg focus-visible:outline-offset-[-2px]"
+							className="inline-flex shrink-0 snap-start items-center justify-center border-line border-r px-5 font-medium font-mono text-[13.5px] text-fg2 hover:bg-raised hover:text-fg focus-visible:outline-offset-[-2px] motion-reduce:transition-none aria-[current=page]:bg-primary/[0.13] aria-[current=page]:text-brand aria-[current=page]:hover:bg-primary/[0.18]"
 						>
 							{label}
 						</RetainQueryLink>
 					))}
-					<span
-						aria-hidden
-						data-indicator
-						className="pointer-events-none absolute bottom-0 left-0 h-0.5 w-px bg-brand opacity-0"
-					/>
 				</div>
 			</nav>
 			<Credenza open={showHelpDialog} onOpenChange={setShowHelpDialog}>
@@ -220,7 +216,7 @@ export function Navigation({ className, guilds, allGuilds, ...props }: Navigatio
 						<Button
 							variant="secondary"
 							onClick={() => {
-								toast.promise(enableGuild({ guildId: String(guildId) }), {
+								toast.promise(unwrap(enableGuild({ guildId: String(guildId) })), {
 									loading: "Enabling...",
 									success: () => {
 										setShowHelpDialog(false);

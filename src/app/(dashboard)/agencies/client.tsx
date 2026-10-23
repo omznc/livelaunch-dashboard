@@ -7,6 +7,7 @@ import { Setting, SettingGroup } from "@components/ui/setting";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@components/ui/tabs";
 import type { enabled_guilds, ll2_agencies, ll2_agencies_filter } from "@generated/client";
+import { unwrap } from "@lib/action-result";
 import { cn } from "@lib/utils";
 import { FrownIcon } from "lucide-react";
 import Image from "next/image";
@@ -54,7 +55,7 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
 		if (snapshot === lastSavedSnapshotRef.current) return;
 		lastSavedSnapshotRef.current = snapshot;
 
-		toast.promise(SetAgencies({ guildId: String(guild.guild_id), agencies: selectedAgencies }), {
+		toast.promise(unwrap(SetAgencies({ guildId: String(guild.guild_id), agencies: selectedAgencies })), {
 			loading: "Saving...",
 			success: "Saved!",
 			error: "Failed to save!",
@@ -71,7 +72,7 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
 	const allSelected = selectedAgencies.length > 0 && selectedAgencies.every((a) => a.selected);
 
 	return (
-		<div className="flex flex-col gap-10">
+		<div className="flex flex-col">
 			<SettingGroup title={"Exclusions"} description="Whether to show or hide agencies">
 				<Setting
 					label={"Exclusion Mode"}
@@ -111,7 +112,7 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
 				<Input
 					placeholder={"Search..."}
 					aria-label="Search"
-					className="h-11 border-x-0 border-t-0 border-line bg-transparent px-4"
+					className="h-12 border-x-0 border-t-0 border-line bg-transparent px-4 sm:px-6"
 					onChange={(e) => {
 						setSearchQuery(e.target.value.trim());
 					}}
@@ -144,9 +145,7 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
 								{filtered.map((a) => (
 									<TableRow
 										key={a.agency_id}
-										className={cn("w-full select-none align-middle", {
-											"bg-primary/[0.07]": a.selected,
-										})}
+										className={cn("w-full select-none align-middle", {})}
 										onMouseDown={(e) => {
 											if (e.button === 0) {
 												e.preventDefault();
@@ -184,13 +183,13 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
 													<Image
 														src={a.logo_url}
 														alt="Agency Logo"
-														width={28}
-														height={28}
-														className="h-7 w-7 shrink-0 border border-line bg-bg object-contain"
+														width={32}
+														height={32}
+														className="h-8 w-8 shrink-0 border border-line bg-bg object-contain"
 													/>
 												) : (
 													<div
-														className="flex h-7 w-7 shrink-0 items-center justify-center border border-line bg-raised font-mono text-fg2 text-xs uppercase"
+														className="flex h-8 w-8 shrink-0 items-center justify-center border border-line bg-raised font-mono text-fg2 text-xs uppercase"
 														title={a.name ?? "Unknown"}
 													>
 														{a.name?.[0]}
