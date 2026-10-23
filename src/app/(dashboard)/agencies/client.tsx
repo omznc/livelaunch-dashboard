@@ -127,7 +127,7 @@ export default function Client({ agencies, enabledAgencies, guild }: ClientProps
 											onClick={(e) => {
 												e.preventDefault();
 												e.stopPropagation();
-												const checkbox = e.currentTarget as HTMLInputElement;
+												const checkbox = e.currentTarget as unknown as HTMLInputElement;
 												checkbox.checked = !checkbox.checked;
 												setSelectedAgencies((prev) =>
 													prev.map((p) => ({

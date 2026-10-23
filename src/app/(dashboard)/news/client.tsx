@@ -233,7 +233,7 @@ export default function Client({ newsSites, enabledNewsSites, guild, channels }:
 										onClick={(e) => {
 											e.preventDefault();
 											e.stopPropagation();
-											const checkbox = e.currentTarget as HTMLInputElement;
+											const checkbox = e.currentTarget as unknown as HTMLInputElement;
 											checkbox.checked = !checkbox.checked;
 											setSelectedNewsSites((prev) =>
 												prev.map((p) => ({
