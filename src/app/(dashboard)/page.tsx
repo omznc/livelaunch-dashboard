@@ -59,10 +59,10 @@ export default function Home(props: { searchParams: Promise<{ g?: string }> }) {
 				<GuildRedirect searchParams={props.searchParams} />
 			</Suspense>
 			<section className="relative isolate flex flex-col gap-4 px-4 py-12 sm:px-6 sm:py-16">
-				{/* The only accent glow on the page. */}
+				{/* The only accent glow on the page. On a light background it looks like a stain, so it is off. */}
 				<div
 					aria-hidden
-					className="-z-10 pointer-events-none absolute -top-16 -left-24 h-64 w-[28rem] max-w-full bg-[radial-gradient(closest-side,color-mix(in_oklch,var(--primary)_22%,transparent),transparent)]"
+					className="-z-10 pointer-events-none absolute in-data-[theme=light]:hidden -top-16 -left-24 h-64 w-[28rem] max-w-full bg-[radial-gradient(closest-side,color-mix(in_oklch,var(--primary)_22%,transparent),transparent)]"
 				/>
 				<h1 className="font-semibold text-5xl leading-[1.04] tracking-display sm:text-6xl">
 					LiveLaunch Dashboard
