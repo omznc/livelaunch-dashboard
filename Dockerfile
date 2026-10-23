@@ -23,7 +23,8 @@ ENV NEXT_PUBLIC_DISCORD_CLIENT_ID=$NEXT_PUBLIC_DISCORD_CLIENT_ID
 ENV SKIP_ENV_VALIDATION=1
 
 # Placeholder URLs for the build only. Modules parse them while Next collects page data.
-RUN bunx prisma generate && \
+RUN test -n "$NEXT_PUBLIC_DISCORD_CLIENT_ID" || { echo "Set the NEXT_PUBLIC_DISCORD_CLIENT_ID build arg" >&2; exit 1; } && \
+	bunx prisma generate && \
 	BETTER_AUTH_URL=http://localhost:3000 DATABASE_URL=mysql://u:p@localhost:3306/db bun run build
 
 # Production image, copy all the files and run next
