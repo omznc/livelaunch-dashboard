@@ -22,6 +22,10 @@ export const auth = betterAuth({
 			}),
 		},
 	},
+	account: {
+		// The OAuth state in 1.7 is longer than Verification.value (VARCHAR 255).
+		storeStateStrategy: "cookie",
+	},
 	session: {
 		fields: {
 			token: "token",
