@@ -5,6 +5,7 @@ import { Button } from "@components/ui/button";
 import { logger } from "@lib/logger";
 import { catchError, type ErrorInfo } from "next/error";
 import { useSearchParams } from "next/navigation";
+import posthog from "posthog-js";
 import { useEffect, useRef } from "react";
 
 function ErrorView({ error, retry }: ErrorInfo) {
@@ -18,6 +19,7 @@ function ErrorView({ error, retry }: ErrorInfo) {
 	}, [guild, retry]);
 
 	useEffect(() => {
+		posthog.captureException(error, { boundary: "section-error" });
 		logger.error("section-error", "Dashboard section error occurred", {
 			error: error instanceof Error ? error.message : String(error),
 			stack: error instanceof Error ? error.stack : undefined,
