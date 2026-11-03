@@ -4,11 +4,13 @@ import { StatusPage } from "@components/status-page";
 import { themeScript } from "@components/theme-script";
 import { Button } from "@components/ui/button";
 import { logger } from "@lib/logger";
+import posthog from "posthog-js";
 import { useEffect } from "react";
 import { fontClasses } from "./fonts";
 
 export default function GlobalError({ error, reset }: { error: Error; reset: () => void }) {
 	useEffect(() => {
+		posthog.captureException(error, { boundary: "global-error" });
 		logger.error("global-error", "Global application error occurred", {
 			error: error instanceof Error ? error.message : String(error),
 			stack: error instanceof Error ? error.stack : undefined,
