@@ -19,6 +19,7 @@ import { cn } from "@lib/utils";
 import { Power, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
+import posthog from "posthog-js";
 import type * as React from "react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
@@ -222,6 +223,7 @@ export function Navigation({ className, guilds, allGuilds, ...props }: Navigatio
 								toast.promise(unwrap(enableGuild({ guildId: String(guildId) })), {
 									loading: "Enabling...",
 									success: () => {
+										posthog.capture("guild_enabled", { method: "automatic" });
 										setShowHelpDialog(false);
 										return "Enabled!";
 									},
